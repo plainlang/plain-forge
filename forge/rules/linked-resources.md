@@ -61,6 +61,8 @@ A linked resource **must not** be any of the following:
 ```
 
 ## File location and path resolution
-- Paths are resolved relative to the directory where `codeplain` is run (the current working directory)
+- Paths are resolved against the directory that contains the `.plain` file, not the directory where `codeplain` is run
+- A path that does not resolve there is then looked up in the `--template-dir` directory (if given), and last in the built-in `standard_template_library`
+- Because the `.plain` file's own directory is the anchor, a render gives the same result from any working directory
 - Relative paths may traverse into parent directories — `[resource](../../resources/resource.md)` is valid — as long as they resolve to a real text file on disk
-- The conventional location is a `resources/` directory; keep the resource inside the project so the path stays stable from wherever `codeplain` is run
+- The conventional location is a `resources/` directory next to the `.plain` file
