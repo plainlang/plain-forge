@@ -5,6 +5,8 @@ import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 
+import { ensurePlainParser } from "./python-tools.mjs";
+
 const __filename = fileURLToPath(import.meta.url);
 const pkgRoot = path.resolve(path.dirname(__filename), "..");
 const forgeDir = path.join(pkgRoot, "forge");
@@ -117,6 +119,7 @@ Install options:
   --agent <claude|codex|copilot|forgecode|opencode|universal>
                                                Target agent layout
   --scope <project|global>                     Install into cwd or $HOME
+  --skip-plain-parser                          Don't install plain-parser (and uv)
   -h, --help                                   Show this help
 
 Update options:
@@ -139,6 +142,8 @@ Examples:
 
 "install" fails if plain-forge is already installed at the target — use
 "update" to refresh it. Missing install flags are prompted interactively.
+"install" also installs plain-parser, which the healthcheck uses to validate
+.plain files, with uv (installing uv first if it is missing).
 "update" auto-detects installs and prunes only files plain-forge wrote
 (confirming each removal), leaving your own and third-party skills untouched.
 "uninstall" deletes exactly the files recorded in the install manifest, then
@@ -152,6 +157,7 @@ function parseArgs(argv) {
     if (a === "--agent") out.agent = argv[++i];
     else if (a === "--scope") out.scope = argv[++i];
     else if (a === "-y" || a === "--yes") out.yes = true;
+    else if (a === "--skip-plain-parser") out.skipPlainParser = true;
     else if (a === "-h" || a === "--help") out.help = true;
     else out._.push(a);
   }
@@ -794,6 +800,7 @@ async function cmdInstall(args) {
   console.log(`  rules:  ${counts.rules}`);
   console.log(`  docs:   ${counts.docs}`);
   wireRules(agent, scope);
+  if (!args.skipPlainParser) ensurePlainParser();
   console.log();
   printNextSteps(agent);
 }
@@ -988,7 +995,6 @@ function printNextSteps(agent) {
   const bold = (s) => `\x1b[1m${s}\x1b[0m`;
   const dim = (s) => `\x1b[2m${s}\x1b[0m`;
   const plain = (s) => color(palette.plain, s);
-  const codeplain = (s) => color(palette.brand, s);
   const link = (s) => color(palette.link, s, "4;");
 
   console.log(`\x1b[1mnext steps:\x1b[0m`);
@@ -1006,9 +1012,6 @@ function printNextSteps(agent) {
     `       ${bold("add-feature")}        — add a feature to an existing ${plain("***plain")} project`,
   );
   console.log();
-  console.log(
-    `prerequisite: install the ${codeplain("codeplain")} CLI to render your specs into code — ${link("https://www.codeplain.ai/")}`,
-  );
   console.log(
     `usage guide: ${link("https://github.com/plainlang/plain-forge#usage")}`,
   );

@@ -6,7 +6,7 @@ description: >-
   then scaffolds a template import module (with base implementation reqs and
   test reqs), a stub top-level module, the unit testing script, and
   (optionally) the conformance and prepare-environment scripts plus a
-  config.yaml. Does NOT run `codeplain --dry-run`. Use when the user wants a
+  config.yaml. Does NOT run `plain-healthcheck`. Use when the user wants a
   quick project skeleton to start writing functional specs against, without
   the full forge-plain interview.
 ---
@@ -17,7 +17,7 @@ Always use the skill `load-plain-reference` to retrieve the ***plain syntax rule
 
 ## Scope
 
-This skill is intentionally **minimal**. It produces a runnable project skeleton — not a complete spec. **No `***definitions***` sections are written by this skill — not in the template module, not in the top module.** No functional specs, no concepts, no acceptance tests, no dry-run validation. The user will fill those in afterwards with `add-feature`, `add-concept`, `add-functional-spec`, etc.
+This skill is intentionally **minimal**. It produces a runnable project skeleton — not a complete spec. **No `***definitions***` sections are written by this skill — not in the template module, not in the top module.** No functional specs, no concepts, no acceptance tests, no validation. The user will fill those in afterwards with `add-feature`, `add-concept`, `add-functional-spec`, etc.
 
 What this skill writes:
 
@@ -30,7 +30,7 @@ What this skill writes:
 
 What this skill does **not** do:
 
-- Run `codeplain --dry-run` or `plain-healthcheck`.
+- Run `plain-healthcheck`.
 - Author concepts, functional specs, or acceptance tests.
 - Probe the host environment (`check-plain-env` is a separate step the user can run later).
 
@@ -111,7 +111,7 @@ template_dir: template
 
 Always include `template_dir: template` because the project has a template import module from step 3. Use `.sh` on macOS/Linux and `.ps1` on Windows, matching whatever the implement-* skills produced.
 
-Do **not** invoke `init-config-file` or `plain-healthcheck` here — keeping this skill light is the whole point. The user can run them later if they want a strict canonicalization or a dry-run.
+Do **not** invoke `init-config-file` or `plain-healthcheck` here — keeping this skill light is the whole point. The user can run them later if they want a strict canonicalization or validation.
 
 ### 7. Recap
 
@@ -119,7 +119,7 @@ Tell the user what was created and what's next:
 
 - Files written: `template/base.plain`, `<project>.plain`, the test scripts, `config.yaml`.
 - Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs`, or jump straight into `add-feature`.
-- Mention that `codeplain <project>.plain --dry-run` has not been run — they can run `plain-healthcheck` when they want validation.
+- Mention that the project has not been validated — they can run `plain-healthcheck` when they want validation.
 
 ## Validation checklist
 

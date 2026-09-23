@@ -120,7 +120,7 @@ output=$(mvn test --no-transfer-progress 2>&1)
 
 ## Common contract (all three scripts)
 
-All three scripts are invoked by the `codeplain` renderer with positional arguments. They MUST:
+All three scripts are invoked by the renderer with positional arguments. They MUST:
 
 1. **Be POSIX-bash (`.sh`) on macOS / Linux, PowerShell (`.ps1`) on Windows.** Executable, idempotent — re-running with the same inputs produces the same result
 2. **Validate every positional argument up front.** Exit with a clear `Usage:` line on bad args. Conventional exit codes (consistent with the shared testing-script rules):

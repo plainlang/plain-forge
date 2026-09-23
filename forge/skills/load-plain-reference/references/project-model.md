@@ -19,7 +19,7 @@ plain_modules/           # Generated output, one directory per module
   <module>/code/         #   implementation and unit tests
   <module>/tests/        #   conformance tests, one folder per functional spec
 test_scripts/            # Unit, environment-preparation, and conformance runners
-config.yaml              # codeplain CLI configuration
+config.yaml              # renderer configuration
 ```
 
 The exact template directory can be configured. Follow the module and linked-resource rules for

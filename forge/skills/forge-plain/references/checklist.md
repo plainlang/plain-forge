@@ -63,5 +63,5 @@ A box is met only when its source confirms it. Return `APPROVED` only when every
 
 - [ ] **[disk]** Identified the render target — the last module in the dependency chain (or the single module).
 - [ ] **[both]** Ran `init-config-file` to build the final `config.yaml`(s); resolved any precondition gap with the user before validating.
-- [ ] **[record]** Ran `plain-healthcheck`; worked its numbered list to `PASS` — never presented the render command on a `FAIL`.
-- [ ] **[record]** Presented the render command only after the dry-run passed, plus every side-channel script actually generated in Phase 3.
+- [ ] **[record]** Ran `plain-healthcheck`; worked its numbered list to `PASS` — never handed off the render target on a `FAIL`.
+- [ ] **[record]** Handed off the render target only after `plain-healthcheck` passed, plus every side-channel script actually generated in Phase 3.

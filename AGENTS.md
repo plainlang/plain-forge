@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 So a change here is almost always one of: (a) editing the installer CLI, or (b) editing the instructional content under `forge/skills/` and `forge/rules/`. These need different mindsets — see "Editing `forge/` content" below.
 
-`plain-forge` only *authors* `.plain` specs. Rendering specs into code is done by a **separate** tool, the `codeplain` CLI (codeplain.ai), which this repo does not contain.
+`plain-forge` only *authors* `.plain` specs. Rendering specs into code is done by a **separate** renderer, which this repo does not contain.
 
 ## Commands
 
@@ -28,14 +28,14 @@ node --test test/cli.test.mjs                              # run a single test f
 
 ## The installer CLI (`bin/cli.mjs`)
 
-A single self-contained ESM file with **zero runtime dependencies**; it exports its internals so the test suite can import them without running `main()` (guarded by `isInvokedDirectly()`, which realpath-compares `argv[1]` to `__filename` — needed because the global bin is a symlink). Key model:
+An ESM file with **zero runtime dependencies**, plus `bin/python-tools.mjs` (see below); it exports its internals so the test suite can import them without running `main()` (guarded by `isInvokedDirectly()`, which realpath-compares `argv[1]` to `__filename` — needed because the global bin is a symlink). Key model:
 
 - `AGENTS` maps agent name → content dir: `claude→.claude`,
   `codex|copilot|universal→.agents`, `forgecode→.forge`, and `opencode→.opencode`.
   `SCOPES`: `project` (cwd) / `global` (`$HOME`). Global ForgeCode and OpenCode paths have explicit
   exceptions in `resolveBaseDir`. `CONTENT_DIRS = [skills, rules, docs]` (missing source dirs are
   silently skipped).
-- **install** writes `forge/{skills,rules,docs}` into `<agentDir>/`, recording every written file in `<agentDir>/.plain-forge/manifest.json`. It **refuses** (exit 1) if a manifest or a "forge signature" already exists — install never overwrites in place; you use `update` for that.
+- **install** writes `forge/{skills,rules,docs}` into `<agentDir>/`, recording every written file in `<agentDir>/.plain-forge/manifest.json`. It **refuses** (exit 1) if a manifest or a "forge signature" already exists — install never overwrites in place; you use `update` for that. It then runs `ensurePlainParser()` from `bin/python-tools.mjs`, which installs plain-parser with `uv tool install`, installing uv first with astral's `install.sh` (Linux/macOS) or `install.ps1` (Windows). It never throws: on failure it prints the manual commands and the install still succeeds. `--skip-plain-parser` skips it, and the integration tests always pass it. The file is temporary and goes away once plain-parser ships on npm.
 - **update** auto-detects every install across both scopes × all agents, re-copies the fresh tree, and **prunes** files that were in the old manifest but no longer ship (confirmed individually unless `--yes`). Only manifest-recorded files are ever prune candidates, so the user's own/third-party files are never touched.
 - **uninstall** deletes exactly `manifest.files` then the manifest; refuses (exit 1) on a manifest-less install rather than guessing which files are its own.
 - Legacy (manifest-less) installs are recognized only when **all** of `FORGE_SIGNATURE_SKILLS` (`forge-plain`, `add-feature`, `debug-specs`, `load-plain-reference`) are present, then refreshed and given a manifest going forward.
@@ -74,8 +74,8 @@ Other constraints the rules enforce (see `forge/rules/`): functional specs are m
 
 ### The skill lifecycle (orchestration)
 
-`forge-plain` is the top-level orchestrator: a short Phase 0 intent interview followed by four gated phases — (1) definitions + functional specs, (2) implementation reqs / tech stack, (3) testing (unit→impl reqs, conformance→test reqs, generate `test_scripts/`, build `config.yaml`, probe host via `check-plain-env`), (4) validate via `plain-healthcheck` (`codeplain … --dry-run` gate) then hand off the render command. Phases 1–3 are **one-question-at-a-time, write-to-disk-immediately**. `add-feature` is the same authoring loop scoped to one feature on an existing project; `init-plain-project` is a no-interview scaffold; `run-codeplain` supervises a live `codeplain --headless` render. The installer ships `forge/rules/*.md` beside the skills; native rule consumers load them directly, while other agents reach them through `load-plain-reference`.
+`forge-plain` is the top-level orchestrator: a short Phase 0 intent interview followed by four gated phases — (1) definitions + functional specs, (2) implementation reqs / tech stack, (3) testing (unit→impl reqs, conformance→test reqs, generate `test_scripts/`, build `config.yaml`, probe host via `check-plain-env`), (4) validate via `plain-healthcheck` (config and script checks, `plain-parser check` on every top module, plus rule checks the parser can't do) then hand off the render target. Phases 1–3 are **one-question-at-a-time, write-to-disk-immediately**. `add-feature` is the same authoring loop scoped to one feature on an existing project; `init-plain-project` is a no-interview scaffold. The installer ships `forge/rules/*.md` beside the skills; native rule consumers load them directly, while other agents reach them through `load-plain-reference`.
 
 ## Memory / persistent context
 
-- Generated artifacts and project scratch (`plain_modules/`, `test_scripts/`, `*.yaml`, `codeplain.log`, env files) are gitignored. The renderer writes everything it generates under `plain_modules/<module>/`: `code/` for implementation and unit tests, `tests/` for conformance tests (one folder per functional spec).
+- Generated artifacts and project scratch (`plain_modules/`, `test_scripts/`, `*.yaml`, env files) are gitignored. The renderer writes everything it generates under `plain_modules/<module>/`: `code/` for implementation and unit tests, `tests/` for conformance tests (one folder per functional spec).

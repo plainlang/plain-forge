@@ -31,3 +31,44 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+
+  # `install` sets up uv and plain-parser (bin/python-tools.mjs). Run it for real
+  # on each OS, then check that the installed plain-parser validates a spec.
+  install-plain-parser:
+    name: Install plain-parser (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - name: plain-forge install
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir project && cd project
+          node "$GITHUB_WORKSPACE/bin/cli.mjs" install --agent claude --scope project | tee install.log
+          grep -E "plain-parser: (already installed|installed)" install.log
+      # uv installs tools into ~/.local/bin, which is not on the runner's PATH.
+      # On Windows, GITHUB_PATH needs the Windows form of Git Bash's $HOME.
+      - run: |
+          dir="$HOME/.local/bin"
+          if command -v cygpath >/dev/null; then dir=$(cygpath -w "$dir"); fi
+          echo "$dir" >> "$GITHUB_PATH"
+      - name: plain-parser check
+        working-directory: ${{ runner.temp }}/project
+        run: |
+          printf '%s\n' '***implementation reqs***' '' '- :Implementation: should be in Python.' '' \
+            '***functional specs***' '' '- :Implementation: prints "hello".' > app.plain
+          plain-parser check app.plain
+          sed 's/:Implementation: prints/:Undefined: prints/' app.plain > bad.plain
+          if plain-parser check bad.plain; then echo "bad.plain should fail"; exit 1; fi

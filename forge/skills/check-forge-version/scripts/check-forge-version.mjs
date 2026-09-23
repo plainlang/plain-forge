@@ -265,7 +265,7 @@ function report(installs, latest, statuses) {
         `${n} ${n === 1 ? "install is" : "installs are"} behind v${latest.version}. ` +
           "Continuing on an outdated plain-forge is not recommended: its skills and rules have " +
           "been superseded, so specs authored against them may not match what the current " +
-          "codeplain renderer expects, and fixes released since this version are not in effect.",
+          "renderer expects, and fixes released since this version are not in effect.",
       ),
     );
   }

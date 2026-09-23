@@ -17,7 +17,6 @@
   "license": "MIT",
   "keywords": [
     "plain",
-    "codeplain",
     "claude-code",
     "skills",
     "spec",
@@ -28,6 +27,7 @@
   },
   "files": [
     "bin/cli.mjs",
+    "bin/python-tools.mjs",
     "forge"
   ],
   "scripts": {
