@@ -988,7 +988,6 @@ function printNextSteps(agent) {
   const bold = (s) => `\x1b[1m${s}\x1b[0m`;
   const dim = (s) => `\x1b[2m${s}\x1b[0m`;
   const plain = (s) => color(palette.plain, s);
-  const codeplain = (s) => color(palette.brand, s);
   const link = (s) => color(palette.link, s, "4;");
 
   console.log(`\x1b[1mnext steps:\x1b[0m`);
@@ -1006,9 +1005,6 @@ function printNextSteps(agent) {
     `       ${bold("add-feature")}        — add a feature to an existing ${plain("***plain")} project`,
   );
   console.log();
-  console.log(
-    `prerequisite: install the ${codeplain("codeplain")} CLI to render your specs into code — ${link("https://www.codeplain.ai/")}`,
-  );
   console.log(
     `usage guide: ${link("https://github.com/plainlang/plain-forge#usage")}`,
   );

@@ -2,8 +2,8 @@
 name: load-plain-reference
 description: >-
   Loads the applicable ***plain authoring rules and operational references for the current task.
-  Covers section ownership, concepts, modules, resources, integrations, rendering, testing, and
-  codeplain CLI behavior without loading unrelated guidance. Use when authoring, editing, reviewing,
+  Covers section ownership, concepts, modules, resources, integrations, rendering, and testing
+  without loading unrelated guidance. Use when authoring, editing, reviewing,
   or debugging .plain files, or before invoking another skill that reads or writes .plain content.
 ---
 
@@ -18,7 +18,7 @@ rules, so every routing decision below inherits its verdict.
 
 If that skill reports a stale or unconfirmed install, tell the user clearly that **authoring on an
 outdated plain-forge is not recommended** and ask them to run `npx plain-forge update` before
-continuing — the rules routed to below may not match what the current `codeplain` renderer expects.
+continuing — the rules routed to below may not match what the current renderer expects.
 Give them the choice rather than blocking: if they decline, continue with the rules on disk and treat
 the stale install as the first suspect for anything that later behaves unexpectedly.
 
@@ -81,7 +81,6 @@ Authoring rules remain authoritative if a reference appears to conflict with the
 |---|---|
 | Project layout, source-of-truth model, or template inclusion | `references/project-model.md` |
 | Rendering order, generated artifacts, conformance workflow, or test scripts | `references/rendering-and-testing.md` |
-| `codeplain` path resolution or CLI options | Invoke `load-codeplain-reference` |
 
 ## 5. Continue with the task
 

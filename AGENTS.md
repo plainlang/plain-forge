@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 So a change here is almost always one of: (a) editing the installer CLI, or (b) editing the instructional content under `forge/skills/` and `forge/rules/`. These need different mindsets — see "Editing `forge/` content" below.
 
-`plain-forge` only *authors* `.plain` specs. Rendering specs into code is done by a **separate** tool, the `codeplain` CLI (codeplain.ai), which this repo does not contain.
+`plain-forge` only *authors* `.plain` specs. Rendering specs into code is done by a **separate** renderer, which this repo does not contain.
 
 ## Commands
 
@@ -74,8 +74,8 @@ Other constraints the rules enforce (see `forge/rules/`): functional specs are m
 
 ### The skill lifecycle (orchestration)
 
-`forge-plain` is the top-level orchestrator: a short Phase 0 intent interview followed by four gated phases — (1) definitions + functional specs, (2) implementation reqs / tech stack, (3) testing (unit→impl reqs, conformance→test reqs, generate `test_scripts/`, build `config.yaml`, probe host via `check-plain-env`), (4) validate via `plain-healthcheck` (`codeplain … --dry-run` gate) then hand off the render command. Phases 1–3 are **one-question-at-a-time, write-to-disk-immediately**. `add-feature` is the same authoring loop scoped to one feature on an existing project; `init-plain-project` is a no-interview scaffold; `run-codeplain` supervises a live `codeplain --headless` render. The installer ships `forge/rules/*.md` beside the skills; native rule consumers load them directly, while other agents reach them through `load-plain-reference`.
+`forge-plain` is the top-level orchestrator: a short Phase 0 intent interview followed by four gated phases — (1) definitions + functional specs, (2) implementation reqs / tech stack, (3) testing (unit→impl reqs, conformance→test reqs, generate `test_scripts/`, build `config.yaml`, probe host via `check-plain-env`), (4) validate via `plain-healthcheck` (static checks of configs, scripts, and every module) then hand off the render target. Phases 1–3 are **one-question-at-a-time, write-to-disk-immediately**. `add-feature` is the same authoring loop scoped to one feature on an existing project; `init-plain-project` is a no-interview scaffold. The installer ships `forge/rules/*.md` beside the skills; native rule consumers load them directly, while other agents reach them through `load-plain-reference`.
 
 ## Memory / persistent context
 
-- Generated artifacts and project scratch (`plain_modules/`, `test_scripts/`, `*.yaml`, `codeplain.log`, env files) are gitignored. The renderer writes everything it generates under `plain_modules/<module>/`: `code/` for implementation and unit tests, `tests/` for conformance tests (one folder per functional spec).
+- Generated artifacts and project scratch (`plain_modules/`, `test_scripts/`, `*.yaml`, env files) are gitignored. The renderer writes everything it generates under `plain_modules/<module>/`: `code/` for implementation and unit tests, `tests/` for conformance tests (one folder per functional spec).
