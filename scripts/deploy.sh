@@ -169,12 +169,16 @@ WORKTREE=$(mktemp -d "${TMPDIR:-/tmp}/plain-forge-release.XXXXXX")
 log "checking out $TAG into $WORKTREE"
 git worktree add --detach --quiet "$WORKTREE" "$TAG"
 cd "$WORKTREE"
+git submodule update --init --quiet vendor/pyro
 
 log "installing dependencies"
 npm ci --silent
 
 log "running tests"
 npm test
+
+log "bundling pyro's render-spec skill"
+./scripts/bundle-pyro.sh
 
 log "setting package version to $VERSION"
 npm version "$VERSION" --no-git-tag-version --allow-same-version >/dev/null

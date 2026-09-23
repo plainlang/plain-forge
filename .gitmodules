@@ -1,0 +1,4 @@
+[submodule "vendor/pyro"]
+	path = vendor/pyro
+	url = https://github.com/plainlang/pyro.git
+	branch = main
