@@ -84,6 +84,11 @@ describe("parseArgs", () => {
     assert.equal(parseArgs(["--help"]).help, true);
     assert.equal(parseArgs(["update"]).yes, undefined);
   });
+
+  test("recognizes --skip-plain-parser", () => {
+    assert.equal(parseArgs(["install", "--skip-plain-parser"]).skipPlainParser, true);
+    assert.equal(parseArgs(["install"]).skipPlainParser, undefined);
+  });
 });
 
 describe("toPosix", () => {
@@ -555,7 +560,10 @@ describe("detectInstalls", () => {
 
 // ── Black-box integration tests: spawn the real CLI in an isolated HOME/cwd ──
 
+// `install` would otherwise download uv and plain-parser; python-tools.test.mjs
+// covers that step without the network.
 function runCli(args, { cwd, home, input } = {}) {
+  if (args[0] === "install") args = [...args, "--skip-plain-parser"];
   return spawnSync("node", [CLI, ...args], {
     cwd,
     input,

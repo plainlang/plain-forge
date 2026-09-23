@@ -14,8 +14,8 @@ immediately before publishing. Nothing is committed back.
 
 This is deliberate: writing the version to `main` would mean a bookkeeping commit on
 a protected branch, which needs either a stored credential or a self-merging PR. The
-tag avoids both — the same model the [codeplain](https://github.com/Codeplain-ai/codeplain)
-repo uses, where hatch-vcs derives the version from the tag.
+tag avoids both — the same model as hatch-vcs, which derives a Python package's version
+from its tag.
 
 The consequence, so it doesn't surprise anyone: **`package.json` on `main` is stale by
 design.** At the time of writing it says `1.0.19` while npm serves `1.0.20`. The tag and
@@ -102,7 +102,7 @@ Two consequences worth knowing:
 
 - **Every merge permanently adds a version to npm.** Unpublishing is only possible within
   72 hours, so the registry accumulates one prerelease per merge. Add a `paths-ignore` to
-  the `push` trigger if that churn stops being worth it — only `bin/cli.mjs` and `forge/`
+  the `push` trigger if that churn stops being worth it — only `bin/` and `forge/`
   reach the tarball, so docs-only and test-only merges publish nothing of substance.
 - **Re-running a merge's workflow is a no-op**, not a failure. The version is derived from
   the sha, so the job detects the version is already on npm and skips.
