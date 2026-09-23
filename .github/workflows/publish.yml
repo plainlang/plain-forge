@@ -79,6 +79,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.release.tag_name }}
+          submodules: true
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -91,6 +92,18 @@ jobs:
           npm --version
 
       - run: npm ci
+
+      - name: Bundle pyro's render-spec skill
+        id: pyro
+        run: ./scripts/bundle-pyro.sh
+
+      # forge/skills/render-spec is gitignored, so prove npm still packs it
+      # rather than shipping a package without the renderer.
+      - name: Check the bundled skill is in the package
+        run: |
+          npm pack --dry-run --json \
+            | jq -e '.[0].files[] | select(.path == "forge/skills/render-spec/SKILL.md")' >/dev/null \
+            || { echo "::error::forge/skills/render-spec is missing from the npm package"; exit 1; }
 
       - name: Read the version from the release tag
         id: pkg
@@ -139,7 +152,7 @@ jobs:
         run: |
           curl -s -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: \`v${{ steps.pkg.outputs.version }}\` published to npm :white_check_mark:. Install with \`npx plain-forge@latest update\`.\"}"
+            --data "{\"text\":\"*plain-forge*: \`v${{ steps.pkg.outputs.version }}\` published to npm :white_check_mark: (bundles pyro \`${{ steps.pyro.outputs.version }}\`). Install with \`npx plain-forge@latest update\`.\"}"
 
       - name: Notify Slack (failure)
         if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}
@@ -173,6 +186,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: true
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -185,6 +200,16 @@ jobs:
           npm --version
 
       - run: npm ci
+
+      - name: Bundle pyro's render-spec skill
+        id: pyro
+        run: ./scripts/bundle-pyro.sh
+
+      - name: Check the bundled skill is in the package
+        run: |
+          npm pack --dry-run --json \
+            | jq -e '.[0].files[] | select(.path == "forge/skills/render-spec/SKILL.md")' >/dev/null \
+            || { echo "::error::forge/skills/render-spec is missing from the npm package"; exit 1; }
 
       # package.json on main is stale by design, so the published `latest` is
       # the only reliable base. Bump its patch and append the commit sha: the
@@ -242,6 +267,7 @@ jobs:
             echo "| version | \`${{ steps.pre.outputs.version }}\` |"
             echo "| dist-tag | \`next\` |"
             echo "| \`latest\` still | \`${{ steps.pre.outputs.base }}\` |"
+            echo "| pyro | \`${{ steps.pyro.outputs.version }}\` |"
             echo
             echo "Try it: \`npx plain-forge@next install\`"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -251,7 +277,7 @@ jobs:
         run: |
           curl -s -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: prerelease \`${{ steps.pre.outputs.version }}\` published to npm :package:. Try it with \`npx plain-forge@next install\`. \`latest\` is untouched at \`${{ steps.pre.outputs.base }}\`. From <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${GITHUB_SHA:0:7}> by *${{ github.actor }}*.\"}"
+            --data "{\"text\":\"*plain-forge*: prerelease \`${{ steps.pre.outputs.version }}\` published to npm :package: (bundles pyro \`${{ steps.pyro.outputs.version }}\`). Try it with \`npx plain-forge@next install\`. \`latest\` is untouched at \`${{ steps.pre.outputs.base }}\`. From <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${GITHUB_SHA:0:7}> by *${{ github.actor }}*.\"}"
 
       # A re-run of an already-published commit is a no-op, not a publish, so it
       # gets its own quiet line rather than claiming something shipped.

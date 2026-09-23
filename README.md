@@ -34,6 +34,7 @@ Pick whichever entry point matches how much upfront design you want:
 
 - **`debug-specs`** — when the rendered app misbehaves, this traces the generated code back to the spec that caused it and fixes the spec (never the generated code).
 - **`run-codeplain`** — experimental supervised render. Launches `codeplain` for you, tails the log, watches generated code appear under `plain_modules/`, and detects pathologies (stuck conformance loops, complexity errors, missing concepts, render failures). On approval it stops the renderer, hands off to the right spec-edit skill, and resumes.
+- **`render-spec`** — [pyro](https://github.com/plainlang/pyro), the open-source ***plain renderer, bundled with plain-forge. Renders a `.plain` module (and the modules it requires or imports) into working, tested code directly inside your agent. See [Render with pyro](#render-with-pyro).
 - **`implement-unit-testing-script`** / **`implement-conformance-testing-script`** / **`implement-prepare-environment-script`** — generate the per-language testing scripts that the renderer and you both invoke. New languages can be added by these skills without touching any other part of the project.
 
 Each skill operates on the same one-question-at-a-time, write-immediately, refine-through-follow-ups loop. Specs land on disk after every answer; later answers fix earlier writes in place. There is no batched interview, no "I'll gather context first," and no hand-authored functional specs — every new spec goes through the authoring skills so the complexity and conflict checks actually run.
@@ -187,6 +188,23 @@ If you'd rather have plain-forge babysit the run from your AI coding agent, invo
 
 This is an **experimental** feature — the default and most reliable way to render is still the manual `codeplain <module>.plain` invocation above.
 
+#### Render with pyro
+
+plain-forge ships [pyro](https://github.com/plainlang/pyro), an open-source renderer packaged as the `render-spec` skill that renders inside your AI coding agent. Invoke it with the module to render:
+
+```
+/render-spec <module>.plain
+```
+
+It resolves the modules the target requires or imports, renders them in dependency order, and writes:
+
+- implementation code and unit tests to `plain_module/code/`
+- conformance tests to `plain_module/tests/`
+- the target module's final output to `dist/`
+- its working files (render plan, dependencies, scenarios, requirement lists) to `.pyro/`
+
+pyro needs **Python 3.8 or newer** on the machine and nothing else. `npx plain-forge@latest update` updates pyro along with the rest of plain-forge.
+
 ### Debugging specs
 
 Hit a bug in the rendered app, a failing test, or behavior that doesn't match what you specified?
@@ -210,10 +228,37 @@ forge/                       # canonical content, copied verbatim on install
 bin/
   cli.mjs                    # the `plain-forge` CLI — `install` and `update` commands
 
+vendor/
+  pyro/                      # git submodule: plainlang/pyro, pinned to the release plain-forge ships
+
+scripts/
+  bundle-pyro.sh             # copies vendor/pyro's `render-spec` skill into forge/skills/ at publish time
+  deploy.sh                  # publishes a release to npm from a workstation
+
 test/
   cli.test.mjs               # tests for the install / update CLI
 
 package.json                 # ships only `bin/cli.mjs` and `forge/` to npm
+```
+
+### Bundled pyro skill
+
+The `render-spec` skill comes from [pyro](https://github.com/plainlang/pyro), which has its own release cycle. It is included as a **git submodule** at [`vendor/pyro`](vendor/pyro), so the exact pyro commit plain-forge ships is visible in the repository. Clone with submodules:
+
+```bash
+git clone --recurse-submodules https://github.com/plainlang/plain-forge.git
+# or, in an existing clone:
+git submodule update --init
+```
+
+Agents only discover skills that sit directly under `skills/`, so the npm publish CI job copies `vendor/pyro/skills/render-spec` into `forge/skills/render-spec` (gitignored) with `scripts/bundle-pyro.sh` just before `npm publish`. Run the script yourself to try the skill locally.
+
+To ship a newer pyro, bump the submodule to pyro's `main` (it only ever points at pyro's latest stable release) and commit the new pointer:
+
+```bash
+git submodule update --remote vendor/pyro
+git add vendor/pyro
+git commit -m "Bump pyro to vX.Y.Z"
 ```
 
 On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them into the chosen agent directory (`.claude/`, `.agents/` for Codex/Copilot/universal, `.forge/`, or `.opencode/` — see the per-agent table above for global-scope paths), recording every file it wrote in `<agent-dir>/.plain-forge/manifest.json` so `update` can later refresh and prune precisely. For agents that need it, it also wires the rules into `opencode.json` or ForgeCode's `AGENTS.md` (see [How the rules get applied per agent](#how-the-rules-get-applied-per-agent)).
@@ -227,6 +272,7 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 | `forge-plain` | End-to-end QA interview that produces complete `.plain` spec files for a new project |
 | `init-plain-project` | Lightweight project initializer — scaffolds `template/base.plain` (base impl + test reqs), a stub top-level module, the testing scripts, and `config.yaml`. No functional specs, no concepts, no dry-run. Pair with `add-feature` to grow the project feature-by-feature. |
 | `add-feature` | Interview the user about a single feature, then write all the specs for it |
+| `render-spec` | [pyro](https://github.com/plainlang/pyro), the open-source renderer: renders a `.plain` module and the modules it requires or imports into working, tested code, from inside your agent. See [Render with pyro](#render-with-pyro). |
 | `run-codeplain` | **Experimental.** Launch a `codeplain` render and supervise it end-to-end — tails `codeplain.log`, watches generated code appear, detects pathologies (stuck conformance loops, complexity errors, missing concepts, render failures), and on approval stops the renderer, hands off to the right spec-edit skill, and resumes with `--render-from`. The default render path is still the manual `codeplain <module>.plain` command. |
 
 ### Spec Authoring

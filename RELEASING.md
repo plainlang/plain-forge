@@ -49,6 +49,7 @@ leading `v` — but every message, link and convention here assumes the prefix.
 | step | detail |
 |---|---|
 | Test | full suite against the tagged tree; a failure stops the release and posts to Slack |
+| Bundle pyro | `scripts/bundle-pyro.sh` copies `render-spec` from the `vendor/pyro` submodule into `forge/skills/` and checks it is in the package. Bump the submodule first to ship a newer pyro |
 | Read version | strips the `v`, refuses anything that isn't semver |
 | Refuse duplicates | fails if that version is already on npm |
 | Set version | `npm version --no-git-tag-version` in the runner only |
