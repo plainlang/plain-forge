@@ -35,4 +35,4 @@ Use this to verify the workflow was followed — never as a substitute for it. R
 - [ ] Read the modified `.plain` file(s) in full.
 - [ ] Verified: concepts defined before use, no cycles, chronological ordering correct end-to-end, functional specs language-agnostic, every external interface explicit (endpoints, methods, CLI args, formats), acceptance tests consistent with their parent specs.
 - [ ] Presented the final diff and got the user's approval (change requests dropped back into the one-question loop, not a restart).
-- [ ] Ran `plain-healthcheck`; worked its numbered list to `PASS` (fixing only `.plain`/`config.yaml`/scripts — never generated code) before declaring the feature ready and reminding the user to re-render with `codeplain <module>.plain`.
+- [ ] Ran `plain-healthcheck`; worked its numbered list to `PASS` (fixing only `.plain`/`config.yaml`/scripts — never generated code) before declaring the feature ready and reminding the user to re-render `<module>.plain`.

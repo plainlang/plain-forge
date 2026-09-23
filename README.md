@@ -4,7 +4,7 @@
 
 # plain-forge
 
-A toolkit for working with [∗∗∗plain](https://plainlang.org) projects from inside your AI coding agent of choice — Claude Code, Codex, ForgeCode, OpenCode, and any other agent that reads from a standard skills directory. plain-forge ships skills, rules, and docs that turn a conversation into complete `.plain` spec files, then keeps maintaining them across the lifetime of the project. The specs are rendered into production-ready code by the [codeplain](https://codeplain.ai) renderer.
+A toolkit for working with [∗∗∗plain](https://plainlang.org) projects from inside your AI coding agent of choice — Claude Code, Codex, ForgeCode, OpenCode, and any other agent that reads from a standard skills directory. plain-forge ships skills, rules, and docs that turn a conversation into complete `.plain` spec files, then keeps maintaining them across the lifetime of the project. The specs are then rendered into production-ready code by a ***plain renderer.
 
 ## What plain-forge does
 
@@ -14,7 +14,7 @@ plain-forge is organized around four kinds of work, each with its own entry-poin
 
 Pick whichever entry point matches how much upfront design you want:
 
-- **`forge-plain`** — full end-to-end interview. One question at a time, immediate writes to disk, covers product → tech stack → testing → validation in four phases. Produces a complete `.plain` project with `config.yaml`, test scripts, and a successful `codeplain --dry-run` before handing off.
+- **`forge-plain`** — full end-to-end interview. One question at a time, immediate writes to disk, covers product → tech stack → testing → validation in four phases. Produces a complete `.plain` project with `config.yaml`, test scripts, and a passing `plain-healthcheck` before handing off.
 - **`init-plain-project`** — lightweight scaffold. Asks only about the base technology, project kind, and whether conformance testing is on; emits a template module, a stub top-level module, the testing scripts, and a `config.yaml`. No interview, no specs — pair it with `add-feature` to grow the project feature by feature.
 
 ### 2. Grow an existing project
@@ -25,15 +25,14 @@ Pick whichever entry point matches how much upfront design you want:
 
 ### 3. Validate and maintain
 
-- **`plain-healthcheck`** — the verification gate. Inventories every `.plain` module, validates every `config.yaml`, and dry-runs every top module with the right config. Returns `PASS` / `FAIL` with a numbered punch-list when something is broken.
+- **`plain-healthcheck`** — the verification gate. Inventories every `.plain` module, validates every `config.yaml`, and statically checks every module against the ***plain rules. Returns `PASS` / `FAIL` with a numbered punch-list when something is broken.
 - **`init-config-file`** — assembles the canonical `config.yaml` per part of a project from the decisions made during interviewing.
-- **`check-plain-env`** — probes the host machine for everything the project needs (language toolchains, external services, system binaries, drivers, `codeplain` itself) and emits a `PASS` / `WARN` / `FAIL` report with OS-specific install commands.
+- **`check-plain-env`** — probes the host machine for everything the project needs (language toolchains, external services, system binaries, drivers) and emits a `PASS` / `WARN` / `FAIL` report with OS-specific install commands.
 - **`analyze-func-specs`** / **`analyze-if-func-spec-too-complex`** / **`break-down-func-spec`** / **`resolve-spec-conflict`** — the spec-quality toolchain that runs behind `add-feature` and `forge-plain` but can also be invoked directly when reviewing or refactoring.
 
-### 4. Debug and render
+### 4. Debug and test
 
 - **`debug-specs`** — when the rendered app misbehaves, this traces the generated code back to the spec that caused it and fixes the spec (never the generated code).
-- **`run-codeplain`** — experimental supervised render. Launches `codeplain` for you, tails the log, watches generated code appear under `plain_modules/`, and detects pathologies (stuck conformance loops, complexity errors, missing concepts, render failures). On approval it stops the renderer, hands off to the right spec-edit skill, and resumes.
 - **`implement-unit-testing-script`** / **`implement-conformance-testing-script`** / **`implement-prepare-environment-script`** — generate the per-language testing scripts that the renderer and you both invoke. New languages can be added by these skills without touching any other part of the project.
 
 Each skill operates on the same one-question-at-a-time, write-immediately, refine-through-follow-ups loop. Specs land on disk after every answer; later answers fix earlier writes in place. There is no batched interview, no "I'll gather context first," and no hand-authored functional specs — every new spec goes through the authoring skills so the complexity and conflict checks actually run.
@@ -158,7 +157,7 @@ If an install has **no manifest** (e.g. one that predates manifests), `uninstall
 
 If you'd rather skip the full upfront interview and build the specs feature-by-feature, use this lighter loop:
 
-1. Invoke `init-plain-project`. It asks just for the base technology, the project kind, and whether conformance testing is enabled, then scaffolds the project skeleton: `template/base.plain` with the base `***implementation reqs***` and `***test reqs***`, a stub top-level `<project>.plain` (frontmatter only — no functional specs, no concepts), the unit-test script, an optional conformance-test script, an optional prepare-environment script, and a `config.yaml` wired to whichever scripts were generated. No `codeplain --dry-run` is run.
+1. Invoke `init-plain-project`. It asks just for the base technology, the project kind, and whether conformance testing is enabled, then scaffolds the project skeleton: `template/base.plain` with the base `***implementation reqs***` and `***test reqs***`, a stub top-level `<project>.plain` (frontmatter only — no functional specs, no concepts), the unit-test script, an optional conformance-test script, an optional prepare-environment script, and a `config.yaml` wired to whichever scripts were generated. The project is not validated.
 2. From there, either:
    - **Converse with the agent.** Just describe the next feature in plain English; the agent will invoke `add-feature` for you and run its one-question-at-a-time loop until the feature is on disk.
    - **Invoke `add-feature` manually** whenever you want to drive the loop yourself.
@@ -173,19 +172,7 @@ If you'd rather skip the full upfront interview and build the specs feature-by-f
 
 ### Rendering specs
 
-Once your `.plain` files are ready (and `plain-healthcheck` is green), render the specs into code with the [Codeplain](https://codeplain.ai) renderer:
-
-```bash
-codeplain <module>.plain
-```
-
-plain-forge prints the exact command (with the right final module name) at the end of Phase 4.
-
-#### Supervised render (experimental)
-
-If you'd rather have plain-forge babysit the run from your AI coding agent, invoke `run-codeplain`. It launches the renderer for you, tails `codeplain.log`, watches generated code appear under `plain_modules/`, and surfaces what's happening in plain English. If it detects a pathology (stuck conformance loop, complexity error, missing concept, render failure), it asks for approval to stop the renderer, hands off to the right spec-edit skill (`debug-specs`, `resolve-spec-conflict`, `break-down-func-spec`, …), and resumes the render from the last completed functionality via `--render-from`.
-
-This is an **experimental** feature — the default and most reliable way to render is still the manual `codeplain <module>.plain` invocation above.
+Once your `.plain` files are ready (and `plain-healthcheck` is green), render the specs into code with a ***plain renderer, passing it the final module in the dependency chain. plain-forge names that module at the end of Phase 4.
 
 ### Debugging specs
 
@@ -225,9 +212,8 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 | Skill | Description |
 |-------|-------------|
 | `forge-plain` | End-to-end QA interview that produces complete `.plain` spec files for a new project |
-| `init-plain-project` | Lightweight project initializer — scaffolds `template/base.plain` (base impl + test reqs), a stub top-level module, the testing scripts, and `config.yaml`. No functional specs, no concepts, no dry-run. Pair with `add-feature` to grow the project feature-by-feature. |
+| `init-plain-project` | Lightweight project initializer — scaffolds `template/base.plain` (base impl + test reqs), a stub top-level module, the testing scripts, and `config.yaml`. No functional specs, no concepts, no validation. Pair with `add-feature` to grow the project feature-by-feature. |
 | `add-feature` | Interview the user about a single feature, then write all the specs for it |
-| `run-codeplain` | **Experimental.** Launch a `codeplain` render and supervise it end-to-end — tails `codeplain.log`, watches generated code appear, detects pathologies (stuck conformance loops, complexity errors, missing concepts, render failures), and on approval stops the renderer, hands off to the right spec-edit skill, and resumes with `--render-from`. The default render path is still the manual `codeplain <module>.plain` command. |
 
 ### Spec Authoring
 
@@ -255,9 +241,9 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 
 | Skill | Description |
 |-------|-------------|
-| `init-config-file` | Build / finalize the project's `config.yaml` file(s) from the decisions made in Phase 3. Knows the full set of valid keys derived from the `codeplain` CLI, refuses to write secrets or per-invocation flags, and produces one config per part of the project. Run at the end of `forge-plain` (just before `plain-healthcheck`) and any time the testing surface changes. |
-| `plain-healthcheck` | Verification gate: validates every `config.yaml`, confirms each `*-script` field points at a real file in `test_scripts/`, and dry-runs every top module. Run whenever anything in the project is finalized — at the end of `forge-plain`, at the end of `add-feature`, after `debug-specs`, and after any single-skill edit that touches the renderable surface. |
-| `check-plain-env` | Read the project's `.plain` files, `test_scripts/`, `config.yaml`(s), and `resources/`, then probe the host for every requirement **the package manager can't install**: language toolchains (`python` + `pip`, `node` + `npm`, JDK + `mvn`, Go, Rust, .NET, etc.), external services (Postgres, Redis, Docker, ...), system binaries that language packages wrap (`ffmpeg`, `tesseract`, `pdftoppm`, browser binaries, ...), hardware / drivers / accelerators (NVIDIA driver → CUDA toolkit → cuDNN → framework-sees-GPU chain), `codeplain` itself, and credential env vars. Does **not** probe individual language packages — `pip install -r requirements.txt` (and equivalents) handle those when the test scripts run. Emits a `PASS` / `WARN` / `FAIL` report with OS-specific install commands for any gaps. Read-only — never installs anything. Run on first-time setup, before rendering on a new machine, after adding a new tech to a project, or any time `command not found` shows up in test output. |
+| `init-config-file` | Build / finalize the project's `config.yaml` file(s) from the decisions made in Phase 3. Knows the full set of valid keys, refuses to write secrets or per-invocation options, and produces one config per part of the project. Run at the end of `forge-plain` (just before `plain-healthcheck`) and any time the testing surface changes. |
+| `plain-healthcheck` | Verification gate: validates every `config.yaml`, confirms each `*-script` field points at a real file in `test_scripts/`, and statically checks every module. Run whenever anything in the project is finalized — at the end of `forge-plain`, at the end of `add-feature`, after `debug-specs`, and after any single-skill edit that touches the renderable surface. |
+| `check-plain-env` | Read the project's `.plain` files, `test_scripts/`, `config.yaml`(s), and `resources/`, then probe the host for every requirement **the package manager can't install**: language toolchains (`python` + `pip`, `node` + `npm`, JDK + `mvn`, Go, Rust, .NET, etc.), external services (Postgres, Redis, Docker, ...), system binaries that language packages wrap (`ffmpeg`, `tesseract`, `pdftoppm`, browser binaries, ...), hardware / drivers / accelerators (NVIDIA driver → CUDA toolkit → cuDNN → framework-sees-GPU chain), and credential env vars. Does **not** probe individual language packages — `pip install -r requirements.txt` (and equivalents) handle those when the test scripts run. Emits a `PASS` / `WARN` / `FAIL` report with OS-specific install commands for any gaps. Read-only — never installs anything. Run on first-time setup, before rendering on a new machine, after adding a new tech to a project, or any time `command not found` shows up in test output. |
 | `analyze-if-func-spec-too-complex` | Check if a spec exceeds the 200-line complexity limit |
 | `analyze-func-specs` | Check a batch of specs (2+) against each other in one call and return every conflicting pair |
 | `analyze-2-func-specs` | Legacy: check exactly two specs for conflicts (prefer `analyze-func-specs`) |

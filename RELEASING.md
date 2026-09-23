@@ -14,8 +14,8 @@ immediately before publishing. Nothing is committed back.
 
 This is deliberate: writing the version to `main` would mean a bookkeeping commit on
 a protected branch, which needs either a stored credential or a self-merging PR. The
-tag avoids both — the same model the [codeplain](https://github.com/Codeplain-ai/codeplain)
-repo uses, where hatch-vcs derives the version from the tag.
+tag avoids both — the same model as hatch-vcs, which derives a Python package's version
+from its tag.
 
 The consequence, so it doesn't surprise anyone: **`package.json` on `main` is stale by
 design.** At the time of writing it says `1.0.19` while npm serves `1.0.20`. The tag and

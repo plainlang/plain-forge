@@ -18,7 +18,7 @@ This skill answers one question: **does the host machine have everything the ***
 
 ## When to run
 
-- **First time you open a ***plain project on a new machine** — before the first `codeplain <module>.plain` or `./test_scripts/run_unittests*.sh` invocation. This is the most common case.
+- **First time you open a ***plain project on a new machine** — before the first render or `./test_scripts/run_unittests*.sh` invocation. This is the most common case.
 - **At the start of `forge-plain` Phase 3 environment verification** — `forge-plain` historically did this inline; delegate to this skill instead so the same check runs the same way everywhere.
 - **After `add-feature`** — when the new feature brought in a new dependency (a new framework, a new service, a new package manager) the project didn't need before.
 - **Before a real render** — alongside `plain-healthcheck`. `plain-healthcheck` answers "are the specs renderable?"; this skill answers "can this machine render them?". Both should pass.
@@ -33,7 +33,7 @@ This skill is **read-only and observational**. It does not edit `.plain` files, 
 - It does **not** install anything. It only suggests install commands and lets the user run them.
 - It does **not** generate scripts, modify `config.yaml`, or change project files. Use `implement-*-testing-script`, `init-config-file`, etc. for that.
 - It does **not** start services (databases, brokers, Docker daemons). It only checks whether the right binaries and (optionally) running endpoints are reachable.
-- It does **not** validate the specs themselves (syntax, dry-run, complexity). Use `plain-healthcheck` for that — the two skills are complementary.
+- It does **not** validate the specs themselves (syntax, concepts, module graph). Use `plain-healthcheck` for that — the two skills are complementary.
 - It does **not** print secrets. Check whether an env var is *set* (e.g. `printenv FOO >/dev/null && echo set || echo missing`), never echo its value.
 
 ## Workflow
@@ -147,8 +147,6 @@ Worked example — the GPU case:
 
 Add these to every requirement list regardless of project:
 
-- `codeplain` CLI on `PATH` — `codeplain --version`.
-- `CODEPLAIN_API_KEY` env var **set** — `printenv CODEPLAIN_API_KEY >/dev/null && echo set || echo missing` (never echo the value).
 - A shell matching the testing scripts' extension (Bash for `.sh`, PowerShell for `.ps1`).
 - `git` (the renderer uses it; almost every plain project tracks itself in git).
 
@@ -163,7 +161,7 @@ For every requirement the project produced in Step 2, run a check using the `ter
 Probe in the same category order Step 2 produced them, so the report reads top-down:
 
 1. **Category 1 — Language toolchains.** Run the toolchain + package-manager probes listed in Step 2's Category 1 for the languages this project actually uses. Do not probe individual language packages.
-2. **Category 5 — Codeplain and `git`.** Always required, independent of the project. `codeplain --version`, `printenv CODEPLAIN_API_KEY >/dev/null`, `git --version`. Verify the shell flavor matches the scripts' extension; a `.sh`-only project on native Windows is a `FAIL` (suggest WSL).
+2. **Category 5 — Shell and `git`.** Always required, independent of the project. `git --version`. Verify the shell flavor matches the scripts' extension; a `.sh`-only project on native Windows is a `FAIL` (suggest WSL).
 3. **Category 2 — External services.** For each service identified at runtime, probe the CLI's presence first, then — if the CLI exists — check whether the service itself is reachable. Service binary present but daemon down → `WARN`, not `FAIL`.
 4. **Category 3 — System binaries that language packages wrap.** For each one identified in Step 2, check the system binary is on `PATH` (`which <bin>` / `<bin> --version`). The wrapper package itself isn't probed.
 5. **Category 4 — Hardware, drivers, accelerators.** Walk the layered probe from Step 2 in order (driver → device visibility → SDK → acceleration libs → framework-sees-it → version match), reporting each layer's result separately. Never collapse a multi-layer failure into a single "GPU not available" message — each layer has a different fix.
@@ -186,7 +184,7 @@ For every **FAIL** and **WARN** item, the report must include four columns:
 | **Status** | "missing", "outdated (found X, need Y)", "binary present but service not running", or "env var not set". |
 | **How to install** | OS-specific command(s). See [Install suggestions](#install-suggestions) below. |
 
-Group the report into the same six probe groups used in Step 3 (toolchains, codeplain/git, services, system binaries, hardware, credentials), so the user can fix one whole layer at a time.
+Group the report into the same six probe groups used in Step 3 (toolchains, shell/git, services, system binaries, hardware, credentials), so the user can fix one whole layer at a time.
 
 End the report with a one-liner reminder: `Re-run check-plain-env after installing missing items to confirm.`
 
@@ -213,7 +211,6 @@ The tables below are a **starter set** of well-known install commands for the th
 | Docker | Install Docker Desktop from https://docker.com/products/docker-desktop |
 | `pg_config` (psycopg) | comes with `brew install postgresql@16` |
 | Xcode CLT | `xcode-select --install` |
-| `codeplain` | follow the install instructions at https://codeplain.ai |
 
 ### Linux (Debian/Ubuntu)
 
@@ -263,7 +260,7 @@ When the host OS detection in Step 1 was inconclusive (e.g. an unrecognized Linu
 - **Don't pre-bake a catalog.** Derive the requirement list at runtime from the project in front of you. A hard-coded "things to always check" table becomes wrong the moment any project deviates from the assumed shape — and every project does.
 - **Don't probe testing framework binaries as if they were independent.** `pytest`, `jest`, `vitest`, `phpunit`, `junit-console`, etc. are installed by the package manager via `requirements.txt` / `package.json` / `pom.xml`. The toolchain check (Category 1) is enough — the framework binary itself is out of scope.
 - **Don't probe in silence.** Use the `terminal` tool and capture the actual command output (version strings, exit codes). Telling the user "looks like Python is installed" without running `python3 --version` is guessing.
-- **Don't print secret values.** Check whether `CODEPLAIN_API_KEY`, `DATABASE_URL`, etc. are set, not what they contain. Use `printenv VAR >/dev/null` not `printenv VAR`.
+- **Don't print secret values.** Check whether `DATABASE_URL`, API keys, etc. are set, not what they contain. Use `printenv VAR >/dev/null` not `printenv VAR`.
 - **Don't install anything on the user's behalf.** Even when the install command is obvious. The user needs to opt in.
 - **Don't stop at the first FAIL.** Run the full sweep so the report is complete in one pass.
 - **Don't suggest `curl | sh` installs when a package manager works.** Reserve the upstream installer fallback for cases where no package-manager option exists (e.g. `rustup`, sometimes Go).

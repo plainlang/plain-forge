@@ -40,7 +40,7 @@ Use standard markdown link syntax inside any spec section:
 
 ## Path Rules
 
-- Paths are resolved **relative to the directory where `codeplain` is run** (the current working directory).
+- Paths are resolved **relative to the directory where the renderer is run** (the current working directory).
 - Relative paths may traverse into parent directories — `[resource](../../resources/resource.md)` is valid — as long as they resolve to a real text file on disk.
 - **No external URLs** — only local file references.
 - **No folder paths** — the target must be a file, not a directory.
@@ -69,7 +69,7 @@ The **only** exceptions are URLs and paths that are *values the produced softwar
 
 ### What a linked resource CAN be
 
-- A single file inside the project, reachable by a path relative to where `codeplain` is run — parent-directory traversal (`../`) is allowed (`resources/` is the conventional home).
+- A single file inside the project, reachable by a path relative to where the renderer is run — parent-directory traversal (`../`) is allowed (`resources/` is the conventional home).
 - A **text-based** file the renderer can read end-to-end: JSON, YAML, XML, HTML, Markdown, plain text, CSV, TSV, source code in any language (`.py`, `.js`, `.ts`, `.go`, `.java`, `.rb`, `.rs`, `.kt`, `.swift`, `.c`, `.cpp`, `.cs`, …), shell scripts, SQL, JSON Schema, OpenAPI, AsyncAPI, Protobuf `.proto`, GraphQL SDL, `.jolt`, `.env.example`, `.toml`, `.ini`, `.proto`, `Dockerfile`, etc.
 
 ## Common Resource Types
@@ -101,6 +101,6 @@ The **only** exceptions are URLs and paths that are *values the produced softwar
 - [ ] **Target is a text-based file** (no binary extensions: `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.tiff`, `.webp`, `.ico`, `.pdf`, `.docx`, `.xlsx`, `.pptx`, `.zip`, `.tar`, `.gz`, `.mp3`, `.mp4`, `.wav`, `.exe`, `.so`, `.dylib`, `.class`, `.wasm`, …)
 - [ ] **No URLs or folder paths anywhere in the surrounding `.plain` content** (not as link targets, not in body prose), with the sole exception of URLs / paths that are runtime values the generated software itself uses
 - [ ] Path is relative to the `.plain` file, not absolute
-- [ ] Path resolves to a real text file on disk from where `codeplain` is run (`../` traversal is allowed)
+- [ ] Path resolves to a real text file on disk from where the renderer is run (`../` traversal is allowed)
 - [ ] Markdown link syntax is correct: `[display text](relative/path)`
 - [ ] Resource content is relevant and adds value beyond what the spec text says

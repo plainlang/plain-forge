@@ -114,7 +114,7 @@ Most checks already happened in the loop; this is a slim consistency pass whose 
    - Acceptance tests (if any) are consistent with their parent specs.
 3. Present the final diff for the modified file(s) and get the user's approval.
 4. If the user requests changes, drop **straight back into the one-question loop** — one question, one write, one fix at a time. Do not restart the loop from scratch.
-5. **Run `plain-healthcheck`** — the last thing this skill does. It validates every `config.yaml` and dry-runs every top module, so a feature is never finished while the project would fail to render. If it returns `FAIL`, work through its numbered list (fixing only `.plain` files / `config.yaml` / scripts — never generated code) by dropping back into the loop, then re-run. Repeat until `PASS`. Only then tell the user the feature is ready and remind them to re-render with `codeplain <module>.plain`.
+5. **Run `plain-healthcheck`** — the last thing this skill does. It validates every `config.yaml` and statically checks every module, so a feature is never finished while the project would fail to render. If it returns `FAIL`, work through its numbered list (fixing only `.plain` files / `config.yaml` / scripts — never generated code) by dropping back into the loop, then re-run. Repeat until `PASS`. Only then tell the user the feature is ready and remind them to re-render `<module>.plain`.
 
 ## Next feature
 

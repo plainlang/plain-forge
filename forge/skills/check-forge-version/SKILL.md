@@ -104,7 +104,7 @@ Relay the verdict to the user, then act on it:
   ```
 
   State plainly that **continuing on an outdated plain-forge is not recommended** — its skills and
-  rules have been superseded, specs authored against them may not match what the current `codeplain`
+  rules have been superseded, specs authored against them may not match what the current
   renderer expects, and fixes released since the installed version are not in effect. On `WARN`,
   where the version could not be confirmed, say the install should be treated as outdated until
   proven otherwise.
