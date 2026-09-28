@@ -102,7 +102,7 @@ jobs:
       - name: Check the bundled skill is in the package
         run: |
           npm pack --dry-run --json \
-            | jq -e '.[0].files[] | select(.path == "forge/skills/render-spec/SKILL.md")' >/dev/null \
+            | jq -e '[.[]][0].files[] | select(.path == "forge/skills/render-spec/SKILL.md")' >/dev/null \
             || { echo "::error::forge/skills/render-spec is missing from the npm package"; exit 1; }
 
       - name: Read the version from the release tag
@@ -208,7 +208,7 @@ jobs:
       - name: Check the bundled skill is in the package
         run: |
           npm pack --dry-run --json \
-            | jq -e '.[0].files[] | select(.path == "forge/skills/render-spec/SKILL.md")' >/dev/null \
+            | jq -e '[.[]][0].files[] | select(.path == "forge/skills/render-spec/SKILL.md")' >/dev/null \
             || { echo "::error::forge/skills/render-spec is missing from the npm package"; exit 1; }
 
       # package.json on main is stale by design, so the published `latest` is
