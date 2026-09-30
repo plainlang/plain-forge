@@ -72,3 +72,36 @@ jobs:
           plain-parser check app.plain
           sed 's/:Implementation: prints/:Undefined: prints/' app.plain > bad.plain
           if plain-parser check bad.plain; then echo "bad.plain should fail"; exit 1; fi
+
+  # Minimal images lack curl, wget, CA certificates and Python — the hosts where
+  # the uv install used to fail. Run the real install inside them.
+  install-plain-parser-minimal:
+    name: Install plain-parser (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: node:22-slim
+            setup: "true"
+          - image: ubuntu:24.04
+            setup: apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq nodejs
+          - image: alpine:3.20
+            setup: apk add -q nodejs
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: plain-forge install + plain-parser check
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE:/src:ro" "${{ matrix.image }}" sh -euc '
+            ${{ matrix.setup }}
+            mkdir /project && cd /project
+            node /src/bin/cli.mjs install --agent claude --scope project | tee install.log
+            grep -E "plain-parser: installed" install.log
+            export PATH="$HOME/.local/bin:$PATH"
+            printf "%s\n" "***implementation reqs***" "" "- :Implementation: should be in Python." "" \
+              "***functional specs***" "" "- :Implementation: prints hello." > app.plain
+            plain-parser check app.plain
+          '

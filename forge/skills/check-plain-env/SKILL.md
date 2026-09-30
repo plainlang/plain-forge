@@ -149,7 +149,7 @@ Add these to every requirement list regardless of project:
 
 - A shell matching the testing scripts' extension (Bash for `.sh`, PowerShell for `.ps1`).
 - `git` (the renderer uses it; almost every plain project tracks itself in git).
-- `plain-parser` and **Python 3.11 or newer** — `plain-healthcheck` validates every module with `plain-parser check`. Probe `python3 --version` and `plain-parser --help`; install with `pipx install plain-parser` or `uv tool install plain-parser`.
+- `plain-parser` and **Python 3.11 or newer** — `plain-healthcheck` validates every module with `plain-parser check`. Probe `python3 --version` and `plain-parser --help`; install with `pipx install plain-parser` or `uv tool install plain-parser`. When `plain-parser --help` is not found but `~/.local/bin/plain-parser` (or the same file in `uv tool dir --bin`) exists, report `WARN`, not `FAIL`: it is installed but off `PATH`, fixed with `export PATH="$HOME/.local/bin:$PATH"` or `uv tool update-shell`. `plain-parser` is installed with uv, which fetches its own Python, so do not `FAIL` on a missing or older system `python3` when `plain-parser` itself runs.
 
 ### Step 3 — Probe the host
 

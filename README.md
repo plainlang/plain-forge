@@ -56,7 +56,7 @@ This prompts you to pick an agent and a scope using an arrow-key menu. You can a
 npx plain-forge install --agent claude --scope project
 ```
 
-`install` also installs [`plain-parser`](https://pypi.org/project/plain-parser/), the Python CLI that `plain-healthcheck` uses to validate `.plain` files. It installs it with [uv](https://docs.astral.sh/uv/), installing uv first if it is missing, on Linux, macOS and Windows alike. If plain-parser is already on your `PATH`, nothing is installed. Pass `--skip-plain-parser` to leave both alone.
+`install` also installs [`plain-parser`](https://pypi.org/project/plain-parser/), the Python CLI that `plain-healthcheck` uses to validate `.plain` files. It installs it with [uv](https://docs.astral.sh/uv/), installing uv first if it is missing, on Linux, macOS and Windows alike. On Linux and macOS uv is downloaded by Node itself, so it also works in minimal Docker images without curl, wget or CA certificates; uv then fetches a Python for plain-parser if the host has none. uv puts plain-parser in `~/.local/bin`, which may not be on your `PATH` yet — `install` prints the `export PATH=…` line to add it. If plain-parser is already on your `PATH`, nothing is installed. Pass `--skip-plain-parser` to leave both alone.
 
 **Agent options:**
 
@@ -218,6 +218,7 @@ forge/                       # canonical content, copied verbatim on install
 bin/
   cli.mjs                    # the `plain-forge` CLI — `install` and `update` commands
   python-tools.mjs           # installs uv + plain-parser during `install` (until plain-parser ships on npm)
+  download-uv.mjs            # downloads uv with Node's fetch, for hosts without curl/wget or CA certificates
 
 vendor/
   pyro/                      # git submodule: plainlang/pyro, pinned to the release plain-forge ships
@@ -230,7 +231,7 @@ test/
   cli.test.mjs               # tests for the install / update CLI
   python-tools.test.mjs      # tests for the uv + plain-parser install step
 
-package.json                 # ships only `bin/cli.mjs`, `bin/python-tools.mjs` and `forge/` to npm
+package.json                 # ships only `bin/cli.mjs`, `bin/python-tools.mjs`, `bin/download-uv.mjs` and `forge/` to npm
 ```
 
 ### Bundled pyro skill

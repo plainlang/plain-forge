@@ -28,6 +28,7 @@
   "files": [
     "bin/cli.mjs",
     "bin/python-tools.mjs",
+    "bin/download-uv.mjs",
     "forge"
   ],
   "scripts": {
