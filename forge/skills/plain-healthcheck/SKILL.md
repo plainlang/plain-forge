@@ -76,7 +76,7 @@ Step 3 has two halves: a mechanical parse by `plain-parser`, then the checks tha
 
 [`plain-parser`](https://pypi.org/project/plain-parser/) is the ***plain parser. It parses a module together with its whole `import` / `requires` chain, so running it on every top module covers every module in the project.
 
-1. **Check it is installed.** Run `plain-parser --help`. If the command is not found, stop and report `FAIL` with the install command (`pipx install plain-parser` or `uv tool install plain-parser`; it needs Python 3.11 or newer). Do **not** fall back to checking these rules by reading the files — without the parser there is no syntax gate.
+1. **Check it is installed.** Run `plain-parser --help`. If the command is not found, look for it where `plain-forge install` puts it before giving up: `~/.local/bin/plain-parser` (`%USERPROFILE%\.local\bin\plain-parser.exe` on Windows), or the directory printed by `uv tool dir --bin`. If it is there, run it by that full path for the rest of this step and tell the user to add the directory to `PATH`. If it is nowhere, stop and report `FAIL` with the install command (`pipx install plain-parser` or `uv tool install plain-parser`; it needs Python 3.11 or newer). Do **not** fall back to checking these rules by reading the files — without the parser there is no syntax gate.
 2. **Run it from the top module's own directory**, once per top module:
 
    ```bash
