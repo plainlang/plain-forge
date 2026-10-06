@@ -1,0 +1,31 @@
+{
+  "name": "@plainlang/regenerative-software",
+  "version": "1.0.0",
+  "description": "Run plain-forge through @plainlang/regenerative-software",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plainlang/plain-forge.git",
+    "directory": "packages/regenerative-software"
+  },
+  "homepage": "https://github.com/plainlang/plain-forge",
+  "bin": {
+    "regenerative-software": "./cli.cjs"
+  },
+  "files": [
+    "cli.cjs"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node --check cli.cjs",
+    "prepack": "npm run check"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "plain-forge": "1.0.23"
+  }
+}

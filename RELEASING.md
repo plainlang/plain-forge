@@ -111,6 +111,55 @@ Slack gets a line either way: the version published and how to try it, or the fa
 `latest` confirmed unaffected. A re-run that had nothing to publish says so rather than
 claiming something shipped. The run summary records the same thing.
 
+## Releasing @plainlang/regenerative-software
+
+[`packages/regenerative-software`](packages/regenerative-software) is a thin wrapper that
+lets users run `npx @plainlang/regenerative-software install`. It has its own version and
+its own tags, and runs the exact `plain-forge` version pinned in its `package.json`.
+
+1. To ship a newer `plain-forge`, re-pin it on a branch and merge:
+
+   ```bash
+   cd packages/regenerative-software
+   npm install --save-exact plain-forge@latest   # updates package.json + package-lock.json
+   ```
+
+2. Create a release tagged `regenerative-software-vX.Y.Z` and keep **plain-forge** marked
+   as the latest GitHub release:
+
+   ```bash
+   gh release create regenerative-software-v1.0.1 --target main \
+     --title "regenerative-software v1.0.1" --latest=false --notes-file notes.md
+   ```
+
+The `publish-regenerative-software` job in `publish.yml` handles these tags (the
+plain-forge `publish` job skips them). It runs the tests and checks the tag is semver.
+It refuses a version already on npm or a pinned `plain-forge` that isn't published. Then it
+installs the packed tarball into a clean project, runs the real installer through it, and
+publishes. A pre-release goes to `next`, as with plain-forge. Like plain-forge,
+`package.json`'s `version` is stale by design and the tag decides.
+
+`--latest=false` matters: `scripts/deploy.sh` publishes "the latest GitHub release" by
+default, and it refuses a `regenerative-software-v*` tag as non-semver.
+
+**One-time setup, before the first automated release.** The `@plainlang` scope must exist as an npm organization ([create it](https://www.npmjs.com/org/create); unlimited public packages are free), and you must be a member. npm only lets you configure a
+trusted publisher on a package that already exists. Publish `1.0.0` once by hand, with
+an account that can publish to the `@plainlang` scope:
+
+```bash
+npm login
+./scripts/deploy-regenerative-software.sh --dry-run   # test + smoke test, publish nothing
+./scripts/deploy-regenerative-software.sh             # publish package.json's version
+./scripts/deploy-regenerative-software.sh --version 1.0.1 --otp 123456
+```
+
+The script publishes `packages/regenerative-software` as it is in your working tree. It
+copies the package to a temp dir, runs the wrapper tests and checks the version isn't on
+npm yet. It installs the packed tarball into a clean project, runs the real installer
+through it, and publishes that same tarball. Then add a trusted publisher on npmjs.com:
+`@plainlang/regenerative-software` → Settings → Trusted Publisher → GitHub Actions,
+`plainlang/plain-forge`, workflow `publish.yml`, environment `npm`.
+
 ## Release notes
 
 Generated notes (`--generate-notes`, or the button on the form) list merged PRs and are
@@ -161,6 +210,7 @@ at the repo root — gitignored, and the only place a webhook should live locall
 | what | where | note |
 |---|---|---|
 | Trusted publisher | npmjs.com → `plain-forge` → Settings → Trusted Publisher | GitHub Actions, `plainlang/plain-forge`, workflow `publish.yml` |
+| Trusted publisher | npmjs.com → `@plainlang/regenerative-software` → Settings → Trusted Publisher | same as above; **not yet configured**, see [Releasing @plainlang/regenerative-software](#releasing-plainlangregenerative-software) |
 | `SLACK_WEBHOOK_URL` | repo secret | notifications are skipped without it |
 | `LINEAR_ACCESS_KEY` | repo secret | records the release in Linear; the job is currently commented out in `publish.yml` |
 | Branch protection | `main` | `Test (node 22 / 24)` required, no force pushes, no deletion |
