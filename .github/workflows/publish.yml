@@ -1,6 +1,6 @@
 name: publish
 
-# This workflow owns both paths onto npm:
+# This workflow owns every path onto npm:
 #
 #   * A published GitHub Release tagged `vX.Y.Z` ships that version to the
 #     `latest` dist-tag. The tag is the source of truth for the version —
@@ -8,6 +8,9 @@ name: publish
 #   * A merge into main ships a prerelease to the `next` dist-tag, versioned
 #     from the current `latest` plus the commit sha. `latest` is never touched
 #     by this path, so ordinary `npx plain-forge` users never see a prerelease.
+#   * A published GitHub Release tagged `regenerative-software-vX.Y.Z` ships
+#     the @plainlang/regenerative-software wrapper (packages/regenerative-software)
+#     at that version. It runs whichever plain-forge version its package.json pins.
 #
 # Auth is OIDC (npm trusted publishing) — no NPM_TOKEN secret. The trusted
 # publisher is configured on npmjs.com against this repo and this exact
@@ -61,7 +64,7 @@ jobs:
   publish:
     name: Publish to npm
     needs: test
-    if: ${{ github.event_name == 'release' }}
+    if: ${{ github.event_name == 'release' && !startsWith(github.event.release.tag_name, 'regenerative-software-v') }}
     runs-on: ubuntu-latest
     # Records the release under Deployments → npm, the same way scripts/deploy.sh
     # does when publishing from a workstation.
@@ -294,6 +297,120 @@ jobs:
           curl -s -X POST "$SLACK_WEBHOOK_URL" \
             -H 'Content-type: application/json' \
             --data "{\"text\":\"*plain-forge*: prerelease of \`${GITHUB_SHA:0:7}\` FAILED :x:. \`latest\` is unaffected. See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.\"}"
+
+  # ---------------------------------------------------------------------------
+  # Release tagged `regenerative-software-vX.Y.Z` -> @plainlang/regenerative-software.
+  #
+  # The wrapper is versioned independently of plain-forge: the tag sets the
+  # wrapper's version, and packages/regenerative-software/package.json pins the
+  # plain-forge version it runs. Lives in this file for the same trusted-publisher
+  # reason as the prerelease job.
+  publish-regenerative-software:
+    name: Publish @plainlang/regenerative-software to npm
+    needs: test
+    if: ${{ github.event_name == 'release' && startsWith(github.event.release.tag_name, 'regenerative-software-v') }}
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@plainlang/regenerative-software
+    permissions:
+      contents: read
+      id-token: write      # OIDC token for trusted publishing
+
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      PKG: "@plainlang/regenerative-software"
+
+    defaults:
+      run:
+        working-directory: packages/regenerative-software
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24      # trusted publishing needs >= 22.14
+
+      - name: Use an npm that supports trusted publishing
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - name: Read the version from the release tag
+        id: pkg
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG#regenerative-software-v}"
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::tag '$TAG' is not a semver release tag (expected regenerative-software-vX.Y.Z)"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "forge=$(jq -r '.dependencies["plain-forge"]' package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Refuse if this version is already on npm
+        run: |
+          if npm view "$PKG@${{ steps.pkg.outputs.version }}" version >/dev/null 2>&1; then
+            echo "::error::$PKG@${{ steps.pkg.outputs.version }} is already published — tag a new version"
+            exit 1
+          fi
+
+      - name: Refuse if the pinned plain-forge is not on npm
+        run: |
+          npm view "plain-forge@${{ steps.pkg.outputs.forge }}" version >/dev/null 2>&1 \
+            || { echo "::error::package.json pins plain-forge@${{ steps.pkg.outputs.forge }}, which is not published"; exit 1; }
+
+      - run: npm ci
+
+      - name: Set the package version to match the tag
+        run: npm version "${{ steps.pkg.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      # Source-directory runs miss packaging mistakes, so install the packed
+      # tarball into a clean project and run the real installer through it.
+      - name: Smoke-test the packed package
+        run: |
+          smoke="$RUNNER_TEMP/smoke project"
+          mkdir -p "$smoke"
+          npm pack --pack-destination "$RUNNER_TEMP"
+          cd "$smoke"
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund "$RUNNER_TEMP"/plainlang-regenerative-software-*.tgz
+          npx --no "$PKG" install --agent claude --scope project --skip-plain-parser
+          test -f .claude/skills/forge-plain/SKILL.md
+          test -f .claude/.plain-forge/manifest.json
+
+      - name: Notify Slack (start)
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"*$PKG*: release \`v${{ steps.pkg.outputs.version }}\` published by *${{ github.actor }}* — shipping to npm...\"}"
+
+      - name: Publish
+        run: |
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            npm publish --access public --tag next
+          else
+            npm publish --access public
+          fi
+
+      - name: Notify Slack (success)
+        if: ${{ success() && env.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"*$PKG*: \`v${{ steps.pkg.outputs.version }}\` published to npm :white_check_mark: (runs plain-forge \`${{ steps.pkg.outputs.forge }}\`). Try it with \`npx $PKG@latest install\`.\"}"
+
+      - name: Notify Slack (failure)
+        if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            --data "{\"text\":\"*$PKG*: publishing \`${{ github.event.release.tag_name }}\` to npm FAILED :x:. See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.\"}"
 
   # Release pipelines to be turned on only after the rest of the infrastructure
   # is ready.
