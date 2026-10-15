@@ -36,12 +36,13 @@ The functional spec to break down, plus the full `.plain` file it belongs to.
    - Independently meaningful (makes sense on its own with previous specs as context)
    - Self-contained (does not require a later spec to be useful)
    - Within the 200 LOC limit
-5. **Draft the replacement specs** — write the smaller specs in chronological order. The first replacement spec typically sets up the foundation, and subsequent ones layer behavior on top.
+5. **Draft the replacement specs** — write the smaller specs in chronological order, each with its own func-id per `semantic-ids.md`; the replacement that keeps the original's main behavior may keep the original's func-id. The first replacement spec typically sets up the foundation, and subsequent ones layer behavior on top.
 6. **Verify functional completeness** — this is critical. The replacement specs taken together must cover **100% of the functionality** described in the original spec. Walk through every behavior, condition, and detail in the original and confirm it appears in exactly one of the replacement specs. Nothing may be lost, weakened, or left implicit. If any functionality from the original is missing, add it to the appropriate replacement spec or create an additional one.
 7. **Verify each replacement spec** — run `analyze-if-func-spec-too-complex` on each to confirm it fits within the limit.
 8. **Check for conflicts** — run `analyze-func-specs` **once** with the full set of replacement specs plus every existing spec in the file and its `base` chain. The batched analyzer reports every conflicting pair (replacement × existing and replacement × replacement) in one call — do not loop over pairs. Resolve each reported pair with `resolve-spec-conflict`, then re-run `analyze-func-specs` over the touched set until the verdict is `COMPATIBLE`.
-9. **Replace in the file** — remove the original spec and insert the replacement specs in its position, preserving chronological order.
-10. **Read the file again** to confirm correct placement and syntax.
+9. **Replace in the file** — remove the original functionality (heading and body) and insert the replacement functionalities, each as a `# <func-id>` heading with its body, in its position, preserving chronological order.
+10. **Bring the test plain files in step** — invoke `add-test-scenarios` for each replacement functionality. It moves every scenario of the original's test plain file to the replacement it tests, writes scenarios for outcomes that have none, and deletes the original's file when its func-id no longer exists.
+11. **Read the file again** to confirm correct placement and syntax.
 
 ## Splitting Strategies
 
@@ -210,7 +211,7 @@ The extracted component spec and the rewritten original must together still cove
 
 The replacement specs take the position of the original spec. Earlier specs remain unchanged. The first replacement spec should make sense given only the specs above it. Each subsequent replacement spec can reference behavior from the ones before it.
 
-If the original spec had acceptance tests, redistribute them to the most appropriate replacement spec — or drop tests that no longer apply to a single smaller spec and rewrite them.
+The original functionality's test plain file is split the same way: each scenario moves to the replacement functionality it tests, a scenario that no longer fits one replacement is rewritten, and each replacement ends with at least one conformance scenario when conformance tests are enabled (see `add-test-scenarios`).
 
 ## Validation Checklist
 
@@ -226,4 +227,4 @@ If the original spec had acceptance tests, redistribute them to the most appropr
 - [ ] Replacement specs are language-agnostic
 - [ ] Replacement specs trimmed per `concise-specs.md` — a split is not a licence to re-add prose
 - [ ] All external interfaces remain explicit
-- [ ] Acceptance tests (if any) have been redistributed or rewritten
+- [ ] Test plain files follow the split: one per replacement functionality, every original scenario moved or rewritten, none bound to a func-id that no longer exists

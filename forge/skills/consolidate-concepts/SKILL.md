@@ -141,7 +141,7 @@ For every affected module (source modules, downstream modules, and the import mo
 - [ ] No `***functional specs***` were modified in any module
 - [ ] No `***implementation reqs***` were modified in any module
 - [ ] No `***test reqs***` were modified in any module
-- [ ] No `***acceptance tests***` were modified in any module
+- [ ] No test plain file was modified
 
 ### 4e. Structural validation
 
@@ -186,7 +186,7 @@ Only remove a concept from `exported_concepts` if **every** downstream module th
 - [ ] Every affected module's `imports` list includes the target import module
 - [ ] `exported_concepts` updated correctly — no missing exports, no unnecessary exports
 - [ ] All concept references in all affected modules resolve correctly
-- [ ] No functional specs, implementation reqs, test reqs, or acceptance tests were modified
+- [ ] No functional specs, implementation reqs, test reqs, or test plain files were modified
 - [ ] Import module is in `template/` and has no functional specs or base
 - [ ] No circular imports introduced
 - [ ] Downstream modules updated if needed

@@ -30,7 +30,7 @@ Generated code in `plain_modules/<module>/code/` and `plain_modules/<module>/tes
 
 ## Phase 1 — Understand the Context
 
-1. **Read the `.plain` file(s)** for the module — frontmatter, definitions, implementation reqs, test reqs, and all functional specs. Also read `imports` and `base` chains.
+1. **Read the `.plain` file(s)** for the module — frontmatter, definitions, implementation reqs, test reqs, and all functional specs. Also read `imports` and `base` chains, and the test plain files under `tests/<module>/`.
 2. **Read the user's observation carefully.** Rephrase it back to confirm understanding. Identify:
    - What is the expected behavior?
    - What is the actual behavior?
@@ -60,13 +60,13 @@ For each relevant file:
 ### 2c. Check conformance tests and unit tests (if relevant)
 
 If the bug manifests as a test failure:
-1. Read the failing test — conformance tests in `plain_modules/<module_name>/tests/<functionality>/`, unit tests inside `plain_modules/<module_name>/code/`.
+1. Read the failing test — conformance tests in `plain_modules/<module_name>/tests/<func-id>/`, each labelled with the scenario-id it implements, unit tests inside `plain_modules/<module_name>/code/`.
 2. Understand what the test expects vs. what the implementation does.
 3. Determine whether the test expectation is correct (matches the spec) or incorrect (doesn't match the spec).
 
 ## Phase 3 — Diagnose the Root Cause
 
-Trace the issue from the generated code back to the specs. There are five possible root causes — determine which one applies **before** making changes:
+Trace the issue from the generated code back to the specs. There are six possible root causes — determine which one applies **before** making changes:
 
 | Root Cause | Symptom | Fix |
 |------------|---------|-----|
@@ -74,6 +74,7 @@ Trace the issue from the generated code back to the specs. There are five possib
 | **Missing spec** | The desired behavior is not covered by any spec. The renderer had no guidance and either did nothing or made an arbitrary choice. | Add a new functional spec using the `add-functional-spec` skill. |
 | **Conflicting specs** | Two specs contradict each other, causing the renderer to produce inconsistent behavior. | Use the `resolve-spec-conflict` skill. |
 | **Incorrect spec** | The spec explicitly describes the wrong behavior. The renderer implemented it faithfully, but the spec itself is wrong. | Rewrite the spec to describe the correct behavior. |
+| **Incorrect scenario** | The spec is correct and the code matches it, but a scenario in the test plain file expects an outcome the spec does not state, or misses one it states. | Fix the scenario with `add-test-scenarios`. |
 | **Missing implementation req** | The spec is correct, but the implementation req doesn't provide enough guidance for the renderer to produce the right code (e.g., missing library, missing architectural constraint, missing platform detail). | Add or update the implementation req using the `add-implementation-requirement` skill. |
 
 ### How to diagnose
@@ -85,7 +86,9 @@ Trace the issue from the generated code back to the specs. There are five possib
 2. **Check for conflicts.** Could another spec be overriding or contradicting this behavior?
    - Read all functional specs that touch the same concepts.
    - If two specs are in tension → **conflicting specs**.
-3. **Check implementation reqs.** Is the renderer missing guidance on how to implement correctly?
+3. **Check the scenario.** When a conformance or acceptance test fails, find its scenario by the scenario-id in the test name and compare it with the spec.
+   - If the scenario contradicts or extends the spec → **incorrect scenario**.
+4. **Check implementation reqs.** Is the renderer missing guidance on how to implement correctly?
    - Does the implementation req specify the right library, pattern, or constraint?
    - If a platform-specific or framework-specific detail is missing → **missing implementation req**.
 
@@ -95,10 +98,11 @@ Apply the fix based on the diagnosed root cause. Use the appropriate skill:
 
 | Root Cause | Skill to Use |
 |------------|-------------|
-| Ambiguous spec | Edit the spec inline — add sub-bullets or reword for clarity |
+| Ambiguous spec | Edit the spec inline — add `- ` bullets under the statement line or reword for clarity |
 | Missing spec | `add-functional-spec` |
 | Conflicting specs | `resolve-spec-conflict` |
 | Incorrect spec | Edit the spec inline — rewrite the incorrect part |
+| Incorrect scenario | `add-test-scenarios` |
 | Missing implementation req | `add-implementation-requirement` |
 
 ### Fix guidelines
@@ -107,6 +111,7 @@ Apply the fix based on the diagnosed root cause. Use the appropriate skill:
 - **Preserve chronological order.** If adding a new spec, place it correctly relative to existing specs.
 - **Stay language-agnostic.** Functional specs describe behavior, not implementation. Platform-specific guidance belongs in implementation reqs.
 - **Respect the 200 LOC limit.** If a fix makes a spec too complex, use `break-down-func-spec` to split it.
+- **Keep the test plain file in step.** After changing a functional spec, invoke `add-test-scenarios` for it so its scenarios still follow from the spec.
 - **Check for new conflicts.** After editing, verify the fix doesn't conflict with other specs by running `analyze-func-specs` once with the edited spec(s) plus every existing spec that touches the same concepts. The batched analyzer reports all conflicting pairs in a single call; resolve each with `resolve-spec-conflict`.
 
 ## Phase 5 — Verify and Report
@@ -148,7 +153,7 @@ A test is failing. Use the test as the entry point.
 ```
 Read failing test → Understand what it expects → Read the implementation →
 Determine if the test or the implementation is wrong → Trace back to the spec →
-Fix the spec (or test reqs/acceptance tests if the test itself is wrong)
+Fix the spec (or the test reqs / the scenario in the test plain file if the test itself is wrong)
 ```
 
 ### Strategy 4: Differential
@@ -179,11 +184,12 @@ A spec fix may affect other specs that reference the same concepts. Always check
 
 - [ ] User's observation is clearly understood (expected vs. actual behavior)
 - [ ] Generated code has been read to understand the current implementation
-- [ ] Root cause is diagnosed (ambiguous / missing / conflicting / incorrect / missing impl req)
+- [ ] Root cause is diagnosed (ambiguous / missing / conflicting / incorrect / incorrect scenario / missing impl req)
 - [ ] Fix is applied in the `.plain` file(s) only — no generated code modified
 - [ ] Fix is minimal and targeted to the observed bug
 - [ ] Fix does not introduce new conflicts with existing specs
 - [ ] Modified specs respect the 200 LOC limit
 - [ ] Modified specs remain language-agnostic
 - [ ] Chronological ordering is preserved
+- [ ] Test plain file of every changed functionality brought in step via `add-test-scenarios`
 - [ ] Summary of findings and fix presented to the user

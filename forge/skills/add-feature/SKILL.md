@@ -49,7 +49,7 @@ Carry the confirmed brief into every later phase. Before advancing, check the Ph
 Keep this short. The goal is to know enough to ask the **very first** writable question — not to design the whole feature on paper.
 
 1. **Read the confirmed feature-intent brief.** Identify which existing `.plain` file(s) the feature most likely belongs to.
-2. **Read the target `.plain` file(s)**, following their `imports` and `base` chains, so the existing definitions, implementation reqs, functional specs, test reqs, and acceptance tests are in context. This is what lets Phase 2 recognize impact when it surfaces.
+2. **Read the target `.plain` file(s)**, following their `imports` and `base` chains, and the test plain files under `tests/`, so the existing definitions, implementation reqs, functional specs, test reqs, and scenarios are in context. This is what lets Phase 2 recognize impact when it surfaces.
 3. **Pick the target module with one question — only if it is genuinely ambiguous** which file to modify. Otherwise skip it and start authoring immediately.
 
 End Phase 1 the moment the target file and a single concrete starter question are clear. Do **not** ask framing, scope, or multi-part design questions here.
@@ -77,6 +77,7 @@ Route each answer to the right edit skill — never hand-author a `***plain` sec
 
 - **New concept** → `add-concept` (into `***definitions***`; define before any reference).
 - **New functional spec** → `add-functional-spec`. It runs `analyze-if-func-spec-too-complex` and `analyze-func-specs` for you — let it. **Never hand-author functional specs.** If it reports the spec is too complex, ask the user a follow-up question to split it (the next loop iteration) — do not break it down alone.
+- **Changed functional spec** → edit its statement line or `- ` bullets in place, then invoke `add-test-scenarios` so its test plain file follows the new text.
 - **New implementation req** → `add-implementation-requirement`. When the answer states HOW the functionality is built — a retry or error-handling policy, a data format, a library, an architectural pattern — and it is not already in the file or its imports.
 - **New test scenario** → `add-test-scenarios`, on the functionality's test plain file. Only when the *Conformance gate* is satisfied and the answer describes a concrete verification.
 - **New test req** → `add-test-requirement`. Only when conformance testing is configured and the answer changes how conformance tests are run.

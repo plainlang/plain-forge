@@ -33,7 +33,7 @@ Test reqs specify how **conformance tests** should be written and run. Common co
 ## What Does NOT Belong Here
 
 - **Unit test guidance** — that goes in `***implementation reqs***`
-- **Acceptance tests** — those are nested under individual functional specs in `***functional specs***`
+- **Test scenarios** — conformance and acceptance scenarios live in test plain files, written with `add-test-scenarios` (see `test-plain-files.md`)
 - **Behavioral requirements** — those go in `***functional specs***`
 - **Technology choices for the implementation** — those go in `***implementation reqs***`
 
@@ -42,8 +42,8 @@ Test reqs specify how **conformance tests** should be written and run. Common co
 | Test Type | Where to Specify | Purpose |
 |-----------|-----------------|---------|
 | Unit tests | `***implementation reqs***` | Test individual functionalities in isolation |
-| Conformance tests | `***test reqs***` | Verify implementation conforms to the full spec |
-| Acceptance tests | `***acceptance tests***` under a functional spec | Verify a specific functional spec |
+| Conformance tests | how: `***test reqs***`; what: `***conformance tests***` of the test plain file | Verify one functionality against its conformance scenarios |
+| Acceptance tests | how: `***test reqs***`; what: `***acceptance tests***` of the test plain file | Verify an end-to-end workflow that may span functionalities |
 
 ## Format
 

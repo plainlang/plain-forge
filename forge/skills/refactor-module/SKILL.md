@@ -29,7 +29,7 @@ The `.plain` file to refactor, plus guidance from the user on the desired groupi
 ## Phase 1 — Analyze the Current Module
 
 1. **Read the entire `.plain` file** — frontmatter, definitions, implementation reqs, test reqs, and all functional specs. Also read any `imports` and `base` chains to understand the full context.
-2. **Inventory the functional specs.** Number each spec and note which `:Concepts:` it references. Build a dependency map: which specs depend on earlier specs (by referencing behavior or state they introduced)?
+2. **Inventory the functional specs.** List each functionality by its func-id and note which `:Concepts:` it references. Build a dependency map: which specs depend on earlier specs (by referencing behavior or state they introduced)?
 3. **Inventory the definitions.** For each concept, note which functional specs reference it. Identify concepts that are used across multiple logical groups vs. concepts used only within one group.
 4. **Identify logical groups.** Look for natural seams — clusters of functional specs that share concepts, represent a cohesive domain, or describe a single feature area. Common groupings:
    - Data model setup and CRUD operations
@@ -86,7 +86,7 @@ If many concepts are shared across all modules, consider creating a new import m
 
 Summarize for the user:
 - Number of resulting modules and their names
-- Which functional specs go in each module (listed by number or short description)
+- Which functional specs go in each module (listed by func-id)
 - The `base` chain order
 - Any new import module being created
 - Which concepts are exported from each module
@@ -109,7 +109,7 @@ Create the first module in the chain:
 2. Add the `***definitions***` section with concepts used by this module's specs and concepts that need to be exported.
 3. Add `***implementation reqs***` and `***test reqs***` specific to this module (if not fully covered by the import template).
 4. Add the `***functional specs***` assigned to this module, preserving their original order and exact wording.
-5. Carry over any `***acceptance tests***` nested under the moved functional specs.
+5. Move the test plain files of the moved functionalities to `tests/<new-module>/` and set their `module:` key to the new module name; func-ids and scenario text stay unchanged.
 
 ### 3c. Create subsequent modules
 
@@ -119,7 +119,7 @@ For each subsequent module in the chain:
 3. Add `***definitions***` for concepts local to this module. Do **not** redefine concepts already available via `base` (exported) or `imports`.
 4. Add `***implementation reqs***` and `***test reqs***` specific to this module.
 5. Add the `***functional specs***` assigned to this module, preserving their original order and exact wording.
-6. Carry over any `***acceptance tests***`.
+6. Move the test plain files of the moved functionalities the same way.
 
 ### 3d. Handle the original module file
 
@@ -135,8 +135,8 @@ This is the most critical verification. Walk through every functional spec from 
 
 Checklist:
 - [ ] Total spec count across all new modules equals the original spec count
-- [ ] Each spec's text is identical to the original (no rewording)
-- [ ] Each spec's acceptance tests (if any) are carried over intact
+- [ ] Each spec's text is identical to the original (no rewording) and keeps its func-id
+- [ ] Each functionality's test plain file moved with it, with `module:` updated and scenarios intact
 
 ### 4b. Chronological ordering check
 
@@ -177,15 +177,15 @@ If a concept defined in module A is referenced by a spec in module B (which requ
 ### Modifying spec text during the split
 This is a refactoring, not a rewrite. Spec text must be copied verbatim. If a spec needs rewording to work in its new module context, that is a sign the split boundary is wrong — adjust the grouping instead.
 
-### Losing acceptance tests
-Acceptance tests are nested under their parent functional spec. When moving a spec to a new module, its acceptance tests must move with it.
+### Losing test plain files
+A test plain file binds to its functionality by `module:` and `func_id:`. When a functionality moves to a new module, its test plain file moves to `tests/<new-module>/` and its `module:` key changes; otherwise the renderer reports a pair that matches no functionality.
 
 ## Validation Checklist
 
 - [ ] User confirmed the split plan before execution
 - [ ] All original functional specs are present in exactly one new module — none lost
 - [ ] Spec text is identical to the original — no rewording
-- [ ] Acceptance tests moved with their parent specs
+- [ ] Test plain files moved with their functionalities and rebound to the new module
 - [ ] Chronological order preserved across the base chain
 - [ ] Every referenced `:Concept:` is available in each module (local, import, or exported)
 - [ ] `exported_concepts` are correctly set on each module
