@@ -11,6 +11,8 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a top-level `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+
 ## What Base Does
 
 `base` attaches the current module to the project's build chain. The base module is built **before** the current one, and its generated code — the accumulated output of that module and all its ancestors — is copied as the starting point. The current module does not need to functionally extend the base module, but their outputs are never independent: the current module's code physically contains the base module's.
