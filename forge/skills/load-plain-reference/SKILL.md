@@ -2,7 +2,7 @@
 name: load-plain-reference
 description: >-
   Loads the applicable ***plain authoring rules and operational references for the current task.
-  Covers section ownership, concepts, modules, resources, integrations, rendering, and testing
+  Covers section ownership, concepts, semantic IDs, test plain files, modules, resources, integrations, rendering, and testing
   without loading unrelated guidance. Use when authoring, editing, reviewing,
   or debugging .plain files, or before invoking another skill that reads or writes .plain content.
 ---
@@ -40,7 +40,8 @@ All paths are relative to this `SKILL.md`.
 | New module, file skeleton, section placement, or comments | `rules/module-structure.md` |
 | Moving facts between sections (see `resolve-section-ownership`) | `rules/module-structure.md`, plus the rule file of each section involved |
 | Definitions or concept usage | `rules/definitions.md` |
-| Functional specs or acceptance tests | `rules/func-specs.md` |
+| Functional specs | `rules/func-specs.md`, `rules/semantic-ids.md` |
+| Test plain files or scenarios | `rules/test-plain-files.md`, `rules/semantic-ids.md` |
 | Implementation requirements or unit tests | `rules/impl-reqs.md` |
 | Test requirements or conformance tests | `rules/test-reqs.md` |
 | `imports` and import modules | `rules/import-modules.md` |
@@ -48,7 +49,7 @@ All paths are relative to this `SKILL.md`.
 | `required_concepts` | `rules/required-concepts.md` |
 | `exported_concepts` | `rules/exported-concepts.md` |
 | Linked files or `resources/` | `rules/linked-resources.md` |
-| Any `.plain` text or example | `rules/bullet-continuation.md`, `rules/concise-specs.md` |
+| Any `.plain` text or example | `rules/glossary.md`, `rules/bullet-continuation.md`, `rules/concise-specs.md` |
 | Drafting or trimming spec wording, or reviewing a spec for verbosity | `rules/concise-specs-examples.md` |
 | A file that may be in the old syntax (`- ` functional specs, nested `***acceptance tests***`, `requires:` / `import:`) | `rules/module-structure.md` (*Old syntax*), then the `migrate-plain-syntax` skill |
 

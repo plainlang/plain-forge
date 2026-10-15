@@ -6,8 +6,10 @@ Functional specs render from top to bottom. When rendering one functional spec, 
 the previous specs but not future specs. A base module's functional specs also count as previous
 specs according to the module rules.
 
-Each functional spec receives its own conformance-test folder. After a new spec renders, the
-renderer runs conformance tests for previous specs to detect regressions. A new failure can mean:
+The renderer reads the test plain files under `tests/` and generates exactly the scenarios they hold,
+one labelled test per scenario-id; it never adds a test of its own. Each functionality receives its own
+conformance-test folder, named by its func-id. After a new spec renders, the renderer runs conformance
+tests for previous specs to detect regressions. A new failure can mean:
 
 1. The generated implementation does not satisfy the specification.
 2. The generated conformance test does not accurately test the specification.
@@ -24,7 +26,7 @@ and debugged, but never edited directly. Apply fixes as follows:
 - Behavior or implementation/unit-test guidance: edit definitions, functional specs, or
   implementation requirements as appropriate.
 - Conformance-test guidance: edit test requirements.
-- Acceptance-test guidance: edit the acceptance tests nested under their owning functional spec.
+- Scenario guidance: edit the scenarios in the functionality's test plain file with `add-test-scenarios`.
 
 Re-render after correcting the source specification.
 
@@ -37,7 +39,7 @@ Test scripts are renderer entry points as well as developer utilities:
 - `prepare_environment_<lang>` optionally prepares a reusable system-temporary environment for
   conformance testing once per render.
 - `run_conformance_tests_<lang>` receives the generated build folder and one functionality's
-  conformance-test folder (`plain_modules/<module_name>/tests/<functionality>`). It may run repeatedly during a render.
+  conformance-test folder (`plain_modules/<module_name>/tests/<func-id>`). It may run repeatedly during a render.
 
 Invoke the corresponding `implement-*-script` skill when creating or changing a test script. Those
 skills own exact staging, cleanup, dependency-installation, shell, and exit-code contracts.
@@ -50,7 +52,7 @@ Run project scripts from the repository root, using the filenames configured for
 ./test_scripts/run_unittests.sh plain_modules/<module_name>/code
 ./test_scripts/prepare_environment.sh plain_modules/<module_name>/code
 ./test_scripts/run_conformance_tests.sh \
-  plain_modules/<module_name>/code plain_modules/<module_name>/tests/<functionality>
+  plain_modules/<module_name>/code plain_modules/<module_name>/tests/<func-id>
 ```
 
 The renderer resolves script arguments to absolute paths. Test scripts must treat input directories
