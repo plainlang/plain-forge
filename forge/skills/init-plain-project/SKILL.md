@@ -3,7 +3,7 @@ name: init-plain-project
 description: >-
   Lightweight initializer for a new ***plain project. Asks about the base
   technology and project kind, asks whether conformance testing is enabled,
-  then scaffolds a template import module (with base implementation reqs and
+  then scaffolds a template import module (with the stack's implementation reqs and
   test reqs), a stub top-level module, the unit testing script, and
   (optionally) the conformance and prepare-environment scripts plus a
   config.yaml. Does NOT run `plain-healthcheck`. Use when the user wants a
@@ -17,21 +17,22 @@ description: >-
 
 ## Scope
 
-This skill is intentionally **minimal**. It produces a runnable project skeleton — not a complete spec. **No `***definitions***` sections are written by this skill — not in the template module, not in the top module.** No functional specs, no concepts, no acceptance tests, no validation. The user will fill those in afterwards with `add-feature`, `add-concept`, `add-functional-spec`, etc.
+This skill is intentionally **minimal**. It produces a runnable project skeleton — not a complete spec. **No `***definitions***` sections are written by this skill — not in the template module, not in the top module.** No functional specs, no concepts, no test plain files, no validation. The user will fill those in afterwards with `add-feature`, `add-concept`, `add-functional-spec`, etc.
 
 What this skill writes:
 
-- `template/base.plain` — an import module with the project's base `***implementation reqs***` and `***test reqs***`.
-- `<project>.plain` — a top-level module that imports `base`. Frontmatter only — no body sections. The user adds `***functional specs***` later.
+- `template/stack.plain` — an import module with the project's stack-wide `***implementation reqs***` and `***test reqs***`.
+- `<project>.plain` — a top-level module that imports `stack`. Frontmatter only — no body sections. The user adds `***functional specs***` later, each with its test plain file under `tests/<project>/`.
 - `test_scripts/run_unittests_<lang>.<sh|ps1>` — always.
 - `test_scripts/run_conformance_tests_<lang>.<sh|ps1>` — only if conformance testing is enabled.
 - `test_scripts/prepare_environment_<lang>.<sh|ps1>` — only if conformance testing is enabled **and** the user opts in.
 - `config.yaml` at the project root — wired to whichever scripts were generated.
+- `tests/` — an empty folder at the project root, only if conformance testing is enabled. `add-functional-spec` later writes each functionality's test plain file to `tests/<project>/<func-id>.plain`.
 
 What this skill does **not** do:
 
 - Run `plain-healthcheck`.
-- Author concepts, functional specs, or acceptance tests.
+- Author concepts, functional specs, or test plain files.
 - Probe the host environment (`check-plain-env` is a separate step the user can run later).
 
 ## Workflow
@@ -51,28 +52,28 @@ Follow up with a free-form prompt for anything the options didn't cover (e.g. sp
 Use **AskUserQuestion** for one tight batch covering:
 
 - **Unit testing framework** — propose the canonical one for the chosen language (pytest, Jest, Go `testing`, JUnit, ...) and let the user override.
-- **Conformance testing** — enabled or not. If the user is unsure, briefly explain it adds a `run_conformance_tests` script and per-spec acceptance tests later.
+- **Conformance testing** — enabled or not. If the user is unsure, briefly explain it adds a `run_conformance_tests` script and, for every functionality added later, a test plain file with conformance scenarios.
 - **Prepare-environment script** — only ask this if conformance testing was enabled in the previous question. Generate one or skip. Recommend "yes" when dependencies need installing (most stacks); recommend "skip" when there is genuinely nothing to set up. If conformance testing is disabled, skip this question entirely and do not generate a prepare-environment script.
 
-### 3. Author `template/base.plain`
+### 3. Author `template/stack.plain`
 
 Create the import module with `create-import-module`. It must contain:
 
-- `***implementation reqs***` — the base stack as requirements **and everything about `:UnitTests:`**:
+- `***implementation reqs***` — the stack as requirements **and everything about `:UnitTests:`**:
   - Programming language and version.
   - Primary framework (if any).
   - Dependency / package manager.
   - Project kind as a constraint (e.g. ":Implementation: should be a REST API service.").
   - `:UnitTests:` framework (pytest / Jest / JUnit / Go's `testing` / …) and the command used to run them — phrased in terms of `:UnitTests:` so the partition is explicit.
   - Anything else the user added in the free-form catch-all.
-- `***test reqs***` — the base **conformance**-testing rules (only added if conformance testing is enabled):
+- `***test reqs***` — the **conformance**-testing rules (only added if conformance testing is enabled):
   - ":ConformanceTests: must be implemented and executed - do not skip tests."
   - The `:ConformanceTests:` framework and the command used to run them.
   - **Do NOT** put unit-test framework / command here — that lives in `***implementation reqs***` above.
 
-Do **not** add a `***definitions***` section to `template/base.plain`. This skill does not author any concepts. Use only the predefined concepts (`:Implementation:`, `:ConformanceTests:`) in the reqs — no project-specific concepts like `:AppName:` or `:App:`. Do not declare `required_concepts` either.
+Do **not** add a `***definitions***` section to `template/stack.plain`. This skill does not author any concepts. Use only the predefined concepts (`:Implementation:`, `:ConformanceTests:`) in the reqs — no project-specific concepts like `:AppName:` or `:App:`. Do not declare `required_concepts` either.
 
-Do **not** add `***functional specs***` to `template/base.plain` — it is an import module.
+Do **not** add `***functional specs***` to `template/stack.plain` — it is an import module.
 
 ### 4. Author the top module `<project>.plain`
 
@@ -81,7 +82,7 @@ Create it at the repo root with frontmatter:
 ```yaml
 ---
 imports:
-  - base
+  - stack
 description: <one-line project description>
 ---
 ```
@@ -90,7 +91,11 @@ Body: **none**. The file ends after the closing `---` of the frontmatter. Do **n
 
 The file must still be created on disk — an empty body is fine, but the file itself is required.
 
-### 5. Generate the testing scripts
+### 5. Create the `tests/` folder
+
+Only if conformance testing is enabled: create an empty `tests/` folder at the project root. Test plain files land in `tests/<project>/` as functionalities are added. If conformance testing is disabled, create nothing.
+
+### 6. Generate the testing scripts
 
 Call the corresponding implementation skills in order. Each skill knows how to write the right Bash or PowerShell variant for the host OS.
 
@@ -98,7 +103,7 @@ Call the corresponding implementation skills in order. Each skill knows how to w
 - `implement-conformance-testing-script` — only if conformance testing was enabled. If a prepare-environment script will also exist, choose the **activate-only** variant; otherwise the **install-inline** variant.
 - `implement-prepare-environment-script` — only if conformance testing was enabled **and** the user opted in.
 
-### 6. Write `config.yaml`
+### 7. Write `config.yaml`
 
 Create `config.yaml` at the project root with **only the keys for scripts that were actually generated**. Valid keys:
 
@@ -113,12 +118,12 @@ Always include `template_dir: template` because the project has a template impor
 
 Do **not** invoke `init-config-file` or `plain-healthcheck` here — keeping this skill light is the whole point. The user can run them later if they want a strict canonicalization or validation.
 
-### 7. Recap
+### 8. Recap
 
 Tell the user what was created and what's next:
 
-- Files written: `template/base.plain`, `<project>.plain`, the test scripts, `config.yaml`.
-- Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs`, or jump straight into `add-feature`.
+- Files written: `template/stack.plain`, `<project>.plain`, the test scripts, `config.yaml`, and the `tests/` folder when conformance testing is enabled.
+- Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs` (each new functionality gets its test plain file under `tests/<project>/` when conformance testing is enabled), or jump straight into `add-feature`.
 - Mention that the project has not been validated — they can run `plain-healthcheck` when they want validation.
 
 ## Validation checklist

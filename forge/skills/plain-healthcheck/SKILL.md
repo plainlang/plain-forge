@@ -3,8 +3,8 @@ name: plain-healthcheck
 description: >-
   Verification gate for a ***plain project. Verifies that every `config.yaml`
   exists and points at scripts that actually live in `test_scripts/`, parses
-  every top module with `plain-parser check`, and checks every module for what
-  the parser can't judge (section ownership, bullets, linked resources). Run this whenever anything in the project is finalized —
+  every top module with `plain-parser check`, and checks every module and test plain file for
+  what the parser can't judge (section ownership, bullets, scenarios, linked resources). Run this whenever anything in the project is finalized —
   including (but not limited to) the end of `forge-plain`, the end of
   `add-feature`, after `debug-specs`, after any single-skill edit that
   finalizes a concept, functional spec, requirement, template, or config —
@@ -40,9 +40,10 @@ The skill is a **detect → fix → re-run** loop. It does not stop at the first
 2. Identify **top modules** — every module that is not listed under `base` by any other module. A single-stack project has one top module; a multi-part project (e.g. backend + frontend) has one top module per part.
 3. List every `config.yaml` in the repo (root and per-part directories such as `backend/`, `frontend/`).
 4. List every script under `test_scripts/`.
-5. Pair each top module with the `config.yaml` that governs it. The pairing rule is: the config file in the same directory as the top module wins; failing that, the repo-root `config.yaml`. A multi-part project must have one config per part — record any top module that has no governing config as a failure.
+5. List every test plain file: each `.plain` file under `tests/` (and under any other folder the user names) whose frontmatter has `module:` and `func_id:`. Record the pair it binds to.
+6. Pair each top module with the `config.yaml` that governs it. The pairing rule is: the config file in the same directory as the top module wins; failing that, the repo-root `config.yaml`. A multi-part project must have one config per part — record any top module that has no governing config as a failure.
 
-Print a one-line inventory summary so the rest of the run is easy to follow, e.g. `Top modules: backend/api.plain (config: backend/config.yaml), frontend/web.plain (config: frontend/config.yaml). Scripts in test_scripts/: 4.`
+Print a one-line inventory summary so the rest of the run is easy to follow, e.g. `Top modules: backend/api.plain (config: backend/config.yaml), frontend/web.plain (config: frontend/config.yaml). Scripts in test_scripts/: 4. Test plain files: 12.`
 
 ### Step 2 — Validate every `config.yaml`
 
@@ -77,24 +78,40 @@ Step 3 has two halves: a mechanical parse by `plain-parser`, then the checks tha
 [`plain-parser`](https://pypi.org/project/plain-parser/) is the ***plain parser. It parses a module together with its whole `imports` / `base` chain, so running it on every top module covers every module in the project.
 
 1. **Check it is installed.** Run `plain-parser --help`. If the command is not found, look for it where `plain-forge install` puts it before giving up: `~/.local/bin/plain-parser` (`%USERPROFILE%\.local\bin\plain-parser.exe` on Windows), or the directory printed by `uv tool dir --bin`. If it is there, run it by that full path for the rest of this step and tell the user to add the directory to `PATH`. If it is nowhere, stop and report `FAIL` with the install command (`pipx install plain-parser` or `uv tool install plain-parser`; it needs Python 3.11 or newer). Do **not** fall back to checking these rules by reading the files — without the parser there is no syntax gate.
-2. **Run it from the top module's own directory**, once per top module:
+2. **Check that it parses the current syntax.** Write this probe module as `probe.plain` into a fresh temporary directory and run `plain-parser check probe.plain` there:
+
+   ```plain
+   ***implementation reqs***
+
+   - :Implementation: is written in Python 3.12.
+
+   ***functional specs***
+
+   # probe
+   :Implementation: starts.
+   ```
+
+   If it prints `OK`, continue. If it reports an error, the installed plain-parser predates the current syntax (`# func-id` headings, test plain files, `base:` / `imports:`). Then record one failure against the project — `plain-parser <version> does not parse the current ***plain syntax; install the release that does and run plain-healthcheck again` — skip steps 3 and 4 of 3a, still run 3b, and report `FAIL`. Never rewrite the specs into an older syntax to satisfy the old parser.
+3. **Run it from the top module's own directory**, once per top module:
 
    ```bash
    cd <top-module-dir> && plain-parser check <top>.plain
    ```
 
    Add `--config-name <name>` when the governing config is not named `config.yaml`. `plain-parser` reads `template-dir` from the config next to the `.plain` file or in the working directory, and exits `2` when it finds one in both — running from the module's own directory avoids that in multi-part projects.
-3. **Read the result.** Exit `0` prints `<file>: OK`. Exit `1` prints `Error: …` on stderr — record that message verbatim as a failure against the top module. Exit `2` is a usage or config error (ambiguous or malformed config) — record it against the config.
+4. **Read the result.** Exit `0` prints `<file>: OK`. Exit `1` prints `Error: …` on stderr — record that message verbatim as a failure against the top module. Exit `2` is a usage or config error (ambiguous or malformed config) — record it against the config.
 
-`plain-parser` checks, among other things: frontmatter, that every `imports` / `base` entry exists and the graph has no cycles, that `base` modules have one fixed order, that imported modules have no functional specs, section headings (allowed, not duplicated, `***definitions***` first, `***acceptance tests***` nested under a functional spec), concepts (defined, exported and required correctly), that a module with functional specs has implementation reqs, and that every linked resource and template resolves to an existing, relative, non-`.plain` file. It does not always report every error in one run, so after fixing what it reported, run it again until it prints `OK`.
+`plain-parser` checks, among other things: frontmatter, that every `imports` / `base` entry exists and the graph has no cycles, that `base` modules have one fixed order, that imported modules have no functional specs, section headings (allowed, not duplicated, `***definitions***` first), `# func-id` headings in `***functional specs***` with unique func-ids, test plain files (frontmatter `module:` and `func_id:` naming an existing functionality, both sections present, unique scenario-ids), concepts (defined, exported and required correctly), that a module with functional specs has implementation reqs, and that every linked resource and template resolves to an existing, relative, non-`.plain` file. It does not always report every error in one run, so after fixing what it reported, run it again until it prints `OK`.
 
 #### 3b. Check what the parser can't judge
 
 Check every `.plain` module against the rules loaded by `load-plain-reference`:
 
 1. **Section ownership.** No fact sits in a section that doesn't own it — `:UnitTests:` facts only in `***implementation reqs***`, `:ConformanceTests:` facts only in `***test reqs***`, technology only in `***implementation reqs***`.
-2. **Bullets.** Every line in every section is a valid `- ` list item or a correctly indented sub-bullet — no bare continuation lines.
+2. **Bullets and headings.** Every line in `***definitions***`, `***implementation reqs***`, and `***test reqs***` is a valid `- ` list item or a correctly indented sub-bullet — no bare continuation lines. Every functionality in `***functional specs***` is a `# <func-id>` heading followed by its body.
 3. **Linked resources.** Every linked resource is a single **text** file (not a binary), and no URL or folder path appears in the surrounding spec text unless it is a runtime value the generated software itself uses.
+4. **Test plain files.** Every test plain file binds to an existing functionality (`module:` names a module, `func_id:` one of its `# func-id` headings) and has both sections in order. Scenario-ids are unique per functionality across every file bound to it. When the module's `config.yaml` has a `conformance-tests-script`, every functionality has at least one conformance scenario; a functionality with none is a failure that names `add-test-scenarios`.
+5. **Old syntax.** A top-level `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in a frontmatter is a failure that names `migrate-plain-syntax`. Do not fix it inline.
 
 Functional-spec complexity is checked when a spec is authored (`add-functional-spec(s)` → `analyze-if-func-spec-too-complex`). Re-run `analyze-if-func-spec-too-complex` here only for a spec that was hand-edited since it was authored.
 
@@ -105,7 +122,7 @@ Treat 3a and 3b together as a hard gate: the healthcheck **only passes** when `p
 Iterate until it passes:
 
 1. Identify the offending `.plain` file, the line, and the kind of issue: missing or duplicated concept, cyclic definition, broken `imports`/`base`, misplaced fact, bare continuation line, missing resource or template, etc.
-2. Fix only the `.plain` files (or the relevant `config.yaml` / template) using the appropriate edit skill — `add-concept`, `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `resolve-section-ownership`, `resolve-spec-conflict`, `break-down-func-spec`, `consolidate-concepts`, or an inline edit. **Never** modify generated code under `plain_modules/<module>/code/` or `plain_modules/<module>/tests/`.
+2. Fix only the `.plain` files (or the relevant `config.yaml` / template) using the appropriate edit skill — `add-concept`, `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `add-test-scenarios`, `resolve-section-ownership`, `resolve-spec-conflict`, `break-down-func-spec`, `consolidate-concepts`, or an inline edit — or `migrate-plain-syntax` for a file in the old syntax. **Never** modify generated code under `plain_modules/<module>/code/` or `plain_modules/<module>/tests/`.
 3. If you are uncertain about ***plain syntax for the failing construct, re-load `load-plain-reference` before fixing.
 4. Re-run the failed checks — for a `plain-parser` failure, re-run `plain-parser check`. Repeat until they pass.
 
@@ -115,7 +132,7 @@ If the failure is something the healthcheck cannot reasonably fix on its own (e.
 
 Emit one of:
 
-- **`PASS`** — followed by a short summary of what was checked: `N config.yaml(s) validated`, `M module(s) checked (plain-parser OK for every top module)`, `K scripts referenced`. The caller (`forge-plain`, `add-feature`, `debug-specs`) can then continue to its hand-off step.
+- **`PASS`** — followed by a short summary of what was checked: `N config.yaml(s) validated`, `M module(s) checked (plain-parser OK for every top module)`, `T test plain file(s) bound`, `K scripts referenced`. The caller (`forge-plain`, `add-feature`, `debug-specs`) can then continue to its hand-off step.
 - **`FAIL`** — followed by a numbered list of every unresolved problem. Each entry must include: the file (config / `.plain` / script) it applies to, the concrete issue, and what the user needs to decide if the healthcheck couldn't resolve it.
 
 The verdict goes on the first line so callers can pattern-match without parsing the whole report.
@@ -136,6 +153,8 @@ The verdict goes on the first line so callers can pattern-match without parsing 
 - [ ] No `config.yaml` mixes stacks (e.g. Python + JS scripts in the same file)
 - [ ] No `config.yaml` declares `prepare-environment-script` without also declaring `conformance-tests-script`
 - [ ] Every `test_scripts/*` file is referenced by some `config.yaml` (or surfaced as a warning)
+- [ ] The parser probe passed, or the report says 3a is suspended and names the plain-parser release that is needed
 - [ ] `plain-parser check` printed `OK` for every top module, run from that module's directory
-- [ ] Every module passes every check in Step 3b (section ownership, bullets, linked resources)
+- [ ] Every module passes every check in Step 3b (section ownership, bullets and headings, linked resources, test plain files, old syntax)
+- [ ] Every test plain file binds to an existing functionality, and every functionality has at least one conformance scenario when conformance tests are enabled
 - [ ] Verdict (`PASS` / `FAIL`) is on the first line, with a numbered list of remaining problems if it failed
