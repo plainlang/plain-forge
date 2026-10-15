@@ -53,18 +53,22 @@ If the spec bundles multiple independently testable actions, split each into its
 ```plain
 ***functional specs***
 
-- A :User: can create, edit, and delete :Recipe: items, with validation on all fields.
+# manage-recipes
+A :User: can create, edit, and delete :Recipe: items, with validation on all fields.
 ```
 
 **After:**
 ```plain
 ***functional specs***
 
-- A :User: can create a :Recipe:. Only valid :Recipe: items can be created.
+# create-recipe
+A :User: can create a :Recipe:. Only valid :Recipe: items can be created.
 
-- A :User: can edit an existing :Recipe:. Validation rules apply to the edited fields.
+# edit-recipe
+A :User: can edit an existing :Recipe:. Validation rules apply to the edited fields.
 
-- A :User: can delete a :Recipe:.
+# delete-recipe
+A :User: can delete a :Recipe:.
 ```
 
 ### Strategy 2: Separate Setup from Behavior
@@ -75,18 +79,22 @@ If the spec introduces a new construct and immediately defines complex behavior 
 ```plain
 ***functional specs***
 
-- The :MealPlan: screen displays a weekly grid of :Slot: items, allows drag-and-drop reordering, and shows nutritional totals per day.
+# meal-plan-screen
+The :MealPlan: screen displays a weekly grid of :Slot: items, allows drag-and-drop reordering, and shows nutritional totals per day.
 ```
 
 **After:**
 ```plain
 ***functional specs***
 
-- The :MealPlan: screen displays a weekly grid of :Slot: items.
+# meal-plan-grid
+The :MealPlan: screen displays a weekly grid of :Slot: items.
 
-- A :User: can reorder :Slot: items within a day on the :MealPlan: screen using drag-and-drop.
+# reorder-slots
+A :User: can reorder :Slot: items within a day on the :MealPlan: screen using drag-and-drop.
 
-- The :MealPlan: screen displays nutritional totals for each day.
+# daily-nutrition-totals
+The :MealPlan: screen displays nutritional totals for each day.
 ```
 
 ### Strategy 3: Separate Core Logic from Cross-Cutting Concerns
@@ -97,18 +105,22 @@ If the spec mixes primary functionality with error handling, retries, caching, p
 ```plain
 ***functional specs***
 
-- :Ingredient: data is fetched from the external API with pagination, retry on transient errors, and caching for 10 minutes.
+# fetch-ingredients
+:Ingredient: data is fetched from the external API with pagination, retry on transient errors, and caching for 10 minutes.
 ```
 
 **After:**
 ```plain
 ***functional specs***
 
-- :Ingredient: data is fetched from the external API.
+# fetch-ingredients
+:Ingredient: data is fetched from the external API.
 
-- :Ingredient: data is fetched from the external API in pages.
+# fetch-ingredients-paged
+:Ingredient: data is fetched from the external API in pages.
 
-- Fetching :Ingredient: data is retried on transient errors.
+# retry-ingredient-fetch
+Fetching :Ingredient: data is retried on transient errors.
 ```
 
 ### Strategy 4: Separate Conditional Paths
@@ -119,20 +131,24 @@ If the spec describes different modes or branches, give each its own spec.
 ```plain
 ***functional specs***
 
-- :MealPlan: generation depends on :DietType:. Standard plans use round-robin assignment. Restrictive plans filter out excluded ingredients first, then apply round-robin. Custom plans allow manual slot-by-slot selection.
+# generate-meal-plan
+:MealPlan: generation depends on :DietType:. Standard plans use round-robin assignment. Restrictive plans filter out excluded ingredients first, then apply round-robin. Custom plans allow manual slot-by-slot selection.
 ```
 
 **After:**
 ```plain
 ***functional specs***
 
-- A standard :MealPlan: is generated using round-robin :Recipe: assignment.
+# generate-standard-plan
+A standard :MealPlan: is generated using round-robin :Recipe: assignment.
 
-- A restrictive :MealPlan: is generated.
-  - Excluded :Ingredient: items are filtered out first.
-  - Round-robin :Recipe: assignment is then applied.
+# generate-restrictive-plan
+A restrictive :MealPlan: is generated.
+- Excluded :Ingredient: items are filtered out first.
+- Round-robin :Recipe: assignment is then applied.
 
-- A :User: can manually assign :Recipe: items to :Slot: items for a custom :MealPlan:.
+# assign-custom-plan
+A :User: can manually assign :Recipe: items to :Slot: items for a custom :MealPlan:.
 ```
 
 ### Strategy 5: Build UI Incrementally
@@ -143,18 +159,22 @@ If the spec describes a full screen, split into layout + individual interactive 
 ```plain
 ***functional specs***
 
-- The :Dashboard: screen shows a summary card with stats, a scrollable list of recent :MealPlan: items, a floating action button to create a new plan, and a bottom navigation bar.
+# dashboard-screen
+The :Dashboard: screen shows a summary card with stats, a scrollable list of recent :MealPlan: items, a floating action button to create a new plan, and a bottom navigation bar.
 ```
 
 **After:**
 ```plain
 ***functional specs***
 
-- The :Dashboard: screen shows a summary card with :MealFrameStats:.
+# dashboard-summary-card
+The :Dashboard: screen shows a summary card with :MealFrameStats:.
 
-- The :Dashboard: screen shows a scrollable list of recent :MealPlan: items.
+# dashboard-recent-plans
+The :Dashboard: screen shows a scrollable list of recent :MealPlan: items.
 
-- The :Dashboard: screen includes a button to create a new :MealPlan:.
+# dashboard-new-plan-button
+The :Dashboard: screen includes a button to create a new :MealPlan:.
 ```
 
 ### Strategy 6: Extract a Reusable Technical Component
@@ -167,18 +187,21 @@ Define the component concept in `***definitions***` (via `add-concept`) before t
 ```plain
 ***functional specs***
 
-- A :Report: is exported to PDF, laying out multi-page tables with repeating headers, page numbers, and charts rendered from :Report: data.
+# export-report-pdf
+A :Report: is exported to PDF, laying out multi-page tables with repeating headers, page numbers, and charts rendered from :Report: data.
 ```
 
 **After:**
 ```plain
 ***functional specs***
 
-- :PdfRenderer: lays out multi-page tables from structured content.
-  - Table headers repeat at the top of each page.
-  - Each page shows its page number.
+# pdf-renderer-tables
+:PdfRenderer: lays out multi-page tables from structured content.
+- Table headers repeat at the top of each page.
+- Each page shows its page number.
 
-- A :Report: is exported to PDF using :PdfRenderer:, embedding charts rendered from :Report: data.
+# export-report-pdf
+A :Report: is exported to PDF using :PdfRenderer:, embedding charts rendered from :Report: data.
 ```
 
 The extracted component spec and the rewritten original must together still cover 100% of the original functionality (step 6): the original must **reference** the component, never re-describe it. Keep the component's technology and architecture choices in `***implementation reqs***`, not in the functional spec. If the component is a self-contained subsystem or will be reused across modules, promote it to its own module with `create-base-module` / `refactor-module` instead of a sibling spec.

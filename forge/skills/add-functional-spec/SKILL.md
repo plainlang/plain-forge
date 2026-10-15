@@ -53,10 +53,11 @@ Each functional spec must be unambiguous — the renderer should have only one r
 ```plain
 ***functional specs***
 
-- A :User: can send a :Message: to a :Conversation:.
-  - A :Message: must have non-empty content.
-  - The :Message: is appended to the end of the :Conversation:.
-  - All :Participant: members of the :Conversation: can see the new :Message:.
+# send-message
+A :User: can send a :Message: to a :Conversation:.
+- A :Message: must have non-empty content.
+- The :Message: is appended to the end of the :Conversation:.
+- All :Participant: members of the :Conversation: can see the new :Message:.
 ```
 
 

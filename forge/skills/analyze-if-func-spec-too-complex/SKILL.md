@@ -50,20 +50,25 @@ Too complex:
 ```plain
 ***functional specs***
 
-- A :User: can create, edit, delete, and archive :Task: items, with validation on all fields and confirmation dialogs for destructive actions.
+# manage-tasks
+A :User: can create, edit, delete, and archive :Task: items, with validation on all fields and confirmation dialogs for destructive actions.
 ```
 
 Acceptable (one behavior each):
 ```plain
 ***functional specs***
 
-- A :User: can create :Task:. Only valid :Task: items can be added.
+# create-task
+A :User: can create :Task:. Only valid :Task: items can be added.
 
-- A :User: can edit :Task:.
+# edit-task
+A :User: can edit :Task:.
 
-- A :User: can delete :Task:.
+# delete-task
+A :User: can delete :Task:.
 
-- A :User: can archive :Task:.
+# archive-task
+A :User: can archive :Task:.
 
 ```
 
@@ -84,19 +89,23 @@ Too complex:
 ```plain
 ***functional specs***
 
-- :Order: processing depends on :OrderType:. Standard orders are validated and stored. Express orders skip validation and are queued for immediate dispatch. Bulk orders are split into sub-orders of 100 items each, validated individually, and processed in parallel with progress tracking.
+# process-order
+:Order: processing depends on :OrderType:. Standard orders are validated and stored. Express orders skip validation and are queued for immediate dispatch. Bulk orders are split into sub-orders of 100 items each, validated individually, and processed in parallel with progress tracking.
 ```
 
 Acceptable (separate the modes):
 ```plain
 ***functional specs***
 
-- A standard :Order: is validated and stored.
+# process-standard-order
+A standard :Order: is validated and stored.
 
-- An express :Order: is queued for immediate dispatch without validation.
+# process-express-order
+An express :Order: is queued for immediate dispatch without validation.
 
-- A bulk :Order: is split into sub-orders of 100 items each.
-  - Each sub-order is processed individually.
+# split-bulk-order
+A bulk :Order: is split into sub-orders of 100 items each.
+- Each sub-order is processed individually.
 ```
 
 ### 4. Cross-Cutting Concerns
@@ -107,17 +116,21 @@ Too complex:
 ```plain
 ***functional specs***
 
-- :Resource: items are fetched from the external API with pagination support, retry on transient errors with exponential backoff, caching for 5 minutes, and logging of all API calls.
+# fetch-resources
+:Resource: items are fetched from the external API with pagination support, retry on transient errors with exponential backoff, caching for 5 minutes, and logging of all API calls.
 ```
 
 Acceptable (separate concerns):
 ```plain
 ***functional specs***
-- :Resource: items are fetched from the external API.
+# fetch-resources
+:Resource: items are fetched from the external API.
 
-- :Resource: items are fetched from the external API in pages.
+# fetch-resources-paged
+:Resource: items are fetched from the external API in pages.
 
-- Fetching :Resource: items is retried on transient errors using exponential backoff.
+# retry-resource-fetch
+Fetching :Resource: items is retried on transient errors using exponential backoff.
 ```
 
 ### 5. UI Complexity
@@ -128,18 +141,22 @@ Too complex:
 ```plain
 ***functional specs***
 
-- The dashboard shows :User: profile, recent :Task: items in a sortable table, a notification bell with unread count, and a sidebar with navigation links that highlights the active page.
+# dashboard
+The dashboard shows :User: profile, recent :Task: items in a sortable table, a notification bell with unread count, and a sidebar with navigation links that highlights the active page.
 ```
 
 Acceptable (build incrementally):
 ```plain
 ***functional specs***
 
-- A dashboard page is shown for :User:.
+# dashboard-page
+A dashboard page is shown for :User:.
 
-- Recent :Task: items are shown in a sortable table on the dashboard.
+# dashboard-recent-tasks
+Recent :Task: items are shown in a sortable table on the dashboard.
 
-- A notification indicator with the unread count is shown on the dashboard.
+# dashboard-notifications
+A notification indicator with the unread count is shown on the dashboard.
 ```
 
 ### 6. Data Transformation Complexity
@@ -157,18 +174,21 @@ Too complex (builds the component and uses it in one spec):
 ```plain
 ***functional specs***
 
-- A :Report: is exported to PDF, laying out multi-page tables with repeating headers and page numbers, and charts rendered from :Report: data.
+# export-report-pdf
+A :Report: is exported to PDF, laying out multi-page tables with repeating headers and page numbers, and charts rendered from :Report: data.
 ```
 
 Acceptable (component in its own spec, then referenced):
 ```plain
 ***functional specs***
 
-- :PdfRenderer: lays out multi-page tables from structured content.
-  - Table headers repeat at the top of each page.
-  - Each page shows its page number.
+# pdf-renderer-tables
+:PdfRenderer: lays out multi-page tables from structured content.
+- Table headers repeat at the top of each page.
+- Each page shows its page number.
 
-- A :Report: is exported to PDF using :PdfRenderer:, embedding charts rendered from :Report: data.
+# export-report-pdf
+A :Report: is exported to PDF using :PdfRenderer:, embedding charts rendered from :Report: data.
 ```
 
 When this indicator fires, the fix is `break-down-func-spec` Strategy 6 — extract the component into its own earlier spec and reference it.
