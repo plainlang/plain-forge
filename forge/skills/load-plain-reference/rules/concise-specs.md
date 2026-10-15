@@ -4,7 +4,7 @@ description: Conciseness and plain-language rules that keep .plain specs reviewa
 
 # Rules for keeping `.plain` specs concise
 
-These rules apply to every section, to concept explanations, and to acceptance tests. `concise-specs-examples.md` holds a worked BAD to GOOD pair for each failure mode named here, and `concise-specs-integration-examples.md` covers the failure modes specific to integration specs.
+These rules apply to every section, to concept explanations, and to scenarios in test plain files. `concise-specs-examples.md` holds a worked BAD to GOOD pair for each failure mode named here, and `concise-specs-integration-examples.md` covers the failure modes specific to integration specs.
 
 ## Why this matters
 

@@ -32,7 +32,7 @@ When writing or editing an `***implementation reqs***` section in a `.plain` fil
 - Behavior and features → `***functional specs***`
 - Concept definitions → `***definitions***`
 - **Conformance-test guidance** → `***test reqs***`
-- **Acceptance-test scenarios** → `***acceptance tests***` nested under the relevant functional spec
+- **Test scenarios**, conformance and acceptance → the functionality's test plain file (see `test-plain-files.md`)
 
 ## Unit tests vs conformance tests (common mistake)
 - Unit-test guidance (`:UnitTests:` framework, structure, mocking) goes **here**, not in `***test reqs***`
