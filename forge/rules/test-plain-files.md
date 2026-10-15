@@ -1,0 +1,103 @@
+---
+description: Syntax and authoring rules for test plain files, which hold the conformance and acceptance scenarios of one functionality
+---
+
+# Rules for test plain files
+
+A test plain file holds the test scenarios of one functionality. The renderer generates conformance and acceptance tests from these scenarios and from nothing else: it never invents a scenario. Scenarios are written by people or by plain-forge at authoring time and are reviewed like any other spec line. Always follow these rules when creating or editing one.
+
+## File skeleton
+- A test plain file is a `.plain` file with YAML frontmatter and two sections, in this order: `***conformance tests***`, then `***acceptance tests***`
+- Both sections are required; `***acceptance tests***` may be empty
+- The frontmatter has exactly two keys, both required:
+  - `module:` the name of the module that holds the functionality (the core spec's file name without `.plain`)
+  - `func_id:` the func-id of the functionality (see `semantic-ids.md`)
+- The pair `(module, func_id)` must name a functionality that exists; a pair with no match is an error
+- A test plain file has no `***definitions***`, `***implementation reqs***`, `***test reqs***`, or `***functional specs***`
+- Comment lines starting with `>` are allowed, as in a core spec
+
+## Location
+- By convention a test plain file lives at `tests/<module>/<func_id>.plain`, with `tests/` next to the core spec
+- The location and the file name are convention only: the renderer discovers test plain files by reading the frontmatter of every `.plain` file under its test folders
+- plain-forge always writes to the conventional path, one file per functionality
+- More than one test plain file may bind to the same functionality; their scenarios are merged, and scenario-ids must be unique across the merged set. Hand-written files may use this; plain-forge keeps one file per functionality
+
+## Scenarios
+- A scenario is a `# <scenario-id>` heading (see `semantic-ids.md`) followed by free text that says what is done and what result is expected
+- A scenario body line may be prose, a `- ` bullet, or any other text, as long as it does not start with `# ` (that starts a new scenario) or with `***`
+- A scenario may reference every concept visible to its module: its own definitions, its `imports`, and the `exported_concepts` of its `base` modules. It defines no concepts
+- Scenarios are language-agnostic: they describe behavior through the observable interface (CLI, HTTP, files, UI) and never name a function, class, or file of the implementation
+- A scenario tests the functionality as a black box; the generated test never imports the implementation's internals
+- A scenario is a direct consequence of the functional spec: it does not contradict, narrow, or extend the behavior the spec states
+- Each scenario states one concrete, checkable outcome; "works correctly" is not an outcome
+- Scenario text follows `concise-specs.md`: no narration, no rationale, no step a reader would assume
+
+## The shape plain-forge writes
+- plain-forge writes every scenario as `given:` / `when:` / `then:` lists; hand-written scenarios may use any shape
+- `given:` the state before the action (running app, existing data, configuration), one `- ` item per fact
+- `when:` the one action under test
+- `then:` the observable results, one `- ` item per result
+- Omit `given:` when there is no setup; never omit `when:` or `then:`
+- Values that matter to the check are concrete (`named "Buy milk"`, `exits with status 0`), never descriptive (`a valid name`)
+
+## Conformance scenarios
+- `***conformance tests***` holds the scenarios that gate the functionality: it is done only when every conformance scenario passes
+- When conformance tests are enabled for the module (its `config.yaml` has a `conformance-tests-script`), every functionality has at least one conformance scenario; an empty section is an error
+- Each conformance scenario exercises the functionality of this file alone, through the interface the functional spec names; it does not test other functionalities
+- Cover the main path first, then each boundary and error case the functional spec states; stop when every stated behavior has one scenario
+- Do not write the same scenario twice in different words; one scenario per distinct outcome
+
+## Acceptance scenarios
+- `***acceptance tests***` holds end-to-end checks that may span several functionalities; the section may be empty
+- An acceptance scenario starts from the functionality of this file and may use the behavior of functionalities rendered before it
+- It is rendered after the conformance tests of its functionality pass
+- Write one only for a workflow that no single conformance scenario shows; do not restate a conformance scenario here
+
+## Keeping test plain files in step with functional specs
+- Every change to a functional spec is followed by a review of its test plain file: scenarios that no longer follow from the spec are removed or rewritten, and new behavior gets a scenario
+- When a functionality is split, each new functionality gets its own test plain file; each scenario moves to the functionality it tests
+- When a functionality is deleted, its test plain file is deleted
+- When a functionality moves to another module, its test plain file moves to that module's folder and its `module:` key is updated
+- When a func-id is renamed, `func_id:` is renamed in every test plain file bound to it and the file moves to the new conventional path
+
+## Relation to `***test reqs***`
+- `***test reqs***` of the module say how `:ConformanceTests:` are built and run (framework, command, network policy); the scenarios say what they check
+- A fact about the framework or the run command never goes into a scenario, and a scenario never goes into `***test reqs***`
+
+## Format
+
+```plain
+---
+module: task-manager
+func_id: add-task
+---
+
+***conformance tests***
+
+# add-valid-task
+given:
+  - :App: is running with an empty :TaskList:
+when:
+  - :User: adds a :Task: named "Buy milk"
+then:
+  - :TaskList: shows one :Task: named "Buy milk"
+
+# reject-short-name
+given:
+  - :App: is running with an empty :TaskList:
+when:
+  - :User: adds a :Task: named "Go"
+then:
+  - :App: shows the error "Name must be at least 3 characters"
+  - :TaskList: stays empty
+
+***acceptance tests***
+
+# add-then-complete
+given:
+  - :App: is running with an empty :TaskList:
+when:
+  - :User: adds a :Task: named "Buy milk" and marks it completed
+then:
+  - :TaskList: shows one :Task: named "Buy milk", marked completed
+```
