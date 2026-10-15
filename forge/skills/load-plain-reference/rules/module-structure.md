@@ -18,9 +18,9 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 | Field | Purpose | Rule file |
 |---|---|---|
 | `description` | One-line summary of the module; recommended on every module | — |
-| `import` | Pull definitions, implementation reqs, and test reqs from import modules | `import-modules.md` |
-| `requires` | Attach the module to the build chain of another root module | `requires-modules.md` |
-| `exported_concepts` | Declare which of this module's concepts are visible to modules that `require` it | `exported-concepts.md` |
+| `imports` | Pull definitions, implementation reqs, and test reqs from import modules | `import-modules.md` |
+| `base` | Attach the module to the build chain of another root module | `base-modules.md` |
+| `exported_concepts` | Declare which of this module's concepts are visible to modules that list it under `base` | `exported-concepts.md` |
 | `required_concepts` | Declare concepts an import module expects the importing module to define | `required-concepts.md` |
 
 ## Sections
@@ -33,9 +33,9 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 
 ## Module kinds
 - A **root module** lives at the repository root and carries behavior: it contains `***functional specs***`
-- To be renderable, a root module needs at least one functional spec plus the implementation reqs to build it — its own or from an `import`ed module (implementation reqs are not inherited through `requires`). A frontmatter-only file is a valid scaffold, but it cannot be rendered until a functional spec is added
-- A **requires module** is a root module that is used by another root module via `requires` directive (see `requires-modules.md`)
-- An **import module** provides shared content that other modules pull in via `import`: it contains only `***definitions***`, `***implementation reqs***`, and/or `***test reqs***` — never `***functional specs***`, never `requires` (see `import-modules.md`)
+- To be renderable, a root module needs at least one functional spec plus the implementation reqs to build it — its own or from an `imports` module (implementation reqs are not inherited through `base`). A frontmatter-only file is a valid scaffold, but it cannot be rendered until a functional spec is added
+- A **base module** is a root module that another root module lists under `base` (see `base-modules.md`)
+- An **import module** provides shared content that other modules pull in via `imports`: it contains only `***definitions***`, `***implementation reqs***`, and/or `***test reqs***` — never `***functional specs***`, never `base` (see `import-modules.md`)
 - A **test plain file** holds the scenarios of one functionality of a root module; its frontmatter `module:` and `func_id:` bind it to that functionality, it lives under `tests/`, and it has no section of a core spec (see `test-plain-files.md`)
 
 ## Section ownership (where a fact lives)
@@ -62,7 +62,7 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 
 ## Liquid templates
 - `.plain` files are processed with [Liquid](https://shopify.github.io/liquid/) before parsing — the full Liquid syntax (variables, filters, conditionals, loops) is available in any section
-- Expansion is **textual** and happens before the specification is interpreted — unlike `import`, which includes another module semantically (see `import-modules.md`)
+- Expansion is **textual** and happens before the specification is interpreted — unlike `imports`, which includes another module semantically (see `import-modules.md`)
 
 ```plain
 {% assign max_tags = 3 %}
@@ -83,7 +83,7 @@ A :Widget: can have its tags listed.
 ```plain
 ---
 description: Command-line task manager.
-import:
+imports:
   - airplain
 ---
 

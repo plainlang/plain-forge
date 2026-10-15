@@ -23,12 +23,12 @@ Do not write:
 - Universal software defaults: that invalid input is rejected, that errors are reported, that data is saved when saving is the point of the operation
 - Rationale, motivation, benefits, or background — the spec states what is, not why it was chosen
 - Standard behavior of a technology already named in `***implementation reqs***` (an HTTP framework parses HTTP; a database driver opens connections)
-- Restatements of a nearby bullet in different words, or of anything already stated in an `import`ed or `require`d module
+- Restatements of a nearby bullet in different words, or of anything already stated in an `imports` or `base` module
 - Anything about work the spec is not about ("no changes to the existing UI")
 - Meta-commentary about the spec itself ("this spec is intentionally small", "as described above")
 
 Worked pairs for every item above — padding, rationale, defaults, technology behavior,
-meta-commentary, and duplication of an `import` — are in `concise-specs-examples.md`.
+meta-commentary, and duplication of an `imports` module — are in `concise-specs-examples.md`.
 
 ## Use plain words
 
@@ -74,7 +74,7 @@ Read the drafted lines once more and apply, in order:
 
 1. **The deletion test** — cut every line whose removal would change nothing about what gets built
 2. **The word test** — replace every ornate word with a plain one, and delete every uncheckable adjective, adverb, and hedge
-3. **The duplication test** — cut anything already stated in this file, an `import`, or a `requires` chain
+3. **The duplication test** — cut anything already stated in this file, an `imports` module, or a `base` chain
 4. **The read-aloud test** — a line you cannot read aloud in one breath is either two facts or one padded one
 
 If a cut would remove an interface detail, a boundary case, or a disambiguation, keep the fact and shorten the wording instead — see *Do not over-cut* in `concise-specs-examples.md` for what a spec cut past its content looks like.
