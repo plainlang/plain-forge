@@ -41,7 +41,7 @@ Use standard markdown link syntax inside any spec section:
 ## Path Rules
 
 - Paths are resolved **against the directory that contains the `.plain` file passed to the renderer**, not the directory where the renderer is run.
-- This includes links inside imported and required modules — they resolve against that same directory, not against the directory the imported module itself lives in.
+- This includes links inside imported and base modules — they resolve against that same directory, not against the directory the imported module itself lives in.
 - A path that does not resolve there is then looked up in the `template-dir` directory (if configured), and last in the renderer's built-in template library.
 - Relative paths may traverse into parent directories — `[resource](../../resources/resource.md)` is valid — as long as they resolve to a real text file on disk.
 - **No external URLs** — only local file references.

@@ -30,7 +30,7 @@ The bullet, section, or `.plain` file to resolve.
 
 ## Workflow
 
-1. **Read the full `.plain` file** — every section, plus its `import` and `requires` chains, so an existing home for a fact is visible before a new one is written.
+1. **Read the full `.plain` file** — every section, plus its `imports` and `base` chains, so an existing home for a fact is visible before a new one is written.
 2. **Identify the target** — one bullet, one section, or the whole file.
 3. **Decompose each bullet into atomic facts.** A clause joined by *and*, *which*, *so that*, or a comma often carries a second fact. Keep each fact in the author's own words for now; rewording comes at step 6.
 4. **Route each fact** by the *Section ownership* table in `module-structure.md`. Where a fact resists the table, apply the question it encodes: **would a caller of the finished software observe this?** Yes → `***functional specs***`. No, it is how the result is reached → `***implementation reqs***`. It says what a term means → `***definitions***`. It shapes `:ConformanceTests:` → `***test reqs***`.

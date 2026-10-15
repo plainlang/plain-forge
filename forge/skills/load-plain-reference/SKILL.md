@@ -10,8 +10,7 @@ description: >-
 # Load the ***plain reference
 
 Load only the rules and references required for the current task. Files under `rules/`, next to
-this `SKILL.md`, are the source of truth for `.plain` syntax and authoring constraints. Do not
-restate or override them.
+the source of truth for `.plain` syntax and authoring constraints. Do not restate or override them.
 
 **First, confirm the rules about to be loaded are current.** On the first invocation of this skill in
 a session, invoke `check-forge-version` before loading any rule file. A stale plain-forge ships stale
@@ -43,8 +42,8 @@ All paths are relative to this `SKILL.md`.
 | Functional specs or acceptance tests | `rules/func-specs.md` |
 | Implementation requirements or unit tests | `rules/impl-reqs.md` |
 | Test requirements or conformance tests | `rules/test-reqs.md` |
-| `import` modules | `rules/import-modules.md` |
-| `requires` modules | `rules/requires-modules.md` |
+| `imports` and import modules | `rules/import-modules.md` |
+| `base` and base modules | `rules/base-modules.md` |
 | `required_concepts` | `rules/required-concepts.md` |
 | `exported_concepts` | `rules/exported-concepts.md` |
 | Linked files or `resources/` | `rules/linked-resources.md` |

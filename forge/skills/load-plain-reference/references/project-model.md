@@ -27,7 +27,7 @@ what these directories may contain and how a spec refers to them.
 
 ## Template inclusion
 
-In addition to frontmatter `import`, ***plain supports parameterized template inclusion:
+In addition to frontmatter `imports`, ***plain supports parameterized template inclusion:
 
 ```plain
 {% include "python-console-app-template.plain", main_executable_file_name: "my_app.py" %}

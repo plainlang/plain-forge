@@ -80,7 +80,7 @@ Create it at the repo root with frontmatter:
 
 ```yaml
 ---
-import:
+imports:
   - base
 description: <one-line project description>
 ---

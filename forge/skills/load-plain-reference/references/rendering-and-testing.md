@@ -3,7 +3,7 @@
 ## Incremental rendering
 
 Functional specs render from top to bottom. When rendering one functional spec, the renderer knows
-the previous specs but not future specs. A required module's functional specs also count as previous
+the previous specs but not future specs. A base module's functional specs also count as previous
 specs according to the module rules.
 
 Each functional spec receives its own conformance-test folder. After a new spec renders, the

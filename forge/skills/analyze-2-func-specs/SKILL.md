@@ -13,7 +13,7 @@ description: >-
 
 ## Input
 
-Two functional specs from a `.plain` file (or across `requires` modules). The user provides them directly or points to them by location in a file.
+Two functional specs from a `.plain` file (or across `base` modules). The user provides them directly or points to them by location in a file.
 
 ## Workflow
 

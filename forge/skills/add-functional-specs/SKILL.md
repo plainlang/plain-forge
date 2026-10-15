@@ -27,13 +27,13 @@ If you only need to add a single spec, use the `add-functional-spec` skill inste
 This skill is `add-functional-spec` applied **one spec at a time, in order**, with no shortcuts. The batch never escapes per-spec rigor.
 
 1. **Identify the target `.plain` file.** If ambiguous, ask the user.
-2. **Read the entire file** to understand existing definitions, implementation reqs, and all current functional specs (including those reachable via `import` / `requires`).
+2. **Read the entire file** to understand existing definitions, implementation reqs, and all current functional specs (including those reachable via `imports` / `base`).
 3. **Draft all the specs you intend to add**, in the chronological order they should appear. Keep the drafts in a working list — nothing is inserted yet. Run the review pass in `concise-specs.md` over every draft before continuing; trim each to the shortest wording that keeps every fact.
 4. **For each drafted spec, in order:**
    1. **Analyze complexity.** Run `analyze-if-func-spec-too-complex` on the spec. If the verdict is `TOO COMPLEX`, run `break-down-func-spec`, replace the entry in the working list with the resulting smaller specs (preserving order), and restart this step on the first of the replacements.
    2. **Check for conflicts.** Run `analyze-func-specs` **once** with this single input set:
       - the new spec, plus
-      - every existing functional spec in the file and its `requires` chain, plus
+      - every existing functional spec in the file and its `base` chain, plus
       - every spec from this batch that has already been inserted.
 
       The batched analyzer returns every conflicting pair in one call — do **not** loop over pairs invoking a per-pair analyzer. For each conflicting pair it reports, run `resolve-spec-conflict`. Apply the resolution — which may revise the new spec, an existing spec, or both — then re-run `analyze-func-specs` once over the touched set until the verdict is `COMPATIBLE`.
@@ -89,7 +89,7 @@ Specs must be detailed enough that a developer can use the built software withou
 
 ### Encapsulation
 
-Functionality must be self-contained in the spec text. `requires` modules only import functional specs, so do not rely on implementation reqs to convey behavior — they won't be visible in downstream modules.
+Functionality must be self-contained in the spec text. `base` modules only pass on functional specs, so do not rely on implementation reqs to convey behavior — they won't be visible in downstream modules.
 
 ## Acceptance Tests
 

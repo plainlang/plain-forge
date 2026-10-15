@@ -16,7 +16,7 @@ Use this to verify the workflow was followed — never as a substitute for it. R
 
 - [ ] Carried the confirmed feature-intent brief into scope and identified the likely target
   `.plain` file(s) without restarting intent discovery.
-- [ ] Read the target `.plain` file(s) and followed their `import`/`requires` chain before authoring.
+- [ ] Read the target `.plain` file(s) and followed their `imports`/`base` chain before authoring.
 - [ ] Picked the target module with a question only when genuinely ambiguous — otherwise started authoring immediately (no framing/scope/multi-part design questions here).
 
 ## Every loop iteration (Phase 2)

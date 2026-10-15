@@ -16,7 +16,7 @@ description: >-
 2. **Read the file** to understand existing definitions, imports, and concepts.
 3. **Validate the concept name** against the syntax rules below.
 4. **Check for uniqueness** — the concept name must not already exist in the file or its imports.
-5. **Check referenced concepts** — any `:ConceptName:` used in the definition must already be defined above it (in this file or via `import`/`requires`). Concept references must not form cycles (e.g., A references B and B references A).
+5. **Check referenced concepts** — any `:ConceptName:` used in the definition must already be defined above it (in this file or via `imports`/`base`). Concept references must not form cycles (e.g., A references B and B references A).
 6. **Check for circular references** — if the new concept references `:B:`, then `:B:` must not reference the new concept (directly or indirectly). Example of a circular definition to avoid:
    ```plain
    - :Order: is placed by :Customer: and contains :OrderItem: entries.
@@ -36,7 +36,7 @@ description: >-
 - CamelCase, starting with an uppercase letter
 - Valid characters: letters, digits, `+`, `-`, `.`, `_`
 - Must be globally unique across the spec and all its imports
-- Exported concepts from `requires` modules are **not transitive** — to reference an ancestor's export, list that ancestor in `requires`; if a concept is shared across branches, define it in a common import module instead
+- Exported concepts from `base` modules are **not transitive** — to reference an ancestor's export, list that ancestor under `base`; if a concept is shared across branches, define it in a common import module instead
 
 ## Definition Format
 

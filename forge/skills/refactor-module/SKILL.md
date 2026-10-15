@@ -2,7 +2,7 @@
 name: refactor-module
 description: >-
   Split a large ***plain module into smaller modules grouped by logical domain.
-  The resulting modules are connected via a requires chain so that functionality
+  The resulting modules are connected via a base chain so that functionality
   is 100% preserved. Use when a module has grown too large and its functional
   specs span multiple distinct concerns that would be clearer as separate modules.
 ---
@@ -28,7 +28,7 @@ The `.plain` file to refactor, plus guidance from the user on the desired groupi
 
 ## Phase 1 — Analyze the Current Module
 
-1. **Read the entire `.plain` file** — frontmatter, definitions, implementation reqs, test reqs, and all functional specs. Also read any `import` and `requires` chains to understand the full context.
+1. **Read the entire `.plain` file** — frontmatter, definitions, implementation reqs, test reqs, and all functional specs. Also read any `imports` and `base` chains to understand the full context.
 2. **Inventory the functional specs.** Number each spec and note which `:Concepts:` it references. Build a dependency map: which specs depend on earlier specs (by referencing behavior or state they introduced)?
 3. **Inventory the definitions.** For each concept, note which functional specs reference it. Identify concepts that are used across multiple logical groups vs. concepts used only within one group.
 4. **Identify logical groups.** Look for natural seams — clusters of functional specs that share concepts, represent a cohesive domain, or describe a single feature area. Common groupings:
@@ -45,17 +45,17 @@ Present the proposed split to the user and get explicit confirmation before maki
 
 ### 2a. Define the module chain
 
-The modules form a `requires` chain that preserves the original chronological ordering of functional specs. The first module in the chain contains the earliest specs; each subsequent module `requires` the previous one and adds the next logical group.
+The modules form a `base` chain that preserves the original chronological ordering of functional specs. The first module in the chain contains the earliest specs; each subsequent module lists the previous one under `base` and adds the next logical group.
 
 ```
 original-module
   ↓ splits into
-module-group-a  (no requires — this is the new base)
-module-group-b  (requires: module-group-a)
-module-group-c  (requires: module-group-b)
+module-group-a  (no base — this is the chain root)
+module-group-b  (base: module-group-a)
+module-group-c  (base: module-group-b)
 ```
 
-If the original module already had `requires` or `import` dependencies, the first new module inherits them.
+If the original module already had `base` or `imports` dependencies, the first new module inherits them.
 
 ### 2b. Assign functional specs to modules
 
@@ -87,7 +87,7 @@ If many concepts are shared across all modules, consider creating a new import m
 Summarize for the user:
 - Number of resulting modules and their names
 - Which functional specs go in each module (listed by number or short description)
-- The `requires` chain order
+- The `base` chain order
 - Any new import module being created
 - Which concepts are exported from each module
 - Confirmation that all original specs are accounted for (none lost)
@@ -96,16 +96,16 @@ Get explicit user confirmation before proceeding.
 
 ## Phase 3 — Execute the Split
 
-Create the new modules in order, from the base of the chain upward.
+Create the new modules in order, from the root of the chain upward.
 
 ### 3a. Create or update the import template (if needed)
 
 If shared definitions or reqs are being moved to a new import template, create it first using the `create-import-module` skill.
 
-### 3b. Create the base module
+### 3b. Create the chain root
 
 Create the first module in the chain:
-1. Set the YAML frontmatter — inherit the original module's `import` references. Add `exported_concepts` for any concepts that downstream modules need.
+1. Set the YAML frontmatter — inherit the original module's `imports` references. Add `exported_concepts` for any concepts that downstream modules need.
 2. Add the `***definitions***` section with concepts used by this module's specs and concepts that need to be exported.
 3. Add `***implementation reqs***` and `***test reqs***` specific to this module (if not fully covered by the import template).
 4. Add the `***functional specs***` assigned to this module, preserving their original order and exact wording.
@@ -114,9 +114,9 @@ Create the first module in the chain:
 ### 3c. Create subsequent modules
 
 For each subsequent module in the chain:
-1. Set `requires` to point to the previous module in the chain. Set `import` if it uses shared templates.
+1. Set `base` to the previous module in the chain. Set `imports` if it uses shared templates.
 2. Add `exported_concepts` for any concepts that later modules in the chain need.
-3. Add `***definitions***` for concepts local to this module. Do **not** redefine concepts already available via `requires` (exported) or `import`.
+3. Add `***definitions***` for concepts local to this module. Do **not** redefine concepts already available via `base` (exported) or `imports`.
 4. Add `***implementation reqs***` and `***test reqs***` specific to this module.
 5. Add the `***functional specs***` assigned to this module, preserving their original order and exact wording.
 6. Carry over any `***acceptance tests***`.
@@ -125,7 +125,7 @@ For each subsequent module in the chain:
 
 After all new modules are created:
 - If the original module is being fully replaced (all specs moved out), delete it or rename it to avoid confusion.
-- If the original module was required by other modules, update those modules to `require` the last module in the new chain instead — its accumulated code and previous functional specs cover the whole chain. Exported concepts are **not** transitive, though: if a downstream module references a concept now exported by an earlier module in the new chain, it must list that earlier module in its `requires` as well.
+- If other modules listed the original module under `base`, update them to list the last module in the new chain instead — its accumulated code and previous functional specs cover the whole chain. Exported concepts are **not** transitive, though: if a downstream module references a concept now exported by an earlier module in the new chain, it must list that earlier module under `base` as well.
 
 ## Phase 4 — Verify
 
@@ -140,12 +140,12 @@ Checklist:
 
 ### 4b. Chronological ordering check
 
-Verify that the chronological order of all functional specs — when read across the requires chain from base to leaf — matches the original ordering exactly. A spec must not appear before a spec it depends on.
+Verify that the chronological order of all functional specs — when read across the base chain from root to leaf — matches the original ordering exactly. A spec must not appear before a spec it depends on.
 
 ### 4c. Concept availability check
 
 For each module, verify:
-- [ ] Every `:Concept:` referenced in its specs is either defined locally, available via `import`, or available via `exported_concepts` from a module listed in `requires`
+- [ ] Every `:Concept:` referenced in its specs is either defined locally, available via `imports`, or available via `exported_concepts` from a module listed under `base`
 - [ ] `exported_concepts` includes every concept that downstream modules need
 - [ ] No concept name collisions between modules
 
@@ -154,7 +154,7 @@ For each module, verify:
 For each new module:
 - [ ] Has at least one functional spec and one implementation req
 - [ ] YAML frontmatter is correctly formatted
-- [ ] `requires` and `import` paths are correct
+- [ ] `base` and `imports` paths are correct
 - [ ] Module file is at the repository root (not in `template/`)
 - [ ] Specs are language-agnostic
 - [ ] All external interfaces remain explicit
@@ -169,7 +169,7 @@ Read each new `.plain` file in full and present the final structure to the user 
 Creating many tiny modules with 1–2 specs each adds overhead without clarity. Aim for modules with 3–10 functional specs each, grouped around a cohesive theme.
 
 ### Breaking chronological order
-Specs that set up foundational behavior (entry point, database init, core CRUD) must stay in the base module even if they touch concepts from multiple domains. Only split when specs are cleanly separable.
+Specs that set up foundational behavior (entry point, database init, core CRUD) must stay in the chain root even if they touch concepts from multiple domains. Only split when specs are cleanly separable.
 
 ### Forgetting exported_concepts
 If a concept defined in module A is referenced by a spec in module B (which requires A), the concept must be in A's `exported_concepts`. Missing exports cause rendering failures.
@@ -186,12 +186,12 @@ Acceptance tests are nested under their parent functional spec. When moving a sp
 - [ ] All original functional specs are present in exactly one new module — none lost
 - [ ] Spec text is identical to the original — no rewording
 - [ ] Acceptance tests moved with their parent specs
-- [ ] Chronological order preserved across the requires chain
+- [ ] Chronological order preserved across the base chain
 - [ ] Every referenced `:Concept:` is available in each module (local, import, or exported)
 - [ ] `exported_concepts` are correctly set on each module
 - [ ] No concept name collisions
 - [ ] Each module has at least one functional spec and one implementation req
-- [ ] `requires` chain is correctly ordered (base → leaf)
+- [ ] `base` chain is correctly ordered (root → leaf)
 - [ ] Original module removed or updated
 - [ ] Downstream modules (if any) updated to require the chain tip, plus any earlier chain modules whose exported concepts they reference
 - [ ] User approved the final result

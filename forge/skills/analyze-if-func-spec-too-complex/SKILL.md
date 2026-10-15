@@ -22,7 +22,7 @@ A drafted functional spec (not yet inserted into the file), plus the full contex
 
 ## Workflow
 
-1. **Read the full `.plain` file** (and any `requires`/`import` modules) to understand the current codebase context — what already exists and what the new spec builds on.
+1. **Read the full `.plain` file** (and any `base`/`imports` modules) to understand the current codebase context — what already exists and what the new spec builds on.
 2. **Read the drafted functional spec** carefully.
 3. **Run the complexity analysis** using the checklist below.
 4. **Output the verdict and nothing else** — either `ACCEPTABLE` or `TOO COMPLEX`. No reasoning, no LOC estimate, no breakdown.
@@ -34,7 +34,7 @@ Work through each indicator. A single "yes" does not automatically mean the spec
 ### 0. First-Spec Bootstrap Cost
 
 Is this the first functional spec in a new root module with no implementation baseline supplied by
-`requires`? If so, include the implicit cost of creating the project structure, package metadata,
+`base`? If so, include the implicit cost of creating the project structure, package metadata,
 framework configuration, entry point, initial source files, and unit-test infrastructure.
 
 The first spec must be substantially simpler than a later spec. It should expose one minimal,

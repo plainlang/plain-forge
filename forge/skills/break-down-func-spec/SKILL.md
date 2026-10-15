@@ -22,7 +22,7 @@ The functional spec to break down, plus the full `.plain` file it belongs to.
 
 ## Workflow
 
-1. **Read the full `.plain` file** — definitions, implementation reqs, and all functional specs (including `requires` modules) to understand context.
+1. **Read the full `.plain` file** — definitions, implementation reqs, and all functional specs (including `base` modules) to understand context.
 2. **Identify the spec to break down** — the one flagged as too complex or pointed to by the user.
 3. **Analyze why it is too complex** — use the indicators from `analyze-if-func-spec-too-complex`:
    - Multiple distinct behaviors bundled together?
@@ -39,7 +39,7 @@ The functional spec to break down, plus the full `.plain` file it belongs to.
 5. **Draft the replacement specs** — write the smaller specs in chronological order. The first replacement spec typically sets up the foundation, and subsequent ones layer behavior on top.
 6. **Verify functional completeness** — this is critical. The replacement specs taken together must cover **100% of the functionality** described in the original spec. Walk through every behavior, condition, and detail in the original and confirm it appears in exactly one of the replacement specs. Nothing may be lost, weakened, or left implicit. If any functionality from the original is missing, add it to the appropriate replacement spec or create an additional one.
 7. **Verify each replacement spec** — run `analyze-if-func-spec-too-complex` on each to confirm it fits within the limit.
-8. **Check for conflicts** — run `analyze-func-specs` **once** with the full set of replacement specs plus every existing spec in the file and its `requires` chain. The batched analyzer reports every conflicting pair (replacement × existing and replacement × replacement) in one call — do not loop over pairs. Resolve each reported pair with `resolve-spec-conflict`, then re-run `analyze-func-specs` over the touched set until the verdict is `COMPATIBLE`.
+8. **Check for conflicts** — run `analyze-func-specs` **once** with the full set of replacement specs plus every existing spec in the file and its `base` chain. The batched analyzer reports every conflicting pair (replacement × existing and replacement × replacement) in one call — do not loop over pairs. Resolve each reported pair with `resolve-spec-conflict`, then re-run `analyze-func-specs` over the touched set until the verdict is `COMPATIBLE`.
 9. **Replace in the file** — remove the original spec and insert the replacement specs in its position, preserving chronological order.
 10. **Read the file again** to confirm correct placement and syntax.
 
@@ -181,7 +181,7 @@ Define the component concept in `***definitions***` (via `add-concept`) before t
 - A :Report: is exported to PDF using :PdfRenderer:, embedding charts rendered from :Report: data.
 ```
 
-The extracted component spec and the rewritten original must together still cover 100% of the original functionality (step 6): the original must **reference** the component, never re-describe it. Keep the component's technology and architecture choices in `***implementation reqs***`, not in the functional spec. If the component is a self-contained subsystem or will be reused across modules, promote it to its own module with `create-requires-module` / `refactor-module` instead of a sibling spec.
+The extracted component spec and the rewritten original must together still cover 100% of the original functionality (step 6): the original must **reference** the component, never re-describe it. Keep the component's technology and architecture choices in `***implementation reqs***`, not in the functional spec. If the component is a self-contained subsystem or will be reused across modules, promote it to its own module with `create-base-module` / `refactor-module` instead of a sibling spec.
 
 ## Preserving Chronological Order
 

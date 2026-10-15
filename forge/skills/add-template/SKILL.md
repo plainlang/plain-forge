@@ -10,7 +10,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Templates use Liquid syntax (`{% include %}`) to reuse the same spec content across multiple `.plain` files. Each inclusion can pass different parameters, producing tailored output from a single source. This is distinct from `import` and `requires` — templates are about textual reuse with parameterization, not module dependencies.
+Templates use Liquid syntax (`{% include %}`) to reuse the same spec content across multiple `.plain` files. Each inclusion can pass different parameters, producing tailored output from a single source. This is distinct from `imports` and `base` — templates are about textual reuse with parameterization, not module dependencies.
 
 ## When to Use Templates
 

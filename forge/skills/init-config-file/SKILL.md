@@ -53,7 +53,7 @@ These keys reflect choices made in Phase 3 of `forge-plain`:
 | `conformance-tests-script` | path (string) | — | Include when the user opted into conformance testing in Phase 3. |
 | `prepare-environment-script` | path (string) | — | Include only when both (a) the user opted into a prepare-environment script and (b) `conformance-tests-script` is also set. Setting prepare without conformance is a hard `plain-healthcheck` failure. |
 | `test-script-timeout` | int (seconds) | `120` | Include only when the user explicitly raised/lowered the default. |
-| `template-dir` | path (string) | — | Include whenever the project has an `import` module or a custom template directory (e.g. `template/`). Required for projects with shared templates. `plain-parser check` reads it too, so `plain-healthcheck` finds the templates. |
+| `template-dir` | path (string) | — | Include whenever the project has an import module or a custom template directory (e.g. `template/`). Required for projects with shared templates. `plain-parser check` reads it too, so `plain-healthcheck` finds the templates. |
 | `build-folder` | string | `plain_modules` | Include only when the user picked a non-default folder name. Must differ from `build-dest`. The renderer writes `<build-folder>/<module>/code` (implementation + unit tests) and `<build-folder>/<module>/tests` (conformance tests, one folder per functional spec). |
 | `build-dest` | string | `dist` | **Always include with the value `dist`.** This skill pins the output destination explicitly so every project's `config.yaml` has the same, predictable target folder, visible in the file. Must differ from `build-folder`. |
 
@@ -73,7 +73,7 @@ Before emitting anything, state the planned split to the user (e.g. "I'll emit `
 
 ### Step 1 — Inventory
 
-1. List every `.plain` file in the repo and identify the top modules (modules not `requires`-ed by anything else) — same procedure as `plain-healthcheck` Step 1.
+1. List every `.plain` file in the repo and identify the top modules (modules not listed under `base` by any other module) — same procedure as `plain-healthcheck` Step 1.
 2. For each top module, determine which part it belongs to (single-stack → one part; multi-part → one part per top module).
 3. List every script under `test_scripts/` and group them by part (e.g. `*_python.sh` belongs to the backend part, `*_js.sh` belongs to the frontend part).
 4. Identify the template directory (typically `template/`) and any custom resource directories (typically `resources/`).

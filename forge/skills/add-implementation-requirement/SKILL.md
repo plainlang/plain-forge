@@ -75,7 +75,7 @@ Reference defined `:Concepts:` where they add clarity. Implementation reqs in no
 
 ## Encapsulation Warning
 
-`requires` modules only receive functional specs from their dependencies — not implementation reqs. If downstream modules need certain behavior to be visible, that behavior must be expressed in functional specs, not here.
+`base` modules only receive functional specs from their dependencies — not implementation reqs. If downstream modules need certain behavior to be visible, that behavior must be expressed in functional specs, not here.
 
 ## Validation Checklist
 

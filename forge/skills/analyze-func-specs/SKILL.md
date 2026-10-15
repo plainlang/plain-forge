@@ -16,7 +16,7 @@ description: >-
 A **set of two or more functional specs** to check against each other. Callers typically supply one of:
 
 - A whole `***functional specs***` section to self-check.
-- A new spec (or batch of new specs) **plus** the existing specs from the same file and any `requires` modules.
+- A new spec (or batch of new specs) **plus** the existing specs from the same file and any `base` modules.
 - An explicit list of spec snippets the user wants compared.
 
 Each spec must be identifiable. If the caller didn't label them, assign **stable identifiers** in order of appearance: `S1`, `S2`, `S3`, …. Use those identifiers in the output. If the caller provided their own IDs or quoted snippets, use those instead and keep them verbatim.
