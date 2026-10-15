@@ -69,9 +69,9 @@ Specs must be detailed enough that a developer can use the built software withou
 
 Functionality must be self-contained in the spec text. `base` modules only pass on functional specs, so do not rely on implementation reqs to convey behavior — they won't be visible in downstream modules.
 
-## Acceptance Tests
+## Test Scenarios
 
-If the functional spec needs verification, use the `add-acceptance-test` skill to add acceptance tests after inserting the spec.
+After inserting the spec, invoke `add-test-scenarios` for it. It writes `tests/<module>/<func-id>.plain` with at least one conformance scenario when conformance tests are enabled for the module.
 
 ## Validation Checklist
 

@@ -22,7 +22,7 @@ Run this skill **whenever anything in the ***plain project is finalized** and th
 - **End of `forge-plain`** (Phase 4) — before handing off the render target.
 - **End of `add-feature`** (Phase 3 final review) — before declaring the feature done.
 - **End of `debug-specs`** — after applying a fix, before telling the user to re-render.
-- **After finalizing any single edit** that changes the renderable surface — e.g. after `add-concept`, `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `add-test-requirement`, `add-acceptance-test`, `add-template`, `add-resource`, `resolve-spec-conflict`, `break-down-func-spec`, `consolidate-concepts`, `refactor-module`, `create-import-module`, `create-base-module`, or any of the `implement-*-testing-script` skills.
+- **After finalizing any single edit** that changes the renderable surface — e.g. after `add-concept`, `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `add-test-requirement`, `add-test-scenarios`, `add-template`, `add-resource`, `resolve-spec-conflict`, `break-down-func-spec`, `consolidate-concepts`, `refactor-module`, `create-import-module`, `create-base-module`, or any of the `implement-*-testing-script` skills.
 - **After hand-editing** a `.plain` file, a `config.yaml`, or anything under `test_scripts/`.
 - **On demand** — whenever the user asks whether the project is in a renderable state.
 

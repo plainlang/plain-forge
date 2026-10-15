@@ -36,7 +36,7 @@ The bullet, section, or `.plain` file to resolve.
 4. **Route each fact** by the *Section ownership* table in `module-structure.md`. Where a fact resists the table, apply the question it encodes: **would a caller of the finished software observe this?** Yes → `***functional specs***`. No, it is how the result is reached → `***implementation reqs***`. It says what a term means → `***definitions***`. It shapes `:ConformanceTests:` → `***test reqs***`.
 5. **Split a fact that carries both a mechanism and its consequence.** The consequence is observable and becomes the functional spec; the mechanism becomes the implementation req. *"Sends the same idempotency key on every retry, so a retried write creates at most one record"* is two facts, not one.
 6. **Give each moved fact a subject that exists in the built system.** A fact leaving a functional spec often loses its subject: name the component that owns the behavior, and add it to `***definitions***` if it is not defined yet. `:Implementation:` is the whole codebase — use it only for a fact that holds everywhere.
-7. **Author each fact into its owning section** with the right edit skill — `add-concept`, `add-implementation-requirement`, `add-test-requirement`, `add-acceptance-test`. **Never hand-author `***functional specs***`**: a fact moving *into* that section goes through `add-functional-spec`, which runs the complexity and conflict analyzers for you.
+7. **Author each fact into its owning section** with the right edit skill — `add-concept`, `add-implementation-requirement`, `add-test-requirement`, `add-test-scenarios`. **Never hand-author `***functional specs***`**: a fact moving *into* that section goes through `add-functional-spec`, which runs the complexity and conflict analyzers for you.
 8. **Remove each fact from where it no longer belongs.** If a bullet is left stating nothing observable, delete the bullet; do not leave a stub. Deleting the last bullet of a section deletes the section.
 9. **Verify nothing was lost and nothing was duplicated.** Walk every fact from the original text and confirm it appears in exactly one section. A fact that now reads as obvious in its new home is still a cut decision — make it deliberately, per `concise-specs.md`.
 10. **Run `plain-healthcheck`.** Moving facts changes the renderable surface; do not finish on a `FAIL`.
@@ -48,7 +48,7 @@ The bullet, section, or `.plain` file to resolve.
 - **`add-functional-spec` reports a conflict** → resolve it with `resolve-spec-conflict` **before** removing the fact from its old section, so no version of it is lost in between.
 - **A fact appears to belong to two sections** → it is two facts; split it per step 5. If it still resists, it is a mechanism whose consequence has not been written down — write the consequence, and the split follows.
 - **The owning section does not exist in the file** → create it in canonical order. An import module carries no `***functional specs***` at all (see `import-modules.md`), so an observable fact found there belongs on the root module that imports it.
-- **The move empties a functional spec** → delete the spec rather than leaving a placeholder, and check whether any acceptance test nested under it must move or go with it.
+- **The move empties a functional spec** → delete the spec rather than leaving a placeholder, and move or delete its test plain file with `add-test-scenarios`.
 
 ## Worked examples
 

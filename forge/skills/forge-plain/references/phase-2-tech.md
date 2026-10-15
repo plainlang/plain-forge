@@ -9,7 +9,7 @@ Write each requirement into `***implementation reqs***`:
 - Shared, stack-wide reqs (language, framework, architecture, coding standards) go on the template module if one exists.
 - Module-specific reqs (e.g. a data-storage choice or an external integration only one module uses) go on the module that needs them.
 
-Do **not** add `***test reqs***` or `***acceptance tests***` in this phase — they belong to later phases.
+Do **not** add `***test reqs***` or test plain files in this phase — they belong to later phases.
 
 ## Topics (in order)
 

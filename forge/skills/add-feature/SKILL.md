@@ -4,7 +4,7 @@ description: >-
   End-to-end feature addition on an existing ***plain project: runs a short feature-intent
   interview, then takes the confirmed request and, one question at a time, incrementally writes
   ***plain specs (concepts, implementation reqs, functional specs, test reqs,
-  acceptance tests) to disk — asking, authoring, and reviewing per
+  test scenarios) to disk — asking, authoring, and reviewing per
   functionality — then closes with a plain-healthcheck gate. Use when the user
   wants to add a feature to an existing project. Not for bootstrapping a new
   project from scratch (use forge-plain) or for editing generated code (the
@@ -78,14 +78,14 @@ Route each answer to the right edit skill — never hand-author a `***plain` sec
 - **New concept** → `add-concept` (into `***definitions***`; define before any reference).
 - **New functional spec** → `add-functional-spec`. It runs `analyze-if-func-spec-too-complex` and `analyze-func-specs` for you — let it. **Never hand-author functional specs.** If it reports the spec is too complex, ask the user a follow-up question to split it (the next loop iteration) — do not break it down alone.
 - **New implementation req** → `add-implementation-requirement`. When the answer states HOW the functionality is built — a retry or error-handling policy, a data format, a library, an architectural pattern — and it is not already in the file or its imports.
-- **New acceptance test** → `add-acceptance-test`, under the relevant functional spec. Only when the *Conformance gate* is satisfied and the answer describes a concrete verification.
+- **New test scenario** → `add-test-scenarios`, on the functionality's test plain file. Only when the *Conformance gate* is satisfied and the answer describes a concrete verification.
 - **New test req** → `add-test-requirement`. Only when conformance testing is configured and the answer changes how conformance tests are run.
 
 If the answer contradicts or refines an earlier snippet, fix that snippet in place now (per *Fix contradictions in place* above).
 
 ### 2c. Handle conflicts just-in-time
 
-If `add-functional-spec` (via its analyzers) reports a conflict, or the snippet just written would **break** (contradict, invalidate) or **augment** (change the meaning of, add behavior to) an existing concept / functional spec / implementation req / test req / acceptance test, the **next question** must be about that conflict. Show the exact existing snippet in the question and offer:
+If `add-functional-spec` (via its analyzers) reports a conflict, or the snippet just written would **break** (contradict, invalidate) or **augment** (change the meaning of, add behavior to) an existing concept / functional spec / implementation req / test req / test scenario, the **next question** must be about that conflict. Show the exact existing snippet in the question and offer:
 
 - **(a) keep** the existing spec — back out or narrow what was just written,
 - **(b) augment** the existing spec — embed the proposed new wording in the question,
@@ -99,7 +99,7 @@ Ask the user whether the feature is fully covered. Yes → Phase 3. No → retur
 
 ### Conformance gate
 
-Author `***test reqs***` and `***acceptance tests***` **only** when the project has a `config.yaml` with a valid `conformance-tests-script` entry pointing at an existing script in `test_scripts/`. Check the `config.yaml` that covers this module (multi-part projects may have several) and confirm the referenced script exists. If conformance testing is not configured, skip those two authoring paths entirely — concepts, functional specs, and implementation reqs are still authored normally.
+Author `***test reqs***` and test plain files **only** when the project has a `config.yaml` with a valid `conformance-tests-script` entry pointing at an existing script in `test_scripts/`. Check the `config.yaml` that covers this module (multi-part projects may have several) and confirm the referenced script exists. If conformance testing is not configured, skip those two authoring paths entirely — concepts, functional specs, and implementation reqs are still authored normally.
 
 ## Phase 3 — Final review
 
@@ -111,7 +111,7 @@ Most checks already happened in the loop; this is a slim consistency pass whose 
    - Chronological ordering is correct end-to-end — no spec depends on something that comes after it.
    - Functional specs are language-agnostic.
    - Every external interface is explicit (endpoint paths, methods, CLI args, formats).
-   - Acceptance tests (if any) are consistent with their parent specs.
+   - Every new or changed functionality has a test plain file whose scenarios follow from its spec, with at least one conformance scenario when conformance tests are enabled.
 3. Present the final diff for the modified file(s) and get the user's approval.
 4. If the user requests changes, drop **straight back into the one-question loop** — one question, one write, one fix at a time. Do not restart the loop from scratch.
 5. **Run `plain-healthcheck`** — the last check this skill runs. It validates every `config.yaml`, runs `plain-parser check` on every top module, and checks every module against the rules, so a feature is never finished while the project would fail to render. If it returns `FAIL`, work through its numbered list (fixing only `.plain` files / `config.yaml` / scripts — never generated code) by dropping back into the loop, then re-run. Repeat until `PASS`. Only then tell the user the feature is ready to render as `<module>.plain`.
