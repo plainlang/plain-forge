@@ -33,11 +33,10 @@ A test plain file holds the test scenarios of one functionality. The renderer ge
 - Scenario text follows `concise-specs.md`: no narration, no rationale, no step a reader would assume
 
 ## The shape plain-forge writes
-- plain-forge writes every scenario as `given:` / `when:` / `then:` lists; hand-written scenarios may use any shape
-- `given:` the state before the action (running app, existing data, configuration), one `- ` item per fact
-- `when:` the one action under test
-- `then:` the observable results, one `- ` item per result
-- Omit `given:` when there is no setup; never omit `when:` or `then:`
+- plain-forge writes every scenario in plain English, with the same shape as a functionality: one statement line, then `- ` bullets indented by two spaces when the line is not enough; hand-written scenarios may use any shape
+- The statement line is one sentence that names the action and the expected result (`Adding a :Task: named "Go" to an empty :TaskList: is rejected.`)
+- The bullets list, in order, the state before the action, the action, and each observable result that the statement line does not already carry, one fact per bullet
+- `given:` / `when:` / `then:` lists or Gherkin steps are allowed when the user asks for them; keep one shape per project
 - Values that matter to the check are concrete (`named "Buy milk"`, `exits with status 0`), never descriptive (`a valid name`)
 
 ## Conformance scenarios
@@ -75,29 +74,16 @@ func_id: add-task
 ***conformance tests***
 
 # add-valid-task
-given:
-  - :App: is running with an empty :TaskList:
-when:
-  - :User: adds a :Task: named "Buy milk"
-then:
-  - :TaskList: shows one :Task: named "Buy milk"
+Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task: named "Buy milk".
 
 # reject-short-name
-given:
-  - :App: is running with an empty :TaskList:
-when:
-  - :User: adds a :Task: named "Go"
-then:
-  - :App: shows the error "Name must be at least 3 characters"
-  - :TaskList: stays empty
+Adding a :Task: named "Go" to an empty :TaskList: is rejected.
+  - :App: shows the error "Name must be at least 3 characters".
+  - :TaskList: stays empty.
 
 ***acceptance tests***
 
 # add-then-complete
-given:
-  - :App: is running with an empty :TaskList:
-when:
-  - :User: adds a :Task: named "Buy milk" and marks it completed
-then:
-  - :TaskList: shows one :Task: named "Buy milk", marked completed
+A :User: adds a :Task: named "Buy milk" to an empty :TaskList: and marks it completed.
+  - :TaskList: shows one :Task: named "Buy milk", marked completed.
 ```

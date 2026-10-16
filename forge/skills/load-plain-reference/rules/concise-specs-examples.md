@@ -454,13 +454,9 @@ GOOD:
 ***acceptance tests***
 
 # create-project
-given:
-  - a :User: is signed in with no :Project: items
-when:
-  - the :User: creates a :Project: named `Apollo`
-then:
-  - :ProjectList: contains exactly one :Project:, named `Apollo`
+A signed-in :User: with no :Project: items creates a :Project: named `Apollo` and finds it in :ProjectList:.
+  - :ProjectList: contains exactly one :Project:, named `Apollo`.
 ```
 
-One narrated paragraph becomes an ordered set of checkable steps, and "everything worked as
+One narrated paragraph becomes one checkable sentence, and "everything worked as
 expected" becomes an assertion.

@@ -3,7 +3,7 @@ name: add-test-scenarios
 description: >-
   Write or update the test plain file of one functionality: create
   tests/<module>/<func-id>.plain, add the conformance scenarios that cover the
-  functional spec in given/when/then form, and add acceptance scenarios for
+  functional spec in plain English, and add acceptance scenarios for
   end-to-end workflows. Use right after a functional spec is added or changed,
   when a functionality has no conformance scenario while conformance tests are
   enabled, or when the user asks for a test scenario. This skill replaces the
@@ -17,7 +17,7 @@ Always use the skill `load-plain-reference` to retrieve the ***plain syntax rule
 
 ## What this skill writes
 
-One test plain file per functionality, at `tests/<module>/<func-id>.plain`, with the frontmatter keys `module:` and `func_id:` and the two sections `***conformance tests***` and `***acceptance tests***`. Every scenario is a `# <scenario-id>` heading followed by `given:` / `when:` / `then:` lists. The renderer generates one test per scenario and nothing else, so the scenarios in this file are the only tests the functionality gets.
+One test plain file per functionality, at `tests/<module>/<func-id>.plain`, with the frontmatter keys `module:` and `func_id:` and the two sections `***conformance tests***` and `***acceptance tests***`. Every scenario is a `# <scenario-id>` heading, one plain-English statement line, and `- ` bullets indented by two spaces when the line is not enough. The renderer generates one test per scenario and nothing else, so the scenarios in this file are the only tests the functionality gets.
 
 ## When to Use
 
@@ -36,10 +36,10 @@ Conformance tests are enabled for a module when the `config.yaml` that governs i
 2. **Read the context.** Read the functional spec (heading and body), the `***definitions***` the module sees (its own, its `imports`, and the `exported_concepts` of its `base` modules), the `***test reqs***`, and the functional specs that come before this one, because a scenario may rely on behavior they established.
 3. **Locate or create the test plain file.** Look for `tests/<module>/<func-id>.plain`. Also scan the frontmatter of every other `.plain` file under `tests/` for the same `(module, func_id)` pair; read those files too, so scenario-ids stay unique across the merged set. Create the file with the frontmatter and both sections if it does not exist.
 4. **List the outcomes the spec states.** Walk the statement line and every clarification bullet. Write down the main path and each boundary, validation, and error case the spec names. Do not add an outcome the spec does not state: a scenario may not extend the spec. If a needed outcome is missing from the spec, ask the user one question and route the answer into the functional spec through `add-functional-spec` (or an inline edit of the clarification bullets) before writing the scenario.
-5. **Draft one conformance scenario per outcome.** Give each a scenario-id per `semantic-ids.md` (short slug, unique for this functionality). Write the body as:
-   - `given:` the state before the action, one `- ` item per fact; omit when there is no setup.
-   - `when:` the one action under test.
-   - `then:` every observable result, one `- ` item per result, with concrete values.
+5. **Draft one conformance scenario per outcome.** Give each a scenario-id per `semantic-ids.md` (short slug, unique for this functionality). Write the body in plain English:
+   - One statement line: a sentence that names the action and the expected result, with concrete values.
+   - When that line is not enough, `- ` bullets indented by two spaces, in order: the state before the action, the one action under test, and each observable result, one fact per bullet.
+   - `given:` / `when:` / `then:` lists are allowed when the user asks for them; otherwise plain English, and one shape per project.
    Exercise only this functionality, through the interface the spec names, as a black box.
 6. **Draft acceptance scenarios only when they add a workflow.** An acceptance scenario spans this functionality and functionalities rendered before it. Write one only when the user asks for it or when the functionality completes a user-visible workflow that no single conformance scenario shows. Otherwise leave `***acceptance tests***` empty.
 7. **Run the review pass** from `concise-specs.md` over every scenario: no narration, no rationale, no step a reader would assume, concrete values, plain words.
@@ -75,21 +75,12 @@ func_id: add-task
 ***conformance tests***
 
 # add-valid-task
-given:
-  - :App: is running with an empty :TaskList:
-when:
-  - :User: adds a :Task: named "Buy milk"
-then:
-  - :TaskList: shows one :Task: named "Buy milk"
+Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task: named "Buy milk".
 
 # reject-short-name
-given:
-  - :App: is running with an empty :TaskList:
-when:
-  - :User: adds a :Task: named "Go"
-then:
-  - :App: shows the error "Name must be at least 3 characters"
-  - :TaskList: stays empty
+Adding a :Task: named "Go" to an empty :TaskList: is rejected.
+  - :App: shows the error "Name must be at least 3 characters".
+  - :TaskList: stays empty.
 
 ***acceptance tests***
 ```
@@ -100,7 +91,7 @@ then:
 - [ ] `***conformance tests***` comes first, `***acceptance tests***` second; both sections exist
 - [ ] At least one conformance scenario when conformance tests are enabled for the module
 - [ ] Every outcome the functional spec states has one conformance scenario; no scenario states an outcome the spec does not
-- [ ] Every scenario is a `# <scenario-id>` heading with `given:` / `when:` / `then:` lists and concrete values
+- [ ] Every scenario is a `# <scenario-id>` heading, a plain-English statement line, indented bullets when needed, and concrete values
 - [ ] Scenario-ids follow `semantic-ids.md` and are unique across every test plain file bound to this functionality
 - [ ] Scenarios are black box and language-agnostic
 - [ ] Trimmed per `concise-specs.md`

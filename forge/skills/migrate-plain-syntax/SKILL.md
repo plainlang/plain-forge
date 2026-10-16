@@ -63,7 +63,7 @@ For each root module, walk the `***functional specs***` section top to bottom:
 For every functionality that had nested acceptance tests, create `tests/<module>/<func-id>.plain` with the frontmatter keys `module:` (the core spec's file name without `.plain`) and `func_id:`, an empty `***conformance tests***` section, and an `***acceptance tests***` section holding one scenario per old acceptance test:
 
 - A `# <scenario-id>` heading per test, with a slug derived from the test text, unique in the file.
-- The old test text as the scenario body, verbatim. When the text already separates setup, action, and result, write it as `given:` / `when:` / `then:` lists; when a faithful split is not obvious, keep the prose. Free text is valid scenario text.
+- The old test text as the scenario body, verbatim: the bullet text becomes the statement line and its nested sub-bullets keep their indentation. Free text is valid scenario text.
 
 Show each created file to the user as a snippet and apply their edits.
 
@@ -147,12 +147,8 @@ func_id: add-task
 ***conformance tests***
 
 # reject-short-name
-given:
-  - :App: is running with an empty :TaskList:
-when:
-  - :User: adds a :Task: named "Go"
-then:
-  - :TaskList: stays empty
+Adding a :Task: named "Go" to an empty :TaskList: is rejected.
+  - :TaskList: stays empty.
 
 ***acceptance tests***
 
