@@ -157,21 +157,21 @@ BAD — four specs, one operation:
 
 # fetch-requires-api-key
 A call to `fetch` fails before any request to :ProviderApi: is sent when `PROVIDER_API_KEY` is unset or empty.
-- The failure names `PROVIDER_API_KEY`.
+  - The failure names `PROVIDER_API_KEY`.
 
 # fetch-reads-catalogue
 A call to `fetch` reads the field catalogue from :ProviderApi: once, before requesting any :Record:.
-- The catalogue yields the name of every field the account defines.
-- A call to `fetch` whose catalogue read fails requests no :Record: items.
+  - The catalogue yields the name of every field the account defines.
+  - A call to `fetch` whose catalogue read fails requests no :Record: items.
 
 # fetch-requests-records
 A request for :Record: items from :ProviderApi: names every field in the catalogue and asks for at most 100 records.
-- Archived :Record: items are not requested.
+  - Archived :Record: items are not requested.
 
 # fetch-pages-records
 A call to `fetch` requests pages until :ProviderApi: returns a response carrying no next-page cursor.
-- Each page after the first is requested with the cursor from the previous response.
-- The :Record: items of every page are carried forward together.
+  - Each page after the first is requested with the cursor from the previous response.
+  - The :Record: items of every page are carried forward together.
 ```
 
 GOOD — one spec, with the result stated first:
@@ -189,9 +189,9 @@ GOOD — one spec, with the result stated first:
 
 # fetch-records
 :RecordSource: `fetch()` returns every non-archived :Record: with every field :ProviderApi: defines, paging under [resources/pagination.yaml](resources/pagination.yaml).
-- :RecordSource: reads the field catalogue once per `fetch()`.
-- `fetch()` fails before any request when `PROVIDER_API_KEY` is unset or empty, naming it.
-- A failed catalogue read fails `fetch()` before any :Record: is requested.
+  - :RecordSource: reads the field catalogue once per `fetch()`.
+  - `fetch()` fails before any request when `PROVIDER_API_KEY` is unset or empty, naming it.
+  - A failed catalogue read fails `fetch()` before any :Record: is requested.
 ```
 
 Merging is not in tension with the complexity limit. Split a spec when it implies more than 200 changed lines of code (`analyze-if-func-spec-too-complex`, then `break-down-func-spec`); merge when several specs implement one operation that fits inside that budget. Fragment count is not a measure of size.

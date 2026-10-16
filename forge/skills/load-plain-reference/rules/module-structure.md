@@ -112,6 +112,6 @@ The :TaskList: is displayed.
 ```
 
 ## Old syntax
-- A core spec is in the old syntax when any of these holds: a top-level `- ` bullet in `***functional specs***`, a `***acceptance tests***` section anywhere in the file, or a `requires:` or `import:` key in the frontmatter
+- A core spec is in the old syntax when any of these holds: a flush-left `- ` bullet in `***functional specs***`, a `***acceptance tests***` section anywhere in the file, or a `requires:` or `import:` key in the frontmatter
 - The old syntax is not supported: the renderer rejects it, and no skill edits a file written in it
 - When a skill meets the old syntax, it stops, tells the user which file and which marker it found, and points to the `migrate-plain-syntax` skill, which converts the whole project in one pass

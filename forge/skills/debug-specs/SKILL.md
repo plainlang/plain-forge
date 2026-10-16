@@ -11,7 +11,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a top-level `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 ## When to Use
 
@@ -100,7 +100,7 @@ Apply the fix based on the diagnosed root cause. Use the appropriate skill:
 
 | Root Cause | Skill to Use |
 |------------|-------------|
-| Ambiguous spec | Edit the spec inline — add `- ` bullets under the statement line or reword for clarity |
+| Ambiguous spec | Edit the spec inline — add indented `- ` bullets under the statement line or reword for clarity |
 | Missing spec | `add-functional-spec` |
 | Conflicting specs | `resolve-spec-conflict` |
 | Incorrect spec | Edit the spec inline — rewrite the incorrect part |

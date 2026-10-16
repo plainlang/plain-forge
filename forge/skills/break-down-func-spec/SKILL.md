@@ -10,7 +10,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a top-level `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 ## When to Use
 
@@ -147,8 +147,8 @@ A standard :MealPlan: is generated using round-robin :Recipe: assignment.
 
 # generate-restrictive-plan
 A restrictive :MealPlan: is generated.
-- Excluded :Ingredient: items are filtered out first.
-- Round-robin :Recipe: assignment is then applied.
+  - Excluded :Ingredient: items are filtered out first.
+  - Round-robin :Recipe: assignment is then applied.
 
 # assign-custom-plan
 A :User: can manually assign :Recipe: items to :Slot: items for a custom :MealPlan:.
@@ -200,8 +200,8 @@ A :Report: is exported to PDF, laying out multi-page tables with repeating heade
 
 # pdf-renderer-tables
 :PdfRenderer: lays out multi-page tables from structured content.
-- Table headers repeat at the top of each page.
-- Each page shows its page number.
+  - Table headers repeat at the top of each page.
+  - Each page shows its page number.
 
 # export-report-pdf
 A :Report: is exported to PDF using :PdfRenderer:, embedding charts rendered from :Report: data.

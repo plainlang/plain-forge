@@ -9,7 +9,7 @@ When writing or editing a `***functional specs***` section in a `.plain` file, a
 ## Shape
 - Each functional spec, called a functionality, is a `# <func-id>` heading followed by its body; the func-id follows `semantic-ids.md`
 - The first body line is the statement of the behavior, written as prose without a leading `- `
-- Clarifications follow the statement as `- ` bullets, one fact per bullet (see `bullet-continuation.md`)
+- Clarifications follow the statement as `- ` bullets indented by two spaces, one fact per bullet; a deeper level adds two more spaces (see `bullet-continuation.md`)
 - No body line starts with `# ` (that starts the next functionality) or with `***`
 - One blank line separates functionalities
 - The test scenarios of a functionality live in its test plain file, never in this section (see `test-plain-files.md`)
@@ -94,7 +94,7 @@ A :User: can add a :Task:. Only valid :Task: items are added.
 
 ## Disambiguation
 - Each functional spec must be unambiguous — the renderer should have only one reasonable interpretation
-- If the statement line is not enough to fully disambiguate the behavior, add **`- ` bullets** under it to add detail
+- If the statement line is not enough to fully disambiguate the behavior, add **indented `- ` bullets** under it to add detail
 - The bullets clarify the statement — they do not introduce separate functionality
 - Even with the bullets, the spec must still imply ≤ 200 lines of code
 
@@ -134,7 +134,7 @@ A :User: can add a :Task:. Only valid :Task: items are added.
 
 # send-message
 A :User: can send a :Message: to a :Conversation:.
-- A :Message: must have non-empty content.
-- The :Message: is appended to the end of the :Conversation:.
-- All :Participant: members of the :Conversation: can see the new :Message:.
+  - A :Message: must have non-empty content.
+  - The :Message: is appended to the end of the :Conversation:.
+  - All :Participant: members of the :Conversation: can see the new :Message:.
 ```

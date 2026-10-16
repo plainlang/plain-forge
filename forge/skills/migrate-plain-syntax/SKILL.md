@@ -18,7 +18,7 @@ Always use the skill `load-plain-reference` to retrieve the ***plain syntax rule
 
 | Old syntax | Current syntax |
 |---|---|
-| A functional spec is a top-level `- ` bullet with nested `  - ` sub-bullets | A functional spec is a `# <func-id>` heading, a statement line, and `- ` clarification bullets |
+| A functional spec is a flush-left `- ` bullet with nested `  - ` sub-bullets | A functional spec is a `# <func-id>` heading, a statement line, and indented `- ` clarification bullets |
 | `***acceptance tests***` nested under a functional spec | `***acceptance tests***` section of the functionality's test plain file `tests/<module>/<func-id>.plain` |
 | The renderer invents conformance tests | `***conformance tests***` section of the test plain file holds at least one scenario per functionality |
 | `requires:` in the frontmatter | `base:` |
@@ -37,7 +37,7 @@ There is no backward compatibility: a project in the old syntax does not render,
 ### 1. Inventory and confirm
 
 1. List every `.plain` file in the project. Follow the `requires` / `base` and `import` / `imports` chains from each root module so no module is missed.
-2. For each file, record which old-syntax markers it holds: top-level `- ` bullets in `***functional specs***`, nested `***acceptance tests***` sections, `requires:`, `import:`.
+2. For each file, record which old-syntax markers it holds: flush-left `- ` bullets in `***functional specs***`, nested `***acceptance tests***` sections, `requires:`, `import:`.
 3. Read every `config.yaml` to learn whether conformance tests are enabled for each module (a `conformance-tests-script` entry).
 4. Show the user the inventory (files, markers, conformance on or off per module) and get explicit confirmation before writing anything.
 
@@ -49,11 +49,11 @@ In every frontmatter, rename the key `requires:` to `base:` and the key `import:
 
 For each root module, walk the `***functional specs***` section top to bottom:
 
-1. For every top-level `- ` bullet, propose a func-id per `semantic-ids.md`: a short slug that names the behavior (`add-task`, `export-csv`), unique in the module. Show the module's full list of proposed ids to the user in one `AskUserQuestion` and apply their edits.
+1. For every flush-left `- ` bullet, propose a func-id per `semantic-ids.md`: a short slug that names the behavior (`add-task`, `export-csv`), unique in the module. Show the module's full list of proposed ids to the user in one `AskUserQuestion` and apply their edits.
 2. Rewrite each functionality in place:
    - The `# <func-id>` heading on its own line.
    - The bullet text, without the leading `- `, as the statement line. A bare continuation line of the bullet is de-indented and kept as part of the statement.
-   - Each nested `  - ` sub-bullet de-indented by two spaces, so it becomes a `- ` clarification; deeper nesting is de-indented the same way.
+   - Each nested `  - ` sub-bullet kept as it is: it is already a clarification indented by two spaces, and deeper nesting keeps its indentation.
    - One blank line between functionalities.
 3. Keep comment lines (`>`) and Liquid tags where they are.
 4. Cut each nested `***acceptance tests***` block out of the core spec and keep its bullets for step 4, together with the func-id they belonged to.
@@ -77,12 +77,12 @@ When conformance tests are not enabled for a module, skip this step and say so; 
 
 ### 6. Verify
 
-1. No `***functional specs***` section holds a top-level `- ` bullet; every functionality starts with a `# <func-id>` heading.
+1. No `***functional specs***` section holds a flush-left `- ` bullet; every functionality starts with a `# <func-id>` heading.
 2. No core spec holds an `***acceptance tests***` section.
 3. No frontmatter holds `requires:` or `import:`.
 4. Func-ids are unique per module; scenario-ids are unique per functionality.
 5. Every test plain file binds to an existing functionality; when conformance tests are enabled, every functionality has at least one conformance scenario.
-6. The number of functionalities per module equals the number of top-level bullets before the migration, and every old acceptance test appears once as an acceptance scenario.
+6. The number of functionalities per module equals the number of flush-left bullets before the migration, and every old acceptance test appears once as an acceptance scenario.
 7. Run `plain-healthcheck`. Until the plain-parser release that parses the current syntax is installed, its parser step reports that it is suspended; the other checks still run.
 
 ### 7. Report
@@ -133,7 +133,7 @@ imports:
 
 # add-task
 A :User: can add a :Task:. Only valid :Task: items are added.
-- The name must be at least 3 characters long.
+  - The name must be at least 3 characters long.
 ```
 
 After, `tests/<module>/add-task.plain`, with the conformance scenario drafted by `add-test-scenarios`:
