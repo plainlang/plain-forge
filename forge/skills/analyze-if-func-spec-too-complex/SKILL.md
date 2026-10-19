@@ -12,7 +12,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 ## Why This Matters
 
@@ -24,7 +24,7 @@ A drafted functional spec (not yet inserted into the file), plus the full contex
 
 ## Workflow
 
-1. **Read the full `.plain` file** (and any `base`/`imports` modules) to understand the current codebase context — what already exists and what the new spec builds on.
+1. **Read the full `.plain` file** (and any `requires`/`import` modules) to understand the current codebase context — what already exists and what the new spec builds on.
 2. **Read the drafted functional spec** carefully.
 3. **Run the complexity analysis** using the checklist below.
 4. **Output the verdict and nothing else** — either `ACCEPTABLE` or `TOO COMPLEX`. No reasoning, no LOC estimate, no breakdown.
@@ -36,7 +36,7 @@ Work through each indicator. A single "yes" does not automatically mean the spec
 ### 0. First-Spec Bootstrap Cost
 
 Is this the first functional spec in a new root module with no implementation baseline supplied by
-`base`? If so, include the implicit cost of creating the project structure, package metadata,
+`requires`? If so, include the implicit cost of creating the project structure, package metadata,
 framework configuration, entry point, initial source files, and unit-test infrastructure.
 
 The first spec must be substantially simpler than a later spec. It should expose one minimal,

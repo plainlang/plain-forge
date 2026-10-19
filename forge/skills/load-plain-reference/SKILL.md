@@ -44,14 +44,14 @@ All paths are relative to this `SKILL.md`.
 | Test plain files or scenarios | `rules/test-plain-files.md`, `rules/semantic-ids.md` |
 | Implementation requirements or unit tests | `rules/impl-reqs.md` |
 | Test requirements or conformance tests | `rules/test-reqs.md` |
-| `imports` and import modules | `rules/import-modules.md` |
-| `base` and base modules | `rules/base-modules.md` |
+| `import` modules | `rules/import-modules.md` |
+| `requires` modules | `rules/requires-modules.md` |
 | `required_concepts` | `rules/required-concepts.md` |
 | `exported_concepts` | `rules/exported-concepts.md` |
 | Linked files or `resources/` | `rules/linked-resources.md` |
 | Any `.plain` text or example | `rules/glossary.md`, `rules/bullet-continuation.md`, `rules/concise-specs.md` |
 | Drafting or trimming spec wording, or reviewing a spec for verbosity | `rules/concise-specs-examples.md` |
-| A file that may be in the old syntax (`- ` functional specs, nested `***acceptance tests***`, `requires:` / `import:`) | `rules/module-structure.md` (*Old syntax*), then the `migrate-plain-syntax` skill |
+| A file that may be in the old syntax (`- ` functional specs, nested `***acceptance tests***`) | `rules/module-structure.md` (*Old syntax*), then the `migrate-plain-syntax` skill |
 
 For a whole-file review or a task spanning several sections, load the union of the applicable rule
 files. Do not load every rule by default.

@@ -11,7 +11,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 Linked resources are external files referenced from within a `.plain` spec using markdown link syntax. The file contents are passed to the renderer alongside the spec, providing additional context for code generation.
 
@@ -44,7 +44,7 @@ An API conforming to the [API specification](resources/api_spec.yaml) is exposed
 ## Path Rules
 
 - Paths are resolved **against the directory that contains the `.plain` file passed to the renderer**, not the directory where the renderer is run.
-- This includes links inside imported and base modules — they resolve against that same directory, not against the directory the imported module itself lives in.
+- This includes links inside imported and required modules — they resolve against that same directory, not against the directory the imported module itself lives in.
 - A path that does not resolve there is then looked up in the `template-dir` directory (if configured), and last in the renderer's built-in template library.
 - Relative paths may traverse into parent directories — `[resource](../../resources/resource.md)` is valid — as long as they resolve to a real text file on disk.
 - **No external URLs** — only local file references.

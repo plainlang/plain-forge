@@ -47,7 +47,7 @@ This keeps the integration self-contained in one directory the user can `cd` int
 
 Run host discovery **before** the first Phase 1 question. Treat the results as ground truth for everything that follows.
 
-1. **Locate the host's `.plain` setup (if any).** Look for an existing `.plain` file or directory, a `config.yaml` declaring `plain_source_dir` / `plain_modules_dir` / `resources_dir` / `test_scripts_dir`, a `plain_modules/`, a `resources/`, and a `test_scripts/`. If the host already has a `.plain` setup, **adopt it verbatim**: the new integration module lands inside the existing `plain_source_dir` and lists the relevant base module under `base` (use `create-base-module`). Do not create a parallel layout.
+1. **Locate the host's `.plain` setup (if any).** Look for an existing `.plain` file or directory, a `config.yaml` declaring `plain_source_dir` / `plain_modules_dir` / `resources_dir` / `test_scripts_dir`, a `plain_modules/`, a `resources/`, and a `test_scripts/`. If the host already has a `.plain` setup, **adopt it verbatim**: the new integration module lands inside the existing `plain_source_dir` and `requires` the relevant base module (use `create-requires-module`). Do not create a parallel layout.
 2. **Read every existing integration in the host.** For each one, extract: intent and scope, host base class / interface / protocol the integration subclasses or implements, package path and naming convention, configuration pattern (env vars, settings module, secret manager), error / exception hierarchy, logging / metrics / tracing conventions, testing pattern (live vs recorded vs mocked, fixture location, conformance-test layout). The new integration must follow the same patterns unless the user explicitly opts out.
 3. **Capture findings in the `host-codebase` concept.** Cite the existing integration by file path so the reasoning is auditable. The concept holds, as facts:
    - Host codebase root (absolute or project-relative path)
@@ -159,7 +159,7 @@ Before declaring an embedded integration done, in addition to the shared checkli
 
 ## Anti-patterns specific to embedded integrations
 
-- **Choosing a different language, framework, or dependency manager than the host.** The host stack is inherited; cross-stack `base` chains are forbidden by [`base-modules.md`](base-modules.md)
+- **Choosing a different language, framework, or dependency manager than the host.** The host stack is inherited; cross-stack `requires` chains are forbidden by [`requires-modules.md`](requires-modules.md)
 - **Redefining a host class under `plain_modules/`.** Reference the host symbol by FQN; let the renderer import it
 - **Inlining a host base class body into the contract spec.** Reference the host file as a linked resource **at its original host-relative path** — do not inline its contents and do not copy it into `resources/`
 - **Copying host source files into `resources/host/` (or anywhere under `resources/`).** That creates a second source of truth that silently drifts from the host. Link the host file in place; the integration `.plain` module already lives inside the host codebase, so the path resolves naturally

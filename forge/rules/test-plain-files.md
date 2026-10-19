@@ -25,7 +25,7 @@ A test plain file holds the test scenarios of one functionality. The renderer ge
 ## Scenarios
 - A scenario is a `# <scenario-id>` heading (see `semantic-ids.md`) followed by free text that says what is done and what result is expected
 - A scenario body line may be prose, a `- ` bullet, or any other text, as long as it does not start with `# ` (that starts a new scenario) or with `***`
-- A scenario may reference every concept visible to its module: its own definitions, its `imports`, and the `exported_concepts` of its `base` modules. It defines no concepts
+- A scenario may reference every concept visible to its module: its own definitions, its `import` modules, and the `exported_concepts` of its `requires` modules. It defines no concepts
 - Scenarios are language-agnostic: they describe behavior through the observable interface (CLI, HTTP, files, UI) and never name a function, class, or file of the implementation
 - A scenario tests the functionality as a black box; the generated test never imports the implementation's internals
 - A scenario is a direct consequence of the functional spec: it does not contradict, narrow, or extend the behavior the spec states

@@ -41,7 +41,7 @@ When writing or editing an `***implementation reqs***` section in a `.plain` fil
 - Unit testing run scripts should be linked here as a linked resource
 
 ## Encapsulation warning
-- `base` modules only pass on functional specs and `exported_concepts` — never implementation reqs
+- `requires` modules only pass on functional specs and `exported_concepts` — never implementation reqs
 - If downstream modules need certain behavior to be visible, express it in functional specs, not here
 
 ## Conciseness

@@ -72,13 +72,13 @@ A :User: can add a :Task:. Only valid :Task: items are added.
 - The first spec must still imply a testable outcome; setup alone is not a functional spec
 - Prefer one minimal entry point or public operation with a deterministic result that can be invoked and verified
 - Defer persistence, integrations, multiple interfaces, branching workflows, and cross-cutting behavior until later specs can build on the generated baseline
-- This extra bootstrap cost applies when no previous implementation baseline exists; a module that continues from a `base` module may already inherit the necessary scaffold
+- This extra bootstrap cost applies when no previous implementation baseline exists; a module that continues from a `requires` module may already inherit the necessary scaffold
 
 ## Chronological ordering
 - Specs are rendered incrementally, top to bottom
 - The renderer has **no knowledge of future specs** — only previously rendered specs are in context
 - A new spec can reference behavior from earlier specs but cannot assume anything about specs that come after it
-- Functional specs from `base` modules are treated as previous requirements — transitively, across the whole ancestor chain
+- Functional specs from `requires` modules are treated as previous requirements — transitively, across the whole ancestor chain
 
 ## No conflicts
 - The new spec must not contradict any existing functional spec
@@ -113,7 +113,7 @@ A :User: can add a :Task:. Only valid :Task: items are added.
 
 ## Encapsulation
 - Functionality must be self-contained in the spec text
-- `base` modules only pass on functional specs and `exported_concepts` — never implementation reqs, so do not rely on implementation reqs to convey behavior
+- `requires` modules only pass on functional specs and `exported_concepts` — never implementation reqs, so do not rely on implementation reqs to convey behavior
 - Behavior that downstream modules need must be expressed in functional specs, not elsewhere
 
 ## Test scenarios live in test plain files

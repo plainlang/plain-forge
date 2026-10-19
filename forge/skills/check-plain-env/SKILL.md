@@ -43,7 +43,7 @@ The skill is a **derive → probe → report** pass. It does not stop at the fir
 ### Step 1 — Inventory the project
 
 1. **Detect the host OS** first. Run `uname -s 2>/dev/null || echo "$OS"`. Use the result to (a) pick the right script extensions to inspect (`.sh` vs `.ps1`) and (b) pick the right install commands later (Homebrew, apt, dnf, pacman, choco, scoop, winget).
-2. **List every `.plain` file** in the repo root and in any subdirectory that contains them. Note which are top modules (not listed under `base` by any other module) and which are import modules (under `template/`).
+2. **List every `.plain` file** in the repo root and in any subdirectory that contains them. Note which are top modules (not `requires`-ed by any other module) and which are import modules (under `template/`).
 3. **List every `config.yaml`** in the repo and read each one. Note the `*-script` keys it sets and the values they point at.
 4. **List every script under `test_scripts/`** (both `.sh` and `.ps1` — projects can ship both).
 5. **List every file under `resources/`** if the directory exists. Schemas and protocol files there often imply running services (e.g. a Postgres `.sql` schema implies a Postgres server).

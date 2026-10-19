@@ -4,7 +4,7 @@ Two halves. First **the agent** validates every spec with `plain-healthcheck` so
 
 ## 4a. Identify the render target
 
-Find the **last module in the dependency chain** — the module that is not listed under `base` by any other module. If there is only one module, use it. Call this module `<module>`.
+Find the **last module in the dependency chain** — the module that is not `requires`-ed by any other module. If there is only one module, use it. Call this module `<module>`.
 
 - Chain `base.plain → features.plain → integrations.plain` → render target is `integrations.plain`.
 - Single module `my_app.plain` → render target is `my_app.plain`.
@@ -27,10 +27,10 @@ Run the `plain-healthcheck` skill — the single source of truth for "is this pr
 
 - inventories every `.plain` module and identifies every top module,
 - validates every `config.yaml` (existence, parseability, script paths actually pointing at files in `test_scripts/`, no mixed stacks), and
-- runs `plain-parser check` on every top module, which parses it with its whole `imports` / `base` chain (frontmatter, module graph, sections, concepts, linked resources, templates), and
+- runs `plain-parser check` on every top module, which parses it with its whole `import` / `requires` chain (frontmatter, module graph, sections, concepts, linked resources, templates), and
 - checks every module for what the parser can't judge (section ownership, bullets, linked-resource contents).
 
-The skill runs the full detect → fix → re-run loop itself (syntax errors, undefined concepts, broken `imports` / `base` chains, cyclic definitions, missing templates, misplaced facts, config drift, missing scripts) and returns only once everything passes or a gap genuinely needs the user. Then:
+The skill runs the full detect → fix → re-run loop itself (syntax errors, undefined concepts, broken `import` / `requires` chains, cyclic definitions, missing templates, misplaced facts, config drift, missing scripts) and returns only once everything passes or a gap genuinely needs the user. Then:
 
 - **`PASS`** → move on to step 4d.
 - **`FAIL`** → do **not** ask the user to render. Work through the numbered list it produced (each item references a specific `.plain` file, `config.yaml`, or script), resolve each one with the appropriate edit skill, and re-run `plain-healthcheck` until it returns `PASS`. Any item the skill could not auto-resolve will name the concrete question to put to the user.

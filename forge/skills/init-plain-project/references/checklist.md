@@ -13,10 +13,10 @@ Use this to verify the scaffold was produced correctly — never as a substitute
 
 ## Author the modules
 
-- [ ] Created `template/stack.plain` via `create-import-module` with `***implementation reqs***` (language/version, framework, package manager, project kind, and everything about `:UnitTests:` — framework + run command).
-- [ ] Added `***test reqs***` to `template/stack.plain` with the `:ConformanceTests:` rules **only** when conformance testing is enabled — and kept unit-test facts out of it.
-- [ ] No `***definitions***`, no `***functional specs***`, and no project-specific concepts in `template/stack.plain`; only predefined concepts (`:Implementation:`, `:ConformanceTests:`) used; no `required_concepts` declared.
-- [ ] Created `<project>.plain` at the repo root with frontmatter only (`imports: [stack]`, `description`) and **no body sections** — the file exists on disk.
+- [ ] Created `template/base.plain` via `create-import-module` with `***implementation reqs***` (language/version, framework, package manager, project kind, and everything about `:UnitTests:` — framework + run command).
+- [ ] Added `***test reqs***` to `template/base.plain` with the `:ConformanceTests:` rules **only** when conformance testing is enabled — and kept unit-test facts out of it.
+- [ ] No `***definitions***`, no `***functional specs***`, and no project-specific concepts in `template/base.plain`; only predefined concepts (`:Implementation:`, `:ConformanceTests:`) used; no `required_concepts` declared.
+- [ ] Created `<project>.plain` at the repo root with frontmatter only (`import: [base]`, `description`) and **no body sections** — the file exists on disk.
 
 ## Generate scripts and config
 

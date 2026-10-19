@@ -13,7 +13,7 @@ When writing or editing a `***definitions***` section in a `.plain` file, always
 
 ## Uniqueness
 - Concept names must be globally unique across the spec and all its imports
-- Check for collisions with concepts coming from `imports` and `base` modules before adding
+- Check for collisions with concepts coming from `import` and `requires` modules before adding
 
 ## Predefined concepts (do not redefine)
 - ***plain ships several predefined concepts that are available in every module without being defined
@@ -37,7 +37,7 @@ When writing or editing a `***definitions***` section in a `.plain` file, always
 
 ## Define before use
 - A concept must be defined before it is referenced in any section (definitions, implementation reqs, functional specs, test reqs)
-- Sources of definitions: the module's own `***definitions***`, an `imports` module's definitions, or a `base` module's `exported_concepts`
+- Sources of definitions: the module's own `***definitions***`, an `import`ed module's definitions, or a `require`d module's `exported_concepts`
 
 ## No circular references
 - Concept references must not form cycles — if A references B, then B must not reference A (directly or indirectly)
@@ -64,8 +64,8 @@ Bad — circular:
 ```
 
 ## Exported concepts are not transitive
-- If module A exports a concept and module B lists A under `base`, a module C with `base: [B]` does **not** gain access to A's exports
-- To use an ancestor's exports, list that ancestor under `base` as well; concepts shared more broadly belong in a common import module
+- If module A exports a concept and module B `requires` A, a module C with `requires: [B]` does **not** gain access to A's exports
+- To use an ancestor's exports, list that ancestor in `requires` as well; concepts shared more broadly belong in a common import module
 
 ## Description quality
 - Descriptions must be clear, concise, and language-agnostic

@@ -13,7 +13,7 @@ A linked resource **must not** be any of the following:
 1. **A folder / directory.** `[integrations](src/integrations/)`, `[host project](../host_project/)` are invalid — the renderer cannot ingest a directory. Pick the single most representative file inside (a `README.md`, an exemplar source file, a manifest) and link **that**.
 2. **A URL / external location.** `[Stripe docs](https://stripe.com/docs/api)`, any `http://` / `https://` / `ftp://` / `git://` / `s3://` / `gs://` target. Linked resources are local-file only. If a URL's content is essential, fetch it once, save the response to a text file under `resources/`, and link the saved file.
 3. **A binary file.** PNG, JPG, GIF, PDF, DOCX, XLSX, ZIP, MP3, MP4, compiled binaries (`.exe`, `.so`, `.class`, `.wasm`), and anything else that isn't human-readable text in its raw form. Binary content cannot be meaningfully consumed by the renderer — transcribe it into a text-based form first (a UI screenshot becomes a Markdown description, a PDF spec becomes a Markdown extract or the underlying JSON Schema / OpenAPI, an architecture diagram becomes a Mermaid block).
-4. **Another `.plain` file.** `[Auth Module](auth.plain)` is invalid. To reference another module, use the `base` or `imports` frontmatter directives. Do not link it as a markdown resource; the renderer will flag this as a syntax error.
+4. **Another `.plain` file.** `[Auth Module](auth.plain)` is invalid. To reference another module, use the `require` or `import` frontmatter directives. Do not link it as a markdown resource; the renderer will flag this as a syntax error.
 
 ## Never use a URL or folder path as a *reference* in prose
 - The hard constraint above is enforced only on markdown links. A bare URL or folder path in prose (concept body, functional-spec text, implementation reqs, test reqs) passes validation and is fed to the renderer verbatim as part of the spec text
@@ -65,7 +65,7 @@ A :User: can edit a :Task: using :TaskModalSpec:.
 
 ## File location and path resolution
 - Paths are resolved against the directory that contains the `.plain` file passed to the renderer, not the directory where the renderer is run
-- This includes links inside imported and base modules — they resolve against that same directory, not against the directory the imported module itself lives in
+- This includes links inside imported and required modules — they resolve against that same directory, not against the directory the imported module itself lives in
 - A path that does not resolve there is then looked up in the `template-dir` directory (if configured), and last in the renderer's built-in template library
 - Because the `.plain` file's own directory is the anchor, a render gives the same result from any working directory
 - Relative paths may traverse into parent directories — `[resource](../../resources/resource.md)` is valid — as long as they resolve to a real text file on disk

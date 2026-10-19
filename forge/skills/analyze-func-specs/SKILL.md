@@ -11,14 +11,14 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 ## Input
 
 A **set of two or more functional specs** to check against each other. Callers typically supply one of:
 
 - A whole `***functional specs***` section to self-check.
-- A new spec (or batch of new specs) **plus** the existing specs from the same file and any `base` modules.
+- A new spec (or batch of new specs) **plus** the existing specs from the same file and any `requires` modules.
 - An explicit list of spec snippets the user wants compared.
 
 Each spec must be identifiable. Use its func-id (`<module>:<func-id>` when the batch spans modules). A draft that has no func-id yet gets a **stable identifier** in order of appearance: `S1`, `S2`, `S3`, …. Use those identifiers in the output. If the caller provided its own labels or quoted snippets, use those instead and keep them verbatim.

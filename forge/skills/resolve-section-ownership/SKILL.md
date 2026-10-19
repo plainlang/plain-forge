@@ -8,7 +8,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 This is the ownership counterpart to `break-down-func-spec`. That skill splits one functional spec into several because it is **too large**; this one moves facts between sections because they are in the **wrong place**. The two are unrelated: a correctly placed spec can be too large, and a one-line bullet can be misplaced.
 
@@ -32,7 +32,7 @@ The bullet, section, or `.plain` file to resolve.
 
 ## Workflow
 
-1. **Read the full `.plain` file** — every section, plus its `imports` and `base` chains, so an existing home for a fact is visible before a new one is written.
+1. **Read the full `.plain` file** — every section, plus its `import` and `requires` chains, so an existing home for a fact is visible before a new one is written.
 2. **Identify the target** — one bullet, one section, or the whole file.
 3. **Decompose each bullet into atomic facts.** A clause joined by *and*, *which*, *so that*, or a comma often carries a second fact. Keep each fact in the author's own words for now; rewording comes at step 6.
 4. **Route each fact** by the *Section ownership* table in `module-structure.md`. Where a fact resists the table, apply the question it encodes: **would a caller of the finished software observe this?** Yes → `***functional specs***`. No, it is how the result is reached → `***implementation reqs***`. It says what a term means → `***definitions***`. It shapes `:ConformanceTests:` → `***test reqs***`.

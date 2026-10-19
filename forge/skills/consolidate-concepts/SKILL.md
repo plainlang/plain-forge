@@ -11,18 +11,18 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 ## When to Use
 
 - Multiple modules define the same or closely related concepts independently.
-- A `base` chain uses long `exported_concepts` lists to share definitions that would be simpler as an import.
+- A `requires` chain uses long `exported_concepts` lists to share definitions that would be simpler as an import.
 - After a `refactor-module` split, shared concepts ended up duplicated or awkwardly exported.
 - The user wants a single source of truth for domain concepts used across modules.
 
 ## Guiding Principle
 
-This is a structural refactoring. The **behavior** of every affected module must remain **identical**. No functional spec, implementation req, or test req is changed. Only concept definitions move — from scattered locations into one shared import module — and the modules' `imports` lists are updated to reference it.
+This is a structural refactoring. The **behavior** of every affected module must remain **identical**. No functional spec, implementation req, or test req is changed. Only concept definitions move — from scattered locations into one shared import module — and the modules' `import` lists are updated to reference it.
 
 ## Input
 
@@ -30,7 +30,7 @@ The set of modules to consolidate from, plus optionally the name for the new (or
 
 ## Phase 1 — Analyze Concepts Across Modules
 
-1. **Read all source modules.** For each `.plain` file involved, read the full file including frontmatter, definitions, implementation reqs, test reqs, and functional specs. Also read their `imports` and `base` chains.
+1. **Read all source modules.** For each `.plain` file involved, read the full file including frontmatter, definitions, implementation reqs, test reqs, and functional specs. Also read their `import` and `requires` chains.
 2. **Build a concept inventory.** For each concept defined across all source modules, record:
    - Where it is defined (which file, which line)
    - Which modules reference it (in definitions, functional specs, implementation reqs, or test reqs)
@@ -72,11 +72,11 @@ For each affected module, determine the frontmatter changes:
 
 | Change | When |
 |--------|------|
-| Add the new import to `imports` list | Module does not already import the target |
+| Add the new import to `import` list | Module does not already import the target |
 | Remove concepts from `exported_concepts` | Concepts that were exported only to share definitions — now handled by the import |
 | Keep concepts in `exported_concepts` | Concepts that downstream modules still need via export (because those downstream modules do not import the new template) |
 
-**Important:** `imports` provides definitions to the importing module. `exported_concepts` on a base module provides concepts to the modules that list it under `base`. If a downstream module will now list the shared template under `imports`, the concept can be removed from `exported_concepts`. If a downstream module does **not** import the template, the concept must remain exported.
+**Important:** `import` provides definitions to the importing module. `exported_concepts` on a `requires` module provides concepts to downstream modules in the build chain. If a downstream module will now `import` the shared template directly, the concept can be removed from `exported_concepts`. If a downstream module does **not** import the template, the concept must remain exported.
 
 ### 2e. Present the plan
 
@@ -84,7 +84,7 @@ Summarize for the user:
 - Target import module (new or existing) and its path
 - List of concepts being moved, with source module for each
 - List of concepts staying local (and why)
-- Frontmatter changes per module (`imports` additions, `exported_concepts` removals)
+- Frontmatter changes per module (`import` additions, `exported_concepts` removals)
 - Confirmation that no functional specs, implementation reqs, or test reqs are changing
 
 Get explicit user confirmation before proceeding.
@@ -94,7 +94,7 @@ Get explicit user confirmation before proceeding.
 ### 3a. Create or update the import module
 
 If creating a new import module:
-1. Create `template/<name>.plain` with YAML frontmatter. If it needs concepts from another import, add that to its own `imports` list.
+1. Create `template/<name>.plain` with YAML frontmatter. If it needs concepts from another import, add that to its own `import` list.
 2. Add a `***definitions***` section with all consolidated concepts in dependency order.
 3. Do **not** add `***functional specs***` — import modules must not contain them.
 
@@ -108,14 +108,14 @@ If updating an existing import module:
 For each module that had concepts moved out:
 
 1. **Remove the concept definitions** from the module's `***definitions***` section. Remove the full definition including all sub-bullets.
-2. **Add the import** to the module's YAML frontmatter `imports` list (if not already present).
+2. **Add the import** to the module's YAML frontmatter `import` list (if not already present).
 3. **Update `exported_concepts`** — remove concepts that no longer need to be exported (see 2d).
 4. **Do not touch** `***functional specs***`, `***implementation reqs***`, or `***test reqs***` — concept references (`:ConceptName:`) in these sections remain unchanged since the concept is now provided by the import.
 
 ### 3c. Update downstream modules (if applicable)
 
 If concepts were removed from a module's `exported_concepts` and downstream modules relied on them:
-1. Add the new import to the downstream module's `imports` list so it gets the concepts directly.
+1. Add the new import to the downstream module's `import` list so it gets the concepts directly.
 2. Verify the downstream module's specs can still resolve all concept references.
 
 ## Phase 4 — Verify
@@ -123,7 +123,7 @@ If concepts were removed from a module's `exported_concepts` and downstream modu
 ### 4a. Concept availability check
 
 For every affected module (source modules, downstream modules, and the import module itself):
-- [ ] Every `:Concept:` referenced in functional specs is resolvable (defined locally, via import, or via exported concepts from a base module)
+- [ ] Every `:Concept:` referenced in functional specs is resolvable (defined locally, via import, or via exported concepts from requires)
 - [ ] Every `:Concept:` referenced in definitions is defined before the concept that references it
 - [ ] Every `:Concept:` referenced in implementation reqs and test reqs is resolvable
 
@@ -131,7 +131,7 @@ For every affected module (source modules, downstream modules, and the import mo
 
 - [ ] No concept is defined in both the import module and a source module
 - [ ] No concept is defined in both the import module and another import that a source module uses
-- [ ] Concept names are globally unique across each module's full resolution scope (local + imports + base exports)
+- [ ] Concept names are globally unique across each module's full resolution scope (local + imports + requires exports)
 
 ### 4c. Definition integrity check
 
@@ -150,11 +150,11 @@ For every affected module (source modules, downstream modules, and the import mo
 For the import module:
 - [ ] File is in the `template/` directory
 - [ ] Does not contain `***functional specs***`
-- [ ] Does not use `base`
+- [ ] Does not use `requires`
 - [ ] YAML frontmatter is correctly formatted
 
 For each source module:
-- [ ] YAML frontmatter `imports` list includes the target import module
+- [ ] YAML frontmatter `import` list includes the target import module
 - [ ] `exported_concepts` is correct (no over-export, no missing exports)
 - [ ] Module still has at least one functional spec and one implementation req
 
@@ -168,16 +168,16 @@ Read each modified `.plain` file in full and present the changes to the user for
 If a concept is only referenced within a single module, consolidating it into a shared import adds unnecessary coupling. Keep it local.
 
 ### Forgetting to update downstream modules
-When a concept is removed from `exported_concepts`, any module that lists the source module under `base` and references that concept will break — unless it now imports the shared template. Always trace the full dependency chain.
+When a concept is removed from `exported_concepts`, any module that `requires` the source module and references that concept will break — unless it now imports the shared template. Always trace the full dependency chain.
 
 ### Breaking concept ordering
 Concepts in the import module must be topologically ordered. If `:Meal:` references `:MealType:` in its definition, then `:MealType:` must appear first. The source modules may have had them in the right order locally, but merging concepts from different modules requires re-establishing a valid order.
 
 ### Creating circular imports
-An import module cannot list under `imports` a module that directly or indirectly imports it back. If the shared concepts reference concepts from an existing template, the new import module should itself import that template — not the other way around.
+An import module cannot `import` a module that directly or indirectly imports it back. If the shared concepts reference concepts from an existing template, the new import module should itself import that template — not the other way around.
 
 ### Removing concepts from exported_concepts prematurely
-Only remove a concept from `exported_concepts` if **every** downstream module that needs it will now get it via `imports`. If even one downstream module does not import the shared template, the export must stay.
+Only remove a concept from `exported_concepts` if **every** downstream module that needs it will now get it via `import`. If even one downstream module does not import the shared template, the export must stay.
 
 ## Validation Checklist
 
@@ -185,11 +185,11 @@ Only remove a concept from `exported_concepts` if **every** downstream module th
 - [ ] All moved concepts are defined in the import module with identical text
 - [ ] Concepts are in valid dependency order in the import module
 - [ ] No concept is defined in both the import module and a source module
-- [ ] Every affected module's `imports` list includes the target import module
+- [ ] Every affected module's `import` list includes the target import module
 - [ ] `exported_concepts` updated correctly — no missing exports, no unnecessary exports
 - [ ] All concept references in all affected modules resolve correctly
 - [ ] No functional specs, implementation reqs, test reqs, or test plain files were modified
-- [ ] Import module is in `template/` and has no functional specs or base
+- [ ] Import module is in `template/` and has no functional specs or requires
 - [ ] No circular imports introduced
 - [ ] Downstream modules updated if needed
 - [ ] User approved the final result

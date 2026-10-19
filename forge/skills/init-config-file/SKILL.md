@@ -73,7 +73,7 @@ Before emitting anything, state the planned split to the user (e.g. "I'll emit `
 
 ### Step 1 — Inventory
 
-1. List every `.plain` file in the repo and identify the top modules (modules not listed under `base` by any other module) — same procedure as `plain-healthcheck` Step 1. A frontmatter that still uses `requires:` or `import:` is the old syntax: stop and point the user to `migrate-plain-syntax`.
+1. List every `.plain` file in the repo and identify the top modules (modules not `requires`-ed by any other module) — same procedure as `plain-healthcheck` Step 1.
 2. For each top module, determine which part it belongs to (single-stack → one part; multi-part → one part per top module).
 3. List every script under `test_scripts/` and group them by part (e.g. `*_python.sh` belongs to the backend part, `*_js.sh` belongs to the frontend part).
 4. Identify the template directory (typically `template/`) and any custom resource directories (typically `resources/`).

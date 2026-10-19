@@ -15,15 +15,15 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 ## Workflow
 
 1. **Identify the target `.plain` file.** If ambiguous, ask the user.
-2. **Read the entire file** to understand existing definitions, implementation reqs, and all current functional specs (including those in `base` modules).
+2. **Read the entire file** to understand existing definitions, implementation reqs, and all current functional specs (including those in `requires` modules).
 3. **Pick the func-id and draft the functional spec.** Choose a func-id per `semantic-ids.md` and confirm no `# <func-id>` heading with that id exists in the module. Draft the statement line and its indented `- ` clarifications following the rules below, then run the review pass in `concise-specs.md` over the draft — trim it to the shortest wording that keeps every fact before any other check.
 4. **Analyze complexity** — use the `analyze-if-func-spec-too-complex` skill to verify the drafted spec implies ≤ 200 LOC. If too complex, use the `break-down-func-spec` skill to split it, then repeat from step 3 for each resulting spec.
-5. **Check for conflicts** with every existing functional spec — this is critical. Run `analyze-func-specs` **once** with the new spec plus all existing specs (in the file and in any `base` chain) as a single batch. The batched analyzer returns every conflicting pair in one call — do **not** invoke a pair-by-pair analyzer. For each conflicting pair it reports, run `resolve-spec-conflict` on that pair; re-run `analyze-func-specs` over the touched set after each resolution until the verdict is `COMPATIBLE`.
+5. **Check for conflicts** with every existing functional spec — this is critical. Run `analyze-func-specs` **once** with the new spec plus all existing specs (in the file and in any `requires` chain) as a single batch. The batched analyzer returns every conflicting pair in one call — do **not** invoke a pair-by-pair analyzer. For each conflicting pair it reports, run `resolve-spec-conflict` on that pair; re-run `analyze-func-specs` over the touched set after each resolution until the verdict is `COMPATIBLE`.
 6. **Append the spec** to the end of the `***functional specs***` section as a `# <func-id>` heading followed by its body, one blank line after the previous functionality (specs are chronological; new ones go last).
 7. **Read the file again** to confirm correct placement and syntax.
 8. **Write the test plain file.** When conformance tests are enabled for the module, invoke `add-test-scenarios` for the new functionality (see *Test Scenarios* below).
@@ -70,7 +70,7 @@ Specs must be detailed enough that a developer can use the built software withou
 
 ### Encapsulation
 
-Functionality must be self-contained in the spec text. `base` modules only pass on functional specs, so do not rely on implementation reqs to convey behavior — they won't be visible in downstream modules.
+Functionality must be self-contained in the spec text. `requires` modules only import functional specs, so do not rely on implementation reqs to convey behavior — they won't be visible in downstream modules.
 
 ## Test Scenarios
 

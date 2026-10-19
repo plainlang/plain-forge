@@ -15,7 +15,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 `add-feature` is the continuous-loop counterpart of `forge-plain`. Where `forge-plain` bootstraps an entire project from scratch, `add-feature` adds a single feature to an **existing** set of `.plain` specs. It begins with a short intent phase, then runs the authoring loop scoped to one feature.
 
@@ -51,7 +51,7 @@ Carry the confirmed brief into every later phase. Before advancing, check the Ph
 Keep this short. The goal is to know enough to ask the **very first** writable question — not to design the whole feature on paper.
 
 1. **Read the confirmed feature-intent brief.** Identify which existing `.plain` file(s) the feature most likely belongs to.
-2. **Read the target `.plain` file(s)**, following their `imports` and `base` chains, and the test plain files under `tests/`, so the existing definitions, implementation reqs, functional specs, test reqs, and scenarios are in context. This is what lets Phase 2 recognize impact when it surfaces.
+2. **Read the target `.plain` file(s)**, following their `import` and `requires` chains, and the test plain files under `tests/`, so the existing definitions, implementation reqs, functional specs, test reqs, and scenarios are in context. This is what lets Phase 2 recognize impact when it surfaces.
 3. **Pick the target module with one question — only if it is genuinely ambiguous** which file to modify. Otherwise skip it and start authoring immediately.
 
 End Phase 1 the moment the target file and a single concrete starter question are clear. Do **not** ask framing, scope, or multi-part design questions here.

@@ -4,15 +4,14 @@ description: >-
   Convert a ***plain project from the old syntax to the current one: give
   every functional spec a # func-id heading, move nested ***acceptance tests***
   into test plain files under tests/<module>/, draft conformance scenarios
-  with the user for every functionality, and rename the frontmatter directives
-  requires and import to base and imports. Use when a skill or plain-parser
+  with the user for every functionality. Use when a skill or plain-parser
   reports the old syntax, or when the user asks to migrate or upgrade old
   .plain files.
 ---
 
 # Migrate Plain Syntax
 
-Always use the skill `load-plain-reference` to retrieve the ***plain syntax rules — but only if you haven't done so yet. This skill needs `module-structure.md`, `func-specs.md`, `semantic-ids.md`, `test-plain-files.md`, `base-modules.md`, and `import-modules.md`.
+Always use the skill `load-plain-reference` to retrieve the ***plain syntax rules — but only if you haven't done so yet. This skill needs `module-structure.md`, `func-specs.md`, `semantic-ids.md`, `test-plain-files.md`, `requires-modules.md`, and `import-modules.md`.
 
 ## What changes
 
@@ -21,14 +20,12 @@ Always use the skill `load-plain-reference` to retrieve the ***plain syntax rule
 | A functional spec is a flush-left `- ` bullet with nested `  - ` sub-bullets | A functional spec is a `# <func-id>` heading, a statement line, and indented `- ` clarification bullets |
 | `***acceptance tests***` nested under a functional spec | `***acceptance tests***` section of the functionality's test plain file `tests/<module>/<func-id>.plain` |
 | The renderer invents conformance tests | `***conformance tests***` section of the test plain file holds at least one scenario per functionality |
-| `requires:` in the frontmatter | `base:` |
-| `import:` in the frontmatter | `imports:` |
 
 There is no backward compatibility: a project in the old syntax does not render, and no other skill edits it. The migration converts the whole project in one pass.
 
 ## Scope
 
-- Every `.plain` file of the project: the root modules, the import modules in the template directory, and every module reachable through `base` and `imports`. A half-migrated project fails the parser.
+- Every `.plain` file of the project: the root modules, the import modules in the template directory, and every module reachable through `requires` and `import`. A half-migrated project fails the parser.
 - Spec text is copied verbatim; only its shape changes. Rewording, trimming, and splitting are separate work for `add-feature`, `break-down-func-spec`, or `resolve-section-ownership` afterwards.
 - Generated output under `plain_modules/` is never edited. Nothing is rendered.
 
@@ -36,16 +33,12 @@ There is no backward compatibility: a project in the old syntax does not render,
 
 ### 1. Inventory and confirm
 
-1. List every `.plain` file in the project. Follow the `requires` / `base` and `import` / `imports` chains from each root module so no module is missed.
-2. For each file, record which old-syntax markers it holds: flush-left `- ` bullets in `***functional specs***`, nested `***acceptance tests***` sections, `requires:`, `import:`.
+1. List every `.plain` file in the project. Follow the `requires` and `import` chains from each root module so no module is missed.
+2. For each file, record which old-syntax markers it holds: flush-left `- ` bullets in `***functional specs***`, nested `***acceptance tests***` sections.
 3. Read every `config.yaml` to learn whether conformance tests are enabled for each module (a `conformance-tests-script` entry).
 4. Show the user the inventory (files, markers, conformance on or off per module) and get explicit confirmation before writing anything.
 
-### 2. Rename the directives
-
-In every frontmatter, rename the key `requires:` to `base:` and the key `import:` to `imports:`. Values stay unchanged. `{% include %}` lines and `exported_concepts` / `required_concepts` stay unchanged.
-
-### 3. Give every functionality a func-id
+### 2. Give every functionality a func-id
 
 For each root module, walk the `***functional specs***` section top to bottom:
 
@@ -56,9 +49,9 @@ For each root module, walk the `***functional specs***` section top to bottom:
    - Each nested `  - ` sub-bullet kept as it is: it is already a clarification indented by two spaces, and deeper nesting keeps its indentation.
    - One blank line between functionalities.
 3. Keep comment lines (`>`) and Liquid tags where they are.
-4. Cut each nested `***acceptance tests***` block out of the core spec and keep its bullets for step 4, together with the func-id they belonged to.
+4. Cut each nested `***acceptance tests***` block out of the core spec and keep its bullets for step 3, together with the func-id they belonged to.
 
-### 4. Move the acceptance tests into test plain files
+### 3. Move the acceptance tests into test plain files
 
 For every functionality that had nested acceptance tests, create `tests/<module>/<func-id>.plain` with the frontmatter keys `module:` (the core spec's file name without `.plain`) and `func_id:` and both sections, holding one scenario per old acceptance test, sorted by its content: a test of the expected use (valid input, the main path) goes under `***conformance tests***`; a test of use that is not expected (invalid input, wrong or missing authentication, missing data) goes under `***acceptance tests***`:
 
@@ -67,27 +60,26 @@ For every functionality that had nested acceptance tests, create `tests/<module>
 
 Show each created file to the user as a snippet, with the split, and apply their edits before moving on.
 
-### 5. Draft conformance scenarios
+### 4. Draft conformance scenarios
 
-When conformance tests are enabled for a module, every functionality needs at least one conformance scenario. Walk the module's functionalities in order and invoke `add-test-scenarios` for each one; it creates the test plain file when step 4 did not, drafts the scenarios the spec still lacks in both sections, and reviews them with the user one functionality at a time.
+When conformance tests are enabled for a module, every functionality needs at least one conformance scenario. Walk the module's functionalities in order and invoke `add-test-scenarios` for each one; it creates the test plain file when step 3 did not, drafts the scenarios the spec still lacks in both sections, and reviews them with the user one functionality at a time.
 
 When `plain_modules/<module>/tests/` holds conformance tests from an earlier render, read the folder of the functionality first: each generated test is a candidate scenario the user can keep, edit, or drop, which is faster than drafting from the spec alone.
 
-When conformance tests are not enabled for a module, skip this step and say so; the test plain files created in step 4 keep an empty `***conformance tests***` section.
+When conformance tests are not enabled for a module, skip this step and say so; the test plain files created in step 3 keep an empty `***conformance tests***` section.
 
-### 6. Verify
+### 5. Verify
 
 1. No `***functional specs***` section holds a flush-left `- ` bullet; every functionality starts with a `# <func-id>` heading.
 2. No core spec holds an `***acceptance tests***` section.
-3. No frontmatter holds `requires:` or `import:`.
-4. Func-ids are unique per module; scenario-ids are unique per functionality.
-5. Every test plain file binds to an existing functionality; when conformance tests are enabled, every functionality has at least one conformance scenario.
-6. The number of functionalities per module equals the number of flush-left bullets before the migration, and every old acceptance test appears once as a scenario, in the section its content decides.
-7. Run `plain-healthcheck`. Until the plain-parser release that parses the current syntax is installed, its parser step reports that it is suspended; the other checks still run.
+3. Func-ids are unique per module; scenario-ids are unique per functionality.
+4. Every test plain file binds to an existing functionality; when conformance tests are enabled, every functionality has at least one conformance scenario.
+5. The number of functionalities per module equals the number of flush-left bullets before the migration, and every old acceptance test appears once as a scenario, in the section its content decides.
+6. Run `plain-healthcheck`. Until the plain-parser release that parses the current syntax is installed, its parser step reports that it is suspended; the other checks still run.
 
-### 7. Report
+### 6. Report
 
-Per module: functionalities migrated, directives renamed, acceptance tests moved, test plain files created, conformance scenarios drafted, and anything the user still has to decide. Remind the user that the project renders only with a renderer that reads test plain files.
+Per module: functionalities migrated, acceptance tests moved, test plain files created, conformance scenarios drafted, and anything the user still has to decide. Remind the user that the project renders only with a renderer that reads test plain files.
 
 ## Rules
 
@@ -124,10 +116,10 @@ After, the core spec:
 
 ```plain
 ---
-base:
+requires:
   - core
-imports:
-  - stack
+import:
+  - base
 ---
 
 ***functional specs***
@@ -159,7 +151,6 @@ Adding a :Task: named "Go" is rejected and :TaskList: stays empty.
 ## Validation Checklist
 
 - [ ] Every `.plain` file of the project was inventoried and the user confirmed the pass
-- [ ] `requires:` and `import:` renamed to `base:` and `imports:` in every frontmatter
 - [ ] Every functionality has a `# <func-id>` heading approved by the user; text verbatim; order unchanged
 - [ ] No `***acceptance tests***` section remains in a core spec; every old acceptance test is a scenario in a test plain file, in the section its content decides, confirmed by the user
 - [ ] Every functionality has at least one conformance scenario when conformance tests are enabled for its module

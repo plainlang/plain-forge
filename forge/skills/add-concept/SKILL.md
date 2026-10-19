@@ -10,7 +10,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***`, an `***acceptance tests***` section in a core spec, or `requires:` / `import:` in the frontmatter. If any is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
 
 ## Workflow
 
@@ -18,7 +18,7 @@ Before reading or editing any `.plain` file, check it for the old syntax (see *O
 2. **Read the file** to understand existing definitions, imports, and concepts.
 3. **Validate the concept name** against the syntax rules below.
 4. **Check for uniqueness** — the concept name must not already exist in the file or its imports.
-5. **Check referenced concepts** — any `:ConceptName:` used in the definition must already be defined above it (in this file or via `imports`/`base`). Concept references must not form cycles (e.g., A references B and B references A).
+5. **Check referenced concepts** — any `:ConceptName:` used in the definition must already be defined above it (in this file or via `import`/`requires`). Concept references must not form cycles (e.g., A references B and B references A).
 6. **Check for circular references** — if the new concept references `:B:`, then `:B:` must not reference the new concept (directly or indirectly). Example of a circular definition to avoid:
    ```plain
    - :Order: is placed by :Customer: and contains :OrderItem: entries.
@@ -38,7 +38,7 @@ Before reading or editing any `.plain` file, check it for the old syntax (see *O
 - CamelCase, starting with an uppercase letter
 - Valid characters: letters, digits, `+`, `-`, `.`, `_`
 - Must be globally unique across the spec and all its imports
-- Exported concepts from `base` modules are **not transitive** — to reference an ancestor's export, list that ancestor under `base`; if a concept is shared across branches, define it in a common import module instead
+- Exported concepts from `requires` modules are **not transitive** — to reference an ancestor's export, list that ancestor in `requires`; if a concept is shared across branches, define it in a common import module instead
 
 ## Definition Format
 

@@ -7,8 +7,8 @@ description: Terms used in .plain files, in plain-forge, and in plain-parser; us
 These are the names used across the rules, the skills, and the parser. Use them as written; do not coin synonyms.
 
 - **Core spec** — a `.plain` file with functional specs, a root module. Test definitions do not live here.
-- **Import module** — a `.plain` file in the template directory that other modules pull in with `imports:`; definitions and reqs only (see `import-modules.md`).
-- **Base module** — a root module that another root module lists under `base:` to build on its generated code and functional specs (see `base-modules.md`).
+- **Import module** — a `.plain` file in the template directory that other modules pull in with `import:`; definitions and reqs only (see `import-modules.md`).
+- **Requires module** — a root module that another root module names under `requires:` to build on its generated code and functional specs (see `requires-modules.md`).
 - **Functionality** — one functional spec in a module, identified by its func-id.
 - **Func-id** — the slug in the `# <func-id>` heading of a functionality. Lowercase letters, digits, and hyphens; unique in the module; written as `<module>:<func-id>` when the module is needed. It needs no meaning (see `semantic-ids.md`).
 - **Test plain file** — a `.plain` file that holds the scenarios of one functionality. Its frontmatter keys `module:` and `func_id:` bind it to that functionality; it has a `***conformance tests***` and an `***acceptance tests***` section. By convention it lives at `tests/<module>/<func_id>.plain`. Several may bind to one functionality; their scenarios are merged (see `test-plain-files.md`).
@@ -18,4 +18,4 @@ These are the names used across the rules, the skills, and the parser. Use them 
 - **Acceptance scenario** — a scenario in `***acceptance tests***`: use of the same functionality that is not expected, such as invalid parameters, wrong or missing authentication, missing data, or an unavailable dependency. It is rendered after the conformance tests of its functionality. A scenario that spans several functionalities is bound to the last one it exercises and sorted by the same rule.
 - **Conformance test** — generated test code that implements one conformance scenario. It runs the implementation as a black box and is labelled with the scenario-id.
 - **Acceptance test** — generated test code that implements one acceptance scenario, labelled with the scenario-id.
-- **Old syntax** — functional specs as `- ` bullets, nested `***acceptance tests***`, and the `requires:` / `import:` directives. Not supported; `migrate-plain-syntax` converts a project.
+- **Old syntax** — functional specs as `- ` bullets and nested `***acceptance tests***`. Not supported; `migrate-plain-syntax` converts a project.
