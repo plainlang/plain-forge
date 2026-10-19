@@ -44,8 +44,8 @@ Test reqs specify how **conformance tests** should be written and run. Common co
 | Test Type | Where to Specify | Purpose |
 |-----------|-----------------|---------|
 | Unit tests | `***implementation reqs***` | Test individual functionalities in isolation |
-| Conformance tests | how: `***test reqs***`; what: `***conformance tests***` of the test plain file | Verify one functionality against its conformance scenarios |
-| Acceptance tests | how: `***test reqs***`; what: `***acceptance tests***` of the test plain file | Verify an end-to-end workflow that may span functionalities |
+| Conformance tests | how: `***test reqs***`; what: `***conformance tests***` of the test plain file | Verify the expected use of one functionality, its main path |
+| Acceptance tests | how: `***test reqs***`; what: `***acceptance tests***` of the test plain file | Verify one functionality under use that is not expected: invalid parameters, wrong or missing authentication, missing data |
 
 ## Format
 

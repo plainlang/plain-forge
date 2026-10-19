@@ -60,16 +60,16 @@ For each root module, walk the `***functional specs***` section top to bottom:
 
 ### 4. Move the acceptance tests into test plain files
 
-For every functionality that had nested acceptance tests, create `tests/<module>/<func-id>.plain` with the frontmatter keys `module:` (the core spec's file name without `.plain`) and `func_id:`, an empty `***conformance tests***` section, and an `***acceptance tests***` section holding one scenario per old acceptance test:
+For every functionality that had nested acceptance tests, create `tests/<module>/<func-id>.plain` with the frontmatter keys `module:` (the core spec's file name without `.plain`) and `func_id:` and both sections, holding one scenario per old acceptance test, sorted by its content: a test of the expected use (valid input, the main path) goes under `***conformance tests***`; a test of use that is not expected (invalid input, wrong or missing authentication, missing data) goes under `***acceptance tests***`:
 
 - A `# <scenario-id>` heading per test, with a slug derived from the test text, unique in the file.
 - The old test text as the scenario body, verbatim: the bullet text becomes the statement line and its nested sub-bullets keep their indentation. Free text is valid scenario text.
 
-Show each created file to the user as a snippet and apply their edits.
+Show each created file to the user as a snippet, with the split, and apply their edits before moving on.
 
 ### 5. Draft conformance scenarios
 
-When conformance tests are enabled for a module, every functionality needs at least one conformance scenario. Walk the module's functionalities in order and invoke `add-test-scenarios` for each one; it creates the test plain file when step 4 did not, drafts the scenarios from the functional spec, and reviews them with the user one functionality at a time.
+When conformance tests are enabled for a module, every functionality needs at least one conformance scenario. Walk the module's functionalities in order and invoke `add-test-scenarios` for each one; it creates the test plain file when step 4 did not, drafts the scenarios the spec still lacks in both sections, and reviews them with the user one functionality at a time.
 
 When `plain_modules/<module>/tests/` holds conformance tests from an earlier render, read the folder of the functionality first: each generated test is a candidate scenario the user can keep, edit, or drop, which is faster than drafting from the spec alone.
 
@@ -82,7 +82,7 @@ When conformance tests are not enabled for a module, skip this step and say so; 
 3. No frontmatter holds `requires:` or `import:`.
 4. Func-ids are unique per module; scenario-ids are unique per functionality.
 5. Every test plain file binds to an existing functionality; when conformance tests are enabled, every functionality has at least one conformance scenario.
-6. The number of functionalities per module equals the number of flush-left bullets before the migration, and every old acceptance test appears once as an acceptance scenario.
+6. The number of functionalities per module equals the number of flush-left bullets before the migration, and every old acceptance test appears once as a scenario, in the section its content decides.
 7. Run `plain-healthcheck`. Until the plain-parser release that parses the current syntax is installed, its parser step reports that it is suspended; the other checks still run.
 
 ### 7. Report
@@ -95,7 +95,7 @@ Per module: functionalities migrated, directives renamed, acceptance tests moved
 - Spec text verbatim; the shape changes, the words do not.
 - The order of functionalities is unchanged; func-ids carry no order.
 - Func-ids are proposed by this skill and approved by the user before they are written.
-- Old acceptance tests become acceptance scenarios, never conformance scenarios; conformance scenarios are drafted from the spec with `add-test-scenarios`.
+- Old acceptance tests are sorted by content: expected use becomes a conformance scenario, the rest become acceptance scenarios, and the user confirms the split; `add-test-scenarios` then drafts the scenarios the spec still lacks.
 - Nothing under `plain_modules/` is edited.
 
 ## Format
@@ -117,6 +117,7 @@ import:
 
   ***acceptance tests***
   - Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task:.
+  - Adding a :Task: named "Go" is rejected and :TaskList: stays empty.
 ```
 
 After, the core spec:
@@ -136,7 +137,7 @@ A :User: can add a :Task:. Only valid :Task: items are added.
   - The name must be at least 3 characters long.
 ```
 
-After, `tests/<module>/add-task.plain`, with the conformance scenario drafted by `add-test-scenarios`:
+After, `tests/<module>/add-task.plain`, with the two old acceptance tests sorted by content:
 
 ```plain
 ---
@@ -146,14 +147,13 @@ func_id: add-task
 
 ***conformance tests***
 
-# reject-short-name
-Adding a :Task: named "Go" to an empty :TaskList: is rejected.
-  - :TaskList: stays empty.
+# add-to-empty-list
+Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task:.
 
 ***acceptance tests***
 
-# add-to-empty-list
-Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task:.
+# reject-short-name
+Adding a :Task: named "Go" is rejected and :TaskList: stays empty.
 ```
 
 ## Validation Checklist
@@ -161,7 +161,7 @@ Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task:.
 - [ ] Every `.plain` file of the project was inventoried and the user confirmed the pass
 - [ ] `requires:` and `import:` renamed to `base:` and `imports:` in every frontmatter
 - [ ] Every functionality has a `# <func-id>` heading approved by the user; text verbatim; order unchanged
-- [ ] No `***acceptance tests***` section remains in a core spec; every old acceptance test is an acceptance scenario in a test plain file
+- [ ] No `***acceptance tests***` section remains in a core spec; every old acceptance test is a scenario in a test plain file, in the section its content decides, confirmed by the user
 - [ ] Every functionality has at least one conformance scenario when conformance tests are enabled for its module
 - [ ] Func-ids unique per module; scenario-ids unique per functionality
 - [ ] `plain-healthcheck` run; its report shown to the user
