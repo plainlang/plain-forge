@@ -442,7 +442,7 @@ The most common single case of this is a functional spec that states a mechanism
 BAD:
 
 ```plain
-***acceptance tests***
+***conformance tests***
 
 # create-project
 The tester should first open the application and log in with a valid account, then navigate to the projects area where they will be able to see the list of projects, and then they should create a new project by filling in the form, after which they should verify that everything worked as expected and the project shows up correctly.
@@ -451,7 +451,7 @@ The tester should first open the application and log in with a valid account, th
 GOOD:
 
 ```plain
-***acceptance tests***
+***conformance tests***
 
 # create-project
 A signed-in :User: with no :Project: items creates a :Project: named `Apollo` and finds it in :ProjectList:.

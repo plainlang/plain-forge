@@ -40,17 +40,23 @@ A test plain file holds the test scenarios of one functionality. The renderer ge
 - Values that matter to the check are concrete (`named "Buy milk"`, `exits with status 0`), never descriptive (`a valid name`)
 
 ## Conformance scenarios
-- `***conformance tests***` holds the scenarios that gate the functionality: it is done only when every conformance scenario passes
+- `***conformance tests***` holds the scenarios of the expected use of the functionality: its main path, with valid parameters, the expected caller, and the data present. For a REST endpoint: what it returns when the caller is authenticated, the data exists, and the parameters are valid
+- These scenarios gate the functionality: it is done only when every conformance scenario passes
 - When conformance tests are enabled for the module (its `config.yaml` has a `conformance-tests-script`), every functionality has at least one conformance scenario; an empty section is an error
-- Each conformance scenario exercises the functionality of this file alone, through the interface the functional spec names; it does not test other functionalities
-- Cover the main path first, then each boundary and error case the functional spec states; stop when every stated behavior has one scenario
+- Cover the main path first, then each variant of expected use the functional spec states (another valid input shape, an optional parameter); stop when every expected behavior has one scenario
 - Do not write the same scenario twice in different words; one scenario per distinct outcome
 
 ## Acceptance scenarios
-- `***acceptance tests***` holds end-to-end checks that may span several functionalities; the section may be empty
-- An acceptance scenario starts from the functionality of this file and may use the behavior of functionalities rendered before it
-- It is rendered after the conformance tests of its functionality pass
-- Write one only for a workflow that no single conformance scenario shows; do not restate a conformance scenario here
+- `***acceptance tests***` holds the scenarios of use that is not expected: invalid parameters, wrong or missing authentication, missing data, an unavailable dependency. For the same REST endpoint: what it returns when authentication is wrong or the parameters are invalid
+- Write one for every error and boundary outcome the functional spec states; the section may be empty when the spec states none
+- An acceptance scenario is rendered after the conformance tests of its functionality pass
+- A scenario that needs a dependency to fail (a backend that does not respond, a database that is unavailable) is written only when `***test reqs***` let the test cause that failure, for example with a local mock of that dependency; otherwise ask the user before writing it
+- The kind of use decides the section, not the number of functionalities the scenario touches (see *Scenarios across functionalities*)
+
+## Scenarios across functionalities
+- A scenario may use functionalities rendered before the one it is bound to, for its setup or as steps of a longer path
+- Such a scenario is bound to the last functionality it exercises, because the earlier ones must exist when it runs
+- It goes under `***conformance tests***` when every step is expected use, and under `***acceptance tests***` when any step is not; plain-forge writes one only when the user asks for it
 
 ## Keeping test plain files in step with functional specs
 - Every change to a functional spec is followed by a review of its test plain file: scenarios that no longer follow from the spec are removed or rewritten, and new behavior gets a scenario
@@ -76,14 +82,13 @@ func_id: add-task
 # add-valid-task
 Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task: named "Buy milk".
 
+# add-second-task
+Adding a :Task: named "Call mom" to a :TaskList: that holds "Buy milk" shows two :Task: items, "Buy milk" first.
+
+***acceptance tests***
+
 # reject-short-name
 Adding a :Task: named "Go" to an empty :TaskList: is rejected.
   - :App: shows the error "Name must be at least 3 characters".
   - :TaskList: stays empty.
-
-***acceptance tests***
-
-# add-then-complete
-A :User: adds a :Task: named "Buy milk" to an empty :TaskList: and marks it completed.
-  - :TaskList: shows one :Task: named "Buy milk", marked completed.
 ```

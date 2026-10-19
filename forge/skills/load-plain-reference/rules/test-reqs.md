@@ -31,8 +31,8 @@ When writing or editing a `***test reqs***` section in a `.plain` file, always f
 | Test type | Where to specify | Generated from | Purpose |
 |-----------|-----------------|----------------|---------|
 | Unit tests | `***implementation reqs***` | the implementation, by the renderer | Test individual functionalities in isolation |
-| Conformance tests | how: `***test reqs***`; what: `***conformance tests***` of the functionality's test plain file | the conformance scenarios, one test per scenario-id | Verify one functionality against its conformance scenarios |
-| Acceptance tests | how: `***test reqs***`; what: `***acceptance tests***` of the functionality's test plain file | the acceptance scenarios, one test per scenario-id | Verify an end-to-end workflow that may span functionalities |
+| Conformance tests | how: `***test reqs***`; what: `***conformance tests***` of the functionality's test plain file | the conformance scenarios, one test per scenario-id | Verify the expected use of one functionality, its main path |
+| Acceptance tests | how: `***test reqs***`; what: `***acceptance tests***` of the functionality's test plain file | the acceptance scenarios, one test per scenario-id | Verify one functionality under use that is not expected: invalid parameters, wrong or missing authentication, missing data |
 
 ## No duplication
 - Do not duplicate guidance already present in the file or its imports
