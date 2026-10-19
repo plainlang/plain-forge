@@ -280,7 +280,7 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 | `add-implementation-requirement` | Add a non-functional requirement to `***implementation reqs***` |
 | `add-test-requirement` | Add a testing requirement to `***test reqs***` |
 | `add-concept` | Define a new concept in `***definitions***` |
-| `add-test-scenarios` | Write or update the test plain file of a functionality (`tests/<module>/<func-id>.plain`): conformance scenarios in plain English, and acceptance scenarios for end-to-end workflows |
+| `add-test-scenarios` | Write or update the test plain file of a functionality (`tests/<module>/<func-id>.plain`): conformance scenarios for its expected use and acceptance scenarios for its unexpected use, in plain English |
 | `add-resource` | Link an external file (schema, API spec) to a spec |
 | `add-template` | Create or include a reusable Liquid template |
 

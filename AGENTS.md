@@ -74,7 +74,7 @@ A `.plain` file is a module: YAML frontmatter (`description`, `imports:`, `base:
 | `***implementation reqs***` | HOW it's built (tech/architecture) **and everything about `:UnitTests:`** |
 | `***functional specs***` | WHAT it does — observable, language-agnostic; one `# func-id` heading per functionality; each spec ≤200 changed LOC; rendered incrementally top-to-bottom |
 | `***test reqs***` | **everything about `:ConformanceTests:`** (framework, run command, mocking/network policy) |
-| test plain file (`***conformance tests***`, `***acceptance tests***`) | the scenarios of one functionality; at least one conformance scenario when conformance tests are enabled; acceptance scenarios are end-to-end workflows |
+| test plain file (`***conformance tests***`, `***acceptance tests***`) | the scenarios of one functionality; conformance scenarios describe the expected use, acceptance scenarios the use that is not expected (invalid parameters, wrong or missing authentication, missing data); at least one conformance scenario when conformance tests are enabled |
 
 Other constraints the rules enforce (see `forge/skills/load-plain-reference/rules/`): functional specs are mandatorily routed through `add-functional-spec(s)` (never hand-authored), checked for the 200-LOC limit (`analyze-if-func-spec-too-complex` → `break-down-func-spec`) and for conflicts (`analyze-func-specs` → `resolve-spec-conflict`); external artifacts (JSON Schema, OpenAPI, payloads) are **linked** as single local text files under `resources/`, never transcribed and never folders/URLs/binaries; generated output under `plain_modules/<module>/code/` (implementation + unit tests) and `plain_modules/<module>/tests/` (conformance tests) is read-only — fixes go back into the spec and re-render.
 
