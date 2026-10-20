@@ -30,8 +30,8 @@ clarification of the statement above it. There is no third, typographic reason t
   a syntax error. A bare continuation, by contrast, is accepted and folded into its parent item verbatim
 - `***functional specs***` has a different top level: each functionality is a `# <func-id>` heading,
   its first body line is prose, and the clarifications under it are `- ` bullets indented by two
-  spaces (see `func-specs.md`); a flush-left `- ` there is the old syntax. A scenario in a test plain
-  file has the same shape (see `test-plain-files.md`)
+  spaces (see `func-specs.md`). A scenario in a test plain file has the same shape (see
+  `test-plain-files.md`)
 
 BAD — line broken for width (bare continuation):
 

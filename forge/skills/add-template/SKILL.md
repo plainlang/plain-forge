@@ -10,7 +10,7 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-Before reading or editing any `.plain` file, check it for the old syntax (see *Old syntax* in `module-structure.md`): a flush-left `- ` bullet in `***functional specs***` or an `***acceptance tests***` section in a core spec. If either is present, stop, name the file and the marker, and point the user to `migrate-plain-syntax`; do not edit a file in the old syntax.
+If a target `.plain` file is in the old syntax (see *Old syntax* in `module-structure.md`), stop, name the file, and point the user to `migrate-plain-syntax`; do not edit it.
 
 Templates use Liquid syntax (`{% include %}`) to reuse the same spec content across multiple `.plain` files. Each inclusion can pass different parameters, producing tailored output from a single source. This is distinct from `import` and `requires` — templates are about textual reuse with parameterization, not module dependencies.
 

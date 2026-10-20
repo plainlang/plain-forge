@@ -18,4 +18,4 @@ These are the names used across the rules, the skills, and the parser. Use them 
 - **Acceptance scenario** — a scenario in `***acceptance tests***`: use of the same functionality that is not expected, such as invalid parameters, wrong or missing authentication, missing data, or an unavailable dependency. It is rendered after the conformance tests of its functionality. A scenario that spans several functionalities is bound to the last one it exercises and sorted by the same rule.
 - **Conformance test** — generated test code that implements one conformance scenario. It runs the implementation as a black box and is labelled with the scenario-id.
 - **Acceptance test** — generated test code that implements one acceptance scenario, labelled with the scenario-id.
-- **Old syntax** — functional specs as `- ` bullets and nested `***acceptance tests***`. Not supported; `migrate-plain-syntax` converts a project.
+- **Old syntax** — functional specs written as `- ` bullets with no `# ` headings, and `***acceptance tests***` nested in a core spec. Not supported; `migrate-plain-syntax` converts a project.
