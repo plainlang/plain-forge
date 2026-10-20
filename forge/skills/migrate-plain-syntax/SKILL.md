@@ -36,7 +36,7 @@ There is no backward compatibility: a project in the old syntax does not render,
 1. List every `.plain` file in the project. Follow the `requires` and `import` chains from each root module so no module is missed.
 2. For each file, record which signs of the old syntax it holds: a `***functional specs***` section whose specs are `- ` bullets with no `# ` headings, nested `***acceptance tests***` sections.
 3. Read every `config.yaml` to learn whether conformance tests are enabled for each module (a `conformance-tests-script` entry).
-4. Show the user the inventory (files, markers, conformance on or off per module) and get explicit confirmation before writing anything.
+4. Show the user the inventory (files, signs of the old syntax, conformance on or off per module) and get explicit confirmation before writing anything.
 
 ### 2. Give every functionality a func-id
 
