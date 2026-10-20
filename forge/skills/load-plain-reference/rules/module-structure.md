@@ -115,4 +115,4 @@ The :TaskList: is displayed.
 - A core spec is in the old syntax when either of these holds: its `***functional specs***` section has a `- ` bullet before its first `# ` heading or has no `# ` heading at all (the specs are written as bullets), or the file holds an `***acceptance tests***` section anywhere
 - A `- ` under a `# ` heading that is not indented is a formatting issue, not the old syntax: indent it by two spaces
 - The old syntax is not supported: the renderer rejects it, and no skill edits a file written in it
-- When a skill meets the old syntax, it stops, tells the user which file and which marker it found, and points to the `migrate-plain-syntax` skill, which converts the whole project in one pass
+- When a skill meets the old syntax, it stops, tells the user which file and which sign it found, and points to the `migrate-plain-syntax` skill, which converts the whole project in one pass
