@@ -26,7 +26,7 @@ Pick whichever entry point matches how much upfront design you want:
 ### 3. Validate and maintain
 
 - **`plain-healthcheck`** — the verification gate. Inventories every `.plain` module, validates every `config.yaml`, parses every top module with [`plain-parser`](https://github.com/plainlang/plain-parser), and checks every module against the ***plain rules. Returns `PASS` / `FAIL` with a numbered punch-list when something is broken.
-- **`migrate-plain-syntax`** — converts a project from the old syntax (`- ` functional specs, nested acceptance tests) to `# func-id` headings and test plain files under `tests/`. Run it when a skill or `plain-parser` reports the old syntax.
+- **`migrate-plain-syntax`** — converts a project from the old syntax (nested acceptance tests, `- ` functional specs) to `# func-id` headings and test plain files under `tests/`. Run it when a skill or `plain-parser` reports the old syntax.
 - **`init-config-file`** — assembles the canonical `config.yaml` per part of a project from the decisions made during interviewing.
 - **`check-plain-env`** — probes the host machine for everything the project needs (language toolchains, external services, system binaries, drivers) and emits a `PASS` / `WARN` / `FAIL` report with OS-specific install commands.
 - **`analyze-func-specs`** / **`analyze-if-func-spec-too-complex`** / **`break-down-func-spec`** / **`resolve-spec-conflict`** — the spec-quality toolchain that runs behind `add-feature` and `forge-plain` but can also be invoked directly when reviewing or refactoring.

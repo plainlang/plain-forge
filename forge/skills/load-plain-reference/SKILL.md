@@ -2,7 +2,7 @@
 name: load-plain-reference
 description: >-
   Loads the applicable ***plain authoring rules and operational references for the current task.
-  Covers section ownership, concepts, semantic IDs, test plain files, modules, resources, integrations, rendering, and testing
+  Covers section ownership, concepts, func-ids, test plain files, modules, resources, integrations, rendering, and testing
   without loading unrelated guidance. Use when authoring, editing, reviewing,
   or debugging .plain files, or before invoking another skill that reads or writes .plain content.
 ---
@@ -49,9 +49,9 @@ All paths are relative to this `SKILL.md`.
 | `required_concepts` | `rules/required-concepts.md` |
 | `exported_concepts` | `rules/exported-concepts.md` |
 | Linked files or `resources/` | `rules/linked-resources.md` |
-| Any `.plain` text or example | `rules/glossary.md`, `rules/bullet-continuation.md`, `rules/concise-specs.md` |
+| Any `.plain` text or example | `rules/bullet-continuation.md`, `rules/concise-specs.md` |
 | Drafting or trimming spec wording, or reviewing a spec for verbosity | `rules/concise-specs-examples.md` |
-| A file that may be in the old syntax (`- ` functional specs, nested `***acceptance tests***`) | `rules/module-structure.md` (*Old syntax*), then the `migrate-plain-syntax` skill |
+| A file that may be in the old syntax (nested `***acceptance tests***`, `- ` functional specs) | `rules/module-structure.md` (*Old syntax*), then the `migrate-plain-syntax` skill |
 
 For a whole-file review or a task spanning several sections, load the union of the applicable rule
 files. Do not load every rule by default.

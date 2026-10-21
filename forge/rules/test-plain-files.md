@@ -4,7 +4,7 @@ description: Syntax and authoring rules for test plain files, which hold the con
 
 # Rules for test plain files
 
-A test plain file holds the test scenarios of one functionality. The renderer generates conformance and acceptance tests from these scenarios and from nothing else: it never invents a scenario. Scenarios are written by people or by plain-forge at authoring time and are reviewed like any other spec line. Always follow these rules when creating or editing one.
+A test plain file holds the test scenarios of one functionality. Conformance scenarios test the core functionality, its expected use; acceptance scenarios catch the edge cases, the use that is not expected. The renderer generates conformance and acceptance tests from these scenarios and from nothing else: it never invents a scenario. Scenarios are written by people or by plain-forge at authoring time and are reviewed like any other spec line. Always follow these rules when creating or editing one.
 
 ## File skeleton
 - A test plain file is a `.plain` file with YAML frontmatter and two sections, in this order: `***conformance tests***`, then `***acceptance tests***`
@@ -68,27 +68,3 @@ A test plain file holds the test scenarios of one functionality. The renderer ge
 ## Relation to `***test reqs***`
 - `***test reqs***` of the module say how `:ConformanceTests:` are built and run (framework, command, network policy); the scenarios say what they check
 - A fact about the framework or the run command never goes into a scenario, and a scenario never goes into `***test reqs***`
-
-## Format
-
-```plain
----
-module: task-manager
-func_id: add-task
----
-
-***conformance tests***
-
-# add-valid-task
-Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task: named "Buy milk".
-
-# add-second-task
-Adding a :Task: named "Call mom" to a :TaskList: that holds "Buy milk" shows two :Task: items, "Buy milk" first.
-
-***acceptance tests***
-
-# reject-short-name
-Adding a :Task: named "Go" to an empty :TaskList: is rejected.
-  - :App: shows the error "Name must be at least 3 characters".
-  - :TaskList: stays empty.
-```

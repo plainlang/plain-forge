@@ -17,8 +17,8 @@ Always use the skill `load-plain-reference` to retrieve the ***plain syntax rule
 
 | Old syntax | Current syntax |
 |---|---|
-| A functional spec is a top-level `- ` bullet with nested `  - ` sub-bullets | A functional spec is a `# <func-id>` heading, a statement line, and indented `- ` clarification bullets |
 | `***acceptance tests***` nested under a functional spec | `***acceptance tests***` section of the functionality's test plain file `tests/<module>/<func-id>.plain` |
+| A functional spec is a top-level `- ` bullet with nested `  - ` sub-bullets | A functional spec is a `# <func-id>` heading, a statement line, and indented `- ` clarification bullets |
 | The renderer invents conformance tests | `***conformance tests***` section of the test plain file holds at least one scenario per functionality |
 
 There is no backward compatibility: a project in the old syntax does not render, and no other skill edits it. The migration converts the whole project in one pass.
@@ -34,7 +34,7 @@ There is no backward compatibility: a project in the old syntax does not render,
 ### 1. Inventory and confirm
 
 1. List every `.plain` file in the project. Follow the `requires` and `import` chains from each root module so no module is missed.
-2. For each file, record which signs of the old syntax it holds: a `***functional specs***` section whose specs are `- ` bullets with no `# ` headings, nested `***acceptance tests***` sections.
+2. For each file, record which signs of the old syntax it holds: nested `***acceptance tests***` sections, a `***functional specs***` section whose specs are `- ` bullets with no `# ` headings.
 3. Read every `config.yaml` to learn whether conformance tests are enabled for each module (a `conformance-tests-script` entry).
 4. Show the user the inventory (files, signs of the old syntax, conformance on or off per module) and get explicit confirmation before writing anything.
 

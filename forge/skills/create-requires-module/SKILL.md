@@ -11,7 +11,6 @@ description: >-
 
 Always use the skill `load-plain-reference` to retrieve the ***plain syntax rules — but only if you haven't done so yet.
 
-If a target `.plain` file is in the old syntax (see *Old syntax* in `module-structure.md`), stop, name the file, and point the user to `migrate-plain-syntax`; do not edit it.
 
 ## What Requires Does
 
