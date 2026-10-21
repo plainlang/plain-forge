@@ -11,7 +11,6 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-
 ## When This Applies
 
 A conflict exists (or is suspected) when:

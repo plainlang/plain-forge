@@ -14,7 +14,6 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-
 ## When to Use
 
 - The user asks for several functional specs to be added in one go (e.g. "add these three specs", "spec out this feature in a few bullets").

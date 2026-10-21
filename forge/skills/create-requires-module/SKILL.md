@@ -11,7 +11,6 @@ description: >-
 
 Always use the skill `load-plain-reference` to retrieve the ***plain syntax rules — but only if you haven't done so yet.
 
-
 ## What Requires Does
 
 `requires` attaches the current module to the project's build chain. The required module is built **before** the current one, and its generated code — the accumulated output of that module and all its ancestors — is copied as the starting point. The current module does not need to functionally extend the required module, but their outputs are never independent: the current module's code physically contains the required module's.

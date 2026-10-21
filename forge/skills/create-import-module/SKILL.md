@@ -11,7 +11,6 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-
 ## What an Import Module Is
 
 An import module is a `.plain` file that lives in the **`template/`** directory and contains **only** `***definitions***`, `***implementation reqs***`, and/or `***test reqs***`. It must **not** contain `***functional specs***` and must **not** use `requires` in its frontmatter. Other modules pull in its content via the `import` field in their YAML frontmatter, gaining access to its definitions and reqs.

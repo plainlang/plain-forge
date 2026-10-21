@@ -12,7 +12,6 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-
 ## Why This Matters
 
 The renderer enforces a hard complexity limit: each functional spec must imply a **maximum of 200 changed lines of code**. If a spec exceeds this, the renderer rejects it with "Functional spec too complex!" and the spec must be broken down. Catching this before insertion saves a failed render cycle.

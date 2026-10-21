@@ -11,7 +11,6 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-
 ## Input
 
 A **set of two or more functional specs** to check against each other. Callers typically supply one of:

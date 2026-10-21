@@ -11,7 +11,6 @@ description: >-
 
 **Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
-
 Linked resources are external files referenced from within a `.plain` spec using markdown link syntax. The file contents are passed to the renderer alongside the spec, providing additional context for code generation.
 
 ## Workflow
