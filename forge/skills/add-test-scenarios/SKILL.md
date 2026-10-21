@@ -1,15 +1,11 @@
 ---
 name: add-test-scenarios
 description: >-
-  Write or update the test plain file of one functionality: create
-  tests/<module>/<func-id>.plain, add the conformance scenarios for its
-  expected use and the acceptance scenarios for its unexpected use (invalid
-  parameters, wrong or missing authentication, missing data), in plain
-  English. Use right after a functional spec is added or changed,
-  when a functionality has no conformance scenario while conformance tests are
-  enabled, or when the user asks for a test scenario. This skill replaces the
-  removed add-acceptance-test skill; nested ***acceptance tests*** under a
-  functional spec are no longer written.
+  Write or update the test plain file of one functionality
+  (tests/<module>/<func-id>.plain): conformance scenarios for its expected use
+  and acceptance scenarios for its unexpected use, in plain English. Use after
+  a functional spec is added or changed, when a functionality has no
+  conformance scenario, or when the user asks for a test scenario.
 ---
 
 # Add Test Scenarios
