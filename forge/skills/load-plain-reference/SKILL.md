@@ -9,8 +9,9 @@ description: >-
 
 # Load the ***plain reference
 
-Load only the rules and references required for the current task. Files under `../../rules/` are
-the source of truth for `.plain` syntax and authoring constraints. Do not restate or override them.
+Load only the rules and references required for the current task. Files under `rules/`, next to
+this `SKILL.md`, are the source of truth for `.plain` syntax and authoring constraints. Do not
+restate or override them.
 
 **First, confirm the rules about to be loaded are current.** On the first invocation of this skill in
 a session, invoke `check-forge-version` before loading any rule file. A stale plain-forge ships stale
@@ -26,10 +27,7 @@ Skip the check on later invocations in the same session, and skip it when the ne
 
 ## 1. Account for rules already loaded
 
-- In Claude Code, applicable `.claude/rules/*.md` files are loaded natively. Do not read those rule
-  files again.
-- In another agent, do not reread a rule whose full content is already present in the current
-  context.
+- Do not reread a rule whose full content is already present in the current context.
 - Otherwise, read the applicable files from the routing table below before inspecting or changing
   `.plain` content.
 
@@ -39,19 +37,19 @@ All paths are relative to this `SKILL.md`.
 
 | Task or content | Rule files |
 |---|---|
-| New module, file skeleton, section placement, or comments | `../../rules/module-structure.md` |
-| Moving facts between sections (see `resolve-section-ownership`) | `../../rules/module-structure.md`, plus the rule file of each section involved |
-| Definitions or concept usage | `../../rules/definitions.md` |
-| Functional specs or acceptance tests | `../../rules/func-specs.md` |
-| Implementation requirements or unit tests | `../../rules/impl-reqs.md` |
-| Test requirements or conformance tests | `../../rules/test-reqs.md` |
-| `import` modules | `../../rules/import-modules.md` |
-| `requires` modules | `../../rules/requires-modules.md` |
-| `required_concepts` | `../../rules/required-concepts.md` |
-| `exported_concepts` | `../../rules/exported-concepts.md` |
-| Linked files or `resources/` | `../../rules/linked-resources.md` |
-| Any `.plain` text or example | `../../rules/bullet-continuation.md`, `../../rules/concise-specs.md` |
-| Drafting or trimming spec wording, or reviewing a spec for verbosity | `../../rules/concise-specs-examples.md` |
+| New module, file skeleton, section placement, or comments | `rules/module-structure.md` |
+| Moving facts between sections (see `resolve-section-ownership`) | `rules/module-structure.md`, plus the rule file of each section involved |
+| Definitions or concept usage | `rules/definitions.md` |
+| Functional specs or acceptance tests | `rules/func-specs.md` |
+| Implementation requirements or unit tests | `rules/impl-reqs.md` |
+| Test requirements or conformance tests | `rules/test-reqs.md` |
+| `import` modules | `rules/import-modules.md` |
+| `requires` modules | `rules/requires-modules.md` |
+| `required_concepts` | `rules/required-concepts.md` |
+| `exported_concepts` | `rules/exported-concepts.md` |
+| Linked files or `resources/` | `rules/linked-resources.md` |
+| Any `.plain` text or example | `rules/bullet-continuation.md`, `rules/concise-specs.md` |
+| Drafting or trimming spec wording, or reviewing a spec for verbosity | `rules/concise-specs-examples.md` |
 
 For a whole-file review or a task spanning several sections, load the union of the applicable rule
 files. Do not load every rule by default.
@@ -60,16 +58,16 @@ files. Do not load every rule by default.
 
 For an integration spec, always read:
 
-- `../../rules/integrations.md`
+- `rules/integrations.md`
 
 Then read the rule matching the integration shape:
 
-- Embedded integration: `../../rules/integration-embedded.md`
-- Standalone integration: `../../rules/integration-standalone.md`
-- Embedded integration test scripts: `../../rules/integration-embedded-testing.md`
+- Embedded integration: `rules/integration-embedded.md`
+- Standalone integration: `rules/integration-standalone.md`
+- Embedded integration test scripts: `rules/integration-embedded-testing.md`
 
 When drafting or trimming the wording of an integration spec, also read
-`../../rules/concise-specs-integration-examples.md`.
+`rules/concise-specs-integration-examples.md`.
 
 Do not load integration rules for ordinary non-integration specs.
 

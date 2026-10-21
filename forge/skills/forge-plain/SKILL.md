@@ -12,7 +12,7 @@ description: >-
 
 # Forge Plain
 
-Always invoke the `load-plain-reference` skill first to load the `***plain` syntax rules — but only if it hasn't been loaded yet this session.
+**Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
 ## Role
 

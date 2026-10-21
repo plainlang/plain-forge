@@ -369,8 +369,8 @@ function opencodeConfigPath(scope) {
 // The instructions glob to add. Project scope uses a cwd-relative glob (opencode
 // resolves relative instruction paths against the launch cwd). Global scope must
 // be absolute: opencode does not expand ~ and would resolve a relative path
-// against the project cwd, not the config dir. Only top-level rules/*.md are
-// wired in — the examples/ subtree holds reference scripts, not instructions.
+// against the project cwd, not the config dir. rules/ holds only the pointer to
+// load-plain-reference; the authoring rules ship inside that skill and load on demand.
 function opencodeRulesGlob(scope) {
   if (scope === "global") {
     return toPosix(
@@ -531,8 +531,9 @@ function agentsMdBlock(glob) {
     "## ***plain authoring rules (plain-forge)",
     "",
     "When creating or editing `.plain` specification files, first read and follow",
-    `every rule file matching \`${glob}\`. Each file covers one section or topic of`,
-    "the ***plain language; they are installed and maintained by plain-forge.",
+    `every rule file matching \`${glob}\`. They route to the \`load-plain-reference\``,
+    "skill, which loads the ***plain authoring rules for the task; they are installed",
+    "and maintained by plain-forge.",
     AGENTS_MD_END,
   ].join("\n");
 }

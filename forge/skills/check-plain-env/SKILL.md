@@ -12,7 +12,7 @@ description: >-
 
 # Check Plain Env
 
-Always use the skill `load-plain-reference` to retrieve the ***plain syntax rules — but only if you haven't done so yet.
+**Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
 This skill answers one question: **does the host machine have everything the ***plain project needs to render and test?** It reads the project, derives the requirement list, probes the machine, and returns a report. It never installs anything itself — that decision belongs to the user.
 

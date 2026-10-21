@@ -87,23 +87,26 @@ Each install writes three subfolders under the chosen directory:
 
 ```
 <agent-dir>/
-  skills/    # every plain-forge skill
-  rules/     # spec-writing rules (see "How the rules get applied" below)
+  skills/    # every plain-forge skill; the spec-writing rules ship in skills/load-plain-reference/rules/
+  rules/     # plain-forge.md, a short pointer to load-plain-reference (see "How the rules get applied" below)
   docs/      # shared reference docs
 ```
 
 #### How the rules get applied per agent
 
-The `skills/` are discovered natively by every supported agent. The `load-plain-reference` skill
-loads only the rules relevant to the current task and skips rules already present in context. Some
-agents additionally support native rules wiring:
+The `skills/` are discovered natively by every supported agent. The spec-writing rules ship inside the
+`load-plain-reference` skill, which loads only the rules relevant to the current task and skips rules
+already present in context — so a session pays for the rules its task needs, not for the whole rule
+set. The installed `rules/` dir holds only `plain-forge.md`, a short pointer telling the agent to
+invoke `load-plain-reference` when it works on `.plain` files. Each agent picks that pointer up as
+follows:
 
 | Agent | How rules are applied |
 |-------|-----------------------|
-| **Claude Code** | Native — Claude Code auto-loads `.claude/rules/*.md` at launch. Each rule carries `paths: "**/*.plain"` frontmatter so Claude scopes it to `.plain` files. No extra wiring. |
+| **Claude Code** | Native — Claude Code auto-loads `.claude/rules/*.md`. The pointer carries `paths: "**/*.plain"` frontmatter, so it loads only once Claude reads or edits a `.plain` file. No extra wiring. |
 | **OpenCode** | OpenCode doesn't auto-load a `rules/` dir; it reads globs from the `instructions` array in `opencode.json`. plain-forge **merges** a rules glob there — `.opencode/rules/*.md` (project, written to `./opencode.json`) or the absolute `~/.config/opencode/rules/*.md` (global, written to `~/.config/opencode/opencode.json`; absolute because OpenCode doesn't expand `~`). |
 | **ForgeCode** | plain-forge also appends a fenced managed pointer block to `AGENTS.md`: repo-root `./AGENTS.md` for project installs or `~/forge/AGENTS.md` globally. |
-| **Codex / GitHub Copilot / Universal** | No extra instruction file is generated. Their discovered `load-plain-reference` skill loads applicable files from `.agents/rules/` when needed. |
+| **Codex / GitHub Copilot / Universal** | No extra instruction file is generated. Their discovered `load-plain-reference` skill loads applicable files from `.agents/skills/load-plain-reference/rules/` when needed. |
 
 When plain-forge touches `opencode.json` or ForgeCode's `AGENTS.md`, it merges into existing content
 and leaves unrelated configuration intact. `uninstall` removes only plain-forge's glob or block.
@@ -254,7 +257,7 @@ git add vendor/pyro
 git commit -m "Bump pyro to vX.Y.Z"
 ```
 
-On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them into the chosen agent directory (`.claude/`, `.agents/` for Codex/Copilot/universal, `.forge/`, or `.opencode/` — see the per-agent table above for global-scope paths), recording every file it wrote in `<agent-dir>/.plain-forge/manifest.json` so `update` can later refresh and prune precisely. For agents that need it, it also wires the rules into `opencode.json` or ForgeCode's `AGENTS.md` (see [How the rules get applied per agent](#how-the-rules-get-applied-per-agent)).
+On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them into the chosen agent directory (`.claude/`, `.agents/` for Codex/Copilot/universal, `.forge/`, or `.opencode/` — see the per-agent table above for global-scope paths), recording every file it wrote in `<agent-dir>/.plain-forge/manifest.json` so `update` can later refresh and prune precisely. For agents that need it, it also wires the rules pointer into `opencode.json` or ForgeCode's `AGENTS.md` (see [How the rules get applied per agent](#how-the-rules-get-applied-per-agent)).
 
 ## Available Skills
 

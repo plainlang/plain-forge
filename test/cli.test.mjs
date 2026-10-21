@@ -120,7 +120,8 @@ describe("load-plain-reference content", () => {
   test("keeps the entrypoint concise and routes to rules instead of duplicating them", () => {
     assert.ok(skill.split("\n").length < 500);
     assert.match(skill, /source of truth/);
-    assert.match(skill, /\.\.\/\.\.\/rules\/func-specs\.md/);
+    assert.match(skill, /`rules\/func-specs\.md`/);
+    assert.doesNotMatch(skill, /\.\.\/\.\.\/rules\//);
     assert.doesNotMatch(skill, /Each functional spec must imply/);
     assert.doesNotMatch(skill, /PLAIN_REFERENCE\.md/);
   });
@@ -130,6 +131,60 @@ describe("load-plain-reference content", () => {
     assert.ok(
       fs.existsSync(path.join(skillDir, "references", "rendering-and-testing.md")),
     );
+  });
+
+  // The rules load only through this skill's routing table, so a rule file
+  // without a row is never read by any agent.
+  test("routes every rule file it ships", () => {
+    const rules = fs
+      .readdirSync(path.join(skillDir, "rules"))
+      .filter((f) => f.endsWith(".md"));
+    assert.ok(rules.length > 0);
+    for (const rule of rules) {
+      assert.ok(skill.includes(`\`rules/${rule}\``), `rules/${rule} is not routed`);
+    }
+  });
+
+  test("routes only to rule files that exist", () => {
+    for (const [, rel] of skill.matchAll(/`(rules\/[^`]+\.md)`/g)) {
+      assert.ok(fs.existsSync(path.join(skillDir, rel)), `${rel} does not exist`);
+    }
+  });
+});
+
+describe("skills that use load-plain-reference", () => {
+  // The rules reach context only when load-plain-reference runs, so every skill
+  // that relies on it carries the same gate: invoke it before touching .plain.
+  const GATE =
+    "**Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.";
+  const skillsDir = path.join(repoRoot, "forge", "skills");
+  const users = fs
+    .readdirSync(skillsDir)
+    .filter((s) => !["load-plain-reference", "check-forge-version"].includes(s))
+    .filter((s) => {
+      const p = path.join(skillsDir, s, "SKILL.md");
+      return fs.existsSync(p) && fs.readFileSync(p, "utf8").includes("load-plain-reference");
+    });
+
+  test("open with the load-the-rules-first gate", () => {
+    assert.ok(users.length > 0);
+    for (const s of users) {
+      const body = fs.readFileSync(path.join(skillsDir, s, "SKILL.md"), "utf8");
+      assert.ok(body.includes(GATE), `${s} does not carry the load-the-rules-first gate`);
+    }
+  });
+});
+
+describe("forge/rules pointer", () => {
+  // forge/rules/ lands in each agent's always-on rules location, so it must
+  // stay a small pointer rather than grow into the rule set itself.
+  test("ships only a small, .plain-scoped pointer to load-plain-reference", () => {
+    const rulesDir = path.join(repoRoot, "forge", "rules");
+    assert.deepEqual(fs.readdirSync(rulesDir), ["plain-forge.md"]);
+    const pointer = fs.readFileSync(path.join(rulesDir, "plain-forge.md"), "utf8");
+    assert.ok(pointer.length < 1000);
+    assert.match(pointer, /^---\n[\s\S]*?\npaths:\n {2}- "\*\*\/\*\.plain"\n[\s\S]*?---\n/);
+    assert.match(pointer, /`load-plain-reference`/);
   });
 });
 
@@ -587,6 +642,23 @@ describe("cli install (integration)", () => {
     assert.ok(
       fs.existsSync(path.join(project, ".claude", "skills", "forge-plain")),
     );
+    // Claude auto-loads .claude/rules/, so only the pointer lands there; the
+    // authoring rules ship inside load-plain-reference and load on demand.
+    assert.deepEqual(fs.readdirSync(path.join(project, ".claude", "rules")), [
+      "plain-forge.md",
+    ]);
+    assert.ok(
+      fs.existsSync(
+        path.join(
+          project,
+          ".claude",
+          "skills",
+          "load-plain-reference",
+          "rules",
+          "func-specs.md",
+        ),
+      ),
+    );
 
     // The reported skill count is the number of skill DIRECTORIES, not the
     // total file count (a skill can span several files).
@@ -680,7 +752,18 @@ describe("cli install (integration)", () => {
         ),
       ),
     );
-    assert.ok(fs.existsSync(path.join(base, "rules", "bullet-continuation.md")));
+    assert.ok(
+      fs.existsSync(
+        path.join(
+          base,
+          "skills",
+          "load-plain-reference",
+          "rules",
+          "bullet-continuation.md",
+        ),
+      ),
+    );
+    assert.ok(fs.existsSync(path.join(base, "rules", "plain-forge.md")));
     assert.equal(readManifest(base).agent, "copilot");
     assert.equal(fs.existsSync(path.join(project, "AGENTS.md")), false);
   });
@@ -751,6 +834,33 @@ describe("cli update (integration)", () => {
     assert.equal(fs.existsSync(mine), true, "user file untouched");
     const after = readManifest(base);
     assert.ok(!after.files.includes("skills/deprecated-skill.md"));
+  });
+
+  test("--yes prunes rules left by the old top-level rules/ layout", () => {
+    const project = mkTmp();
+    const home = mkTmp();
+    runCli(["install", "--agent", "claude", "--scope", "project"], {
+      cwd: project,
+      home,
+    });
+
+    const base = path.join(project, ".claude");
+    // Recreate what a release before the move left in the auto-loaded rules dir.
+    const legacy = [
+      "rules/func-specs.md",
+      "rules/examples/integration-embedded-testing/run_unittests_java.sh",
+    ];
+    for (const rel of legacy) write(path.join(base, rel), "old");
+    ageManifest(base, "0.0.1", legacy);
+
+    const res = runCli(["update", "--yes"], { cwd: project, home });
+    assert.equal(res.status, 0, res.stderr);
+    assert.deepEqual(fs.readdirSync(path.join(base, "rules")), ["plain-forge.md"]);
+    assert.ok(
+      fs.existsSync(
+        path.join(base, "skills", "load-plain-reference", "rules", "func-specs.md"),
+      ),
+    );
   });
 
   test("non-interactive without --yes keeps deprecated files and keeps tracking them", () => {
