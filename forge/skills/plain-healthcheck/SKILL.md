@@ -13,7 +13,7 @@ description: >-
 
 # Plain Healthcheck
 
-Always use the skill `load-plain-reference` to retrieve the ***plain syntax rules — but only if you haven't done so yet. Step 3b checks every module against those rules, and they are needed to fix what `plain-parser` reports in Step 3a.
+**Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation. Step 3b checks every module against those rules, and they are needed to fix what `plain-parser` reports in Step 3a.
 
 ## When to run
 

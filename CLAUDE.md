@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. **A tiny installer CLI** (`bin/cli.mjs`) — `npx plain-forge install|update|uninstall`.
 2. **The actual product** under `forge/` — a library of AI-agent *skills* and *rules* that teach an agent to author and maintain `***plain` specification files. The CLI copies `forge/` verbatim into an agent directory; there is **no build step** and no generated/committed output.
 
-So a change here is almost always one of: (a) editing the installer CLI, or (b) editing the instructional content under `forge/skills/` and `forge/rules/`. These need different mindsets — see "Editing `forge/` content" below.
+So a change here is almost always one of: (a) editing the installer CLI, or (b) editing the instructional content under `forge/skills/` (the authoring rules live in `forge/skills/load-plain-reference/rules/`). These need different mindsets — see "Editing `forge/` content" below.
 
 `plain-forge` only *authors* `.plain` specs. Rendering specs into code is done by a **separate** renderer, which this repo does not contain.
 
@@ -44,18 +44,24 @@ When changing install/update/uninstall behavior, update `test/cli.test.mjs` acco
 
 ## Editing `forge/` content (skills + rules)
 
-This is the heart of the product. Everything under `forge/` is **instructional text consumed by an AI agent at author-time**, not code that executes. Four consequences:
+This is the heart of the product. Everything under `forge/` is **instructional text consumed by an AI agent at author-time**, not code that executes. Five consequences:
 
-- **`forge/rules/` is the sole source of truth for writing `.plain`.** Every syntax rule,
+- **`forge/skills/load-plain-reference/rules/` is the sole source of truth for writing `.plain`.** Every syntax rule,
   section-ownership rule, constraint, and canonical `.plain` example belongs in the applicable rule
   file. Do not duplicate authoring guidance in skills or skill references; duplication drifts and
   creates contradictory instructions.
 - **`load-plain-reference` is a router, not a language guide.** Its `SKILL.md` stays concise and maps
-  the current task to only the applicable files under `forge/rules/`. It may route to focused
+  the current task to only the applicable files under its `rules/` directory. It may route to focused
   operational references for project layout or rendering/testing, but those references must not
-  restate `.plain` authoring rules. Integration rules load only for integration work. Claude skips
-  rereading rules already supplied natively; other agents read only rules not already in context.
-- **Example hygiene is load-bearing.** The rules teach `.plain` syntax, and a `.plain` example written the wrong way *leaks* — agents imitate it. Bare-continuation examples may appear **only** inside blocks explicitly labeled BAD / WRONG / `Before:` / `Too complex:`. Every "good"/"after"/"acceptable"/canonical/`## Format` example must make each line a valid `- ` list item. (`forge/rules/bullet-continuation.md` is the canonical rule.)
+  restate `.plain` authoring rules. Integration rules load only for integration work. Agents read only
+  rules not already in context. Every file in its `rules/` needs a row in the routing table — a test
+  enforces this, because an unrouted rule is never loaded.
+- **`forge/rules/` holds only the `plain-forge.md` pointer.** The installer copies it into the agent's
+  always-on rules location (Claude Code loads it when a `.plain` file is read, OpenCode every session,
+  ForgeCode through its `AGENTS.md` pointer block), so it stays a short pointer to `load-plain-reference`. Never put authoring
+  rules there: their context cost would be paid in every session instead of only by the tasks that
+  route to them.
+- **Example hygiene is load-bearing.** The rules teach `.plain` syntax, and a `.plain` example written the wrong way *leaks* — agents imitate it. Bare-continuation examples may appear **only** inside blocks explicitly labeled BAD / WRONG / `Before:` / `Too complex:`. Every "good"/"after"/"acceptable"/canonical/`## Format` example must make each line a valid `- ` list item. (`forge/skills/load-plain-reference/rules/bullet-continuation.md` is the canonical rule.)
 - **Skills are narrow and chained.** Each `forge/skills/<name>/SKILL.md` has YAML frontmatter (`name` = dir name, `description` = a `>-` block ending in a "Use when…" trigger) and a prose body. Most spec-touching skills invoke `load-plain-reference` first so it can select the relevant rules. Large or operational detail belongs in a skill's `references/` directory and loads only when needed. Only the three test-script generators (`implement-{unit-testing,conformance-testing,prepare-environment}-script`) carry an `assets/` dir of reference `.sh`/`.ps1` scripts.
 
 ### The `.plain` model the content describes
@@ -70,11 +76,11 @@ A `.plain` file is a module: YAML frontmatter (`description`, `import:`, `requir
 | `***test reqs***` | **everything about `:ConformanceTests:`** (framework, run command, mocking/network policy) |
 | `***acceptance tests***` | nested under a functional spec (not top-level); full end-to-end workflows |
 
-Other constraints the rules enforce (see `forge/rules/`): functional specs are mandatorily routed through `add-functional-spec(s)` (never hand-authored), checked for the 200-LOC limit (`analyze-if-func-spec-too-complex` → `break-down-func-spec`) and for conflicts (`analyze-func-specs` → `resolve-spec-conflict`); external artifacts (JSON Schema, OpenAPI, payloads) are **linked** as single local text files under `resources/`, never transcribed and never folders/URLs/binaries; generated output under `plain_modules/<module>/code/` (implementation + unit tests) and `plain_modules/<module>/tests/` (conformance tests) is read-only — fixes go back into the spec and re-render.
+Other constraints the rules enforce (see `forge/skills/load-plain-reference/rules/`): functional specs are mandatorily routed through `add-functional-spec(s)` (never hand-authored), checked for the 200-LOC limit (`analyze-if-func-spec-too-complex` → `break-down-func-spec`) and for conflicts (`analyze-func-specs` → `resolve-spec-conflict`); external artifacts (JSON Schema, OpenAPI, payloads) are **linked** as single local text files under `resources/`, never transcribed and never folders/URLs/binaries; generated output under `plain_modules/<module>/code/` (implementation + unit tests) and `plain_modules/<module>/tests/` (conformance tests) is read-only — fixes go back into the spec and re-render.
 
 ### The skill lifecycle (orchestration)
 
-`forge-plain` is the top-level orchestrator: a short Phase 0 intent interview followed by four gated phases — (1) definitions + functional specs, (2) implementation reqs / tech stack, (3) testing (unit→impl reqs, conformance→test reqs, generate `test_scripts/`, build `config.yaml`, probe host via `check-plain-env`), (4) validate via `plain-healthcheck` (config and script checks, `plain-parser check` on every top module, plus rule checks the parser can't do) then hand off the render target. Phases 1–3 are **one-question-at-a-time, write-to-disk-immediately**. `add-feature` is the same authoring loop scoped to one feature on an existing project; `init-plain-project` is a no-interview scaffold. The installer ships `forge/rules/*.md` beside the skills; native rule consumers load them directly, while other agents reach them through `load-plain-reference`.
+`forge-plain` is the top-level orchestrator: a short Phase 0 intent interview followed by four gated phases — (1) definitions + functional specs, (2) implementation reqs / tech stack, (3) testing (unit→impl reqs, conformance→test reqs, generate `test_scripts/`, build `config.yaml`, probe host via `check-plain-env`), (4) validate via `plain-healthcheck` (config and script checks, `plain-parser check` on every top module, plus rule checks the parser can't do) then hand off the render target. Phases 1–3 are **one-question-at-a-time, write-to-disk-immediately**. `add-feature` is the same authoring loop scoped to one feature on an existing project; `init-plain-project` is a no-interview scaffold. Every agent reaches the authoring rules through `load-plain-reference`; the installed `rules/` dir carries only the pointer to it.
 
 ## Memory / persistent context
 

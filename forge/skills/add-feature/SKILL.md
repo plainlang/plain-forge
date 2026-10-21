@@ -13,7 +13,7 @@ description: >-
 
 # Add Feature
 
-Always use the skill `load-plain-reference` to retrieve the ***plain syntax rules — but only if you haven't done so yet.
+**Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
 `add-feature` is the continuous-loop counterpart of `forge-plain`. Where `forge-plain` bootstraps an entire project from scratch, `add-feature` adds a single feature to an **existing** set of `.plain` specs. It begins with a short intent phase, then runs the authoring loop scoped to one feature.
 
