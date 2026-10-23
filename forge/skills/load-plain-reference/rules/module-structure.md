@@ -110,8 +110,3 @@ A :Task: can be added to the :TaskList:.
 # show-task-list
 The :TaskList: is displayed.
 ```
-
-## Old syntax
-- A core spec is in the old syntax when it holds an `***acceptance tests***` section (nested under a functional spec), or when its `***functional specs***` are written as `- ` bullets with no `# ` headings
-- The old syntax is not supported: the renderer rejects it, and no skill edits a file written in it
-- When a skill meets the old syntax, it stops, tells the user which file and which sign it found, and points to the `migrate-plain-syntax` skill, which converts the whole project in one pass

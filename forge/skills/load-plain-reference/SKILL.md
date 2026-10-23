@@ -51,7 +51,6 @@ All paths are relative to this `SKILL.md`.
 | Linked files or `resources/` | `rules/linked-resources.md` |
 | Any `.plain` text or example | `rules/bullet-continuation.md`, `rules/concise-specs.md` |
 | Drafting or trimming spec wording, or reviewing a spec for verbosity | `rules/concise-specs-examples.md` |
-| A file that may be in the old syntax (nested `***acceptance tests***`, `- ` functional specs) | `rules/module-structure.md` (*Old syntax*), then the `migrate-plain-syntax` skill |
 
 For a whole-file review or a task spanning several sections, load the union of the applicable rule
 files. Do not load every rule by default.

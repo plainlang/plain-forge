@@ -117,7 +117,7 @@ A :User: can add a :Task:. Only valid :Task: items are added.
 - Behavior that downstream modules need must be expressed in functional specs, not elsewhere
 
 ## Test scenarios live in test plain files
-- A core spec never holds a `***acceptance tests***` section, nested or top-level; that is the old syntax (see `module-structure.md`)
+- A core spec never holds a `***acceptance tests***` section, nested or top-level
 - Conformance and acceptance scenarios for a functionality go into `tests/<module>/<func-id>.plain`, written with `add-test-scenarios` (see `test-plain-files.md`)
 - A functional spec and its test plain file change together: a spec edit without a scenario review is not finished
 

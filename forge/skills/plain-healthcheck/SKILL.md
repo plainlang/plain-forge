@@ -111,7 +111,6 @@ Check every `.plain` module against the rules loaded by `load-plain-reference`:
 2. **Bullets and headings.** Every line in `***definitions***`, `***implementation reqs***`, and `***test reqs***` is a valid `- ` list item or a correctly indented sub-bullet — no bare continuation lines. Every functionality in `***functional specs***` is a `# <func-id>` heading followed by its body, with its `- ` clarifications indented by two spaces; a `- ` under a heading that is not indented is fixed by indenting it.
 3. **Linked resources.** Every linked resource is a single **text** file (not a binary), and no URL or folder path appears in the surrounding spec text unless it is a runtime value the generated software itself uses.
 4. **Test plain files.** Every test plain file binds to an existing functionality (`module:` names a module, `func_id:` one of its `# func-id` headings) and has both sections in order. Scenario-ids are unique per functionality across every file bound to it. When the module's `config.yaml` has a `conformance-tests-script`, every functionality has at least one conformance scenario; a functionality with none is a failure that names `add-test-scenarios`. A scenario under `***conformance tests***` that describes use that is not expected (invalid parameters, wrong or missing authentication, missing data), or one under `***acceptance tests***` that describes the expected use, is a failure that names `add-test-scenarios`.
-5. **Old syntax.** An `***acceptance tests***` section in a core spec, or a `***functional specs***` section written as `- ` bullets with no `# ` headings, is a failure that names `migrate-plain-syntax`. Do not fix it inline.
 
 Functional-spec complexity is checked when a spec is authored (`add-functional-spec(s)` → `analyze-if-func-spec-too-complex`). Re-run `analyze-if-func-spec-too-complex` here only for a spec that was hand-edited since it was authored.
 
@@ -122,7 +121,7 @@ Treat 3a and 3b together as a hard gate: the healthcheck **only passes** when `p
 Iterate until it passes:
 
 1. Identify the offending `.plain` file, the line, and the kind of issue: missing or duplicated concept, cyclic definition, broken `import`/`requires`, misplaced fact, bare continuation line, missing resource or template, etc.
-2. Fix only the `.plain` files (or the relevant `config.yaml` / template) using the appropriate edit skill — `add-concept`, `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `add-test-scenarios`, `resolve-section-ownership`, `resolve-spec-conflict`, `break-down-func-spec`, `consolidate-concepts`, or an inline edit — or `migrate-plain-syntax` for a file in the old syntax. **Never** modify generated code under `plain_modules/<module>/code/` or `plain_modules/<module>/tests/`.
+2. Fix only the `.plain` files (or the relevant `config.yaml` / template) using the appropriate edit skill — `add-concept`, `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `add-test-scenarios`, `resolve-section-ownership`, `resolve-spec-conflict`, `break-down-func-spec`, `consolidate-concepts`, or an inline edit. **Never** modify generated code under `plain_modules/<module>/code/` or `plain_modules/<module>/tests/`.
 3. If you are uncertain about ***plain syntax for the failing construct, re-load `load-plain-reference` before fixing.
 4. Re-run the failed checks — for a `plain-parser` failure, re-run `plain-parser check`. Repeat until they pass.
 
@@ -155,6 +154,6 @@ The verdict goes on the first line so callers can pattern-match without parsing 
 - [ ] Every `test_scripts/*` file is referenced by some `config.yaml` (or surfaced as a warning)
 - [ ] The parser probe passed, or the report says 3a is suspended and names the plain-parser release that is needed
 - [ ] `plain-parser check` printed `OK` for every top module, run from that module's directory
-- [ ] Every module passes every check in Step 3b (section ownership, bullets and headings, linked resources, test plain files, old syntax)
+- [ ] Every module passes every check in Step 3b (section ownership, bullets and headings, linked resources, test plain files)
 - [ ] Every test plain file binds to an existing functionality, and every functionality has at least one conformance scenario when conformance tests are enabled
 - [ ] Verdict (`PASS` / `FAIL`) is on the first line, with a numbered list of remaining problems if it failed
