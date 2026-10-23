@@ -17,7 +17,6 @@ Every functionality in `***functional specs***` and every scenario in a test pla
 - Lowercase letters, digits, and hyphens only: `add-task`, `export-csv-2`, `ctrl-d-exit`
 - The heading is `# ` (hash, one space) followed by the ID and nothing else
 - Nothing else is checked: an ID needs no meaning, no prefix, and no number
-- Prefer a short slug that names the behavior (`add-task`, not `fs-3` or `the-user-adds-a-task`), so render logs and test names can be read without the spec open
 
 ## Uniqueness
 - A func-id is unique in its module; two modules may use the same func-id
