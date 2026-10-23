@@ -11,7 +11,7 @@ description: >-
 
 # Migrate Plain Syntax
 
-Always use the skill `load-plain-reference` to retrieve the ***plain syntax rules — but only if you haven't done so yet. This skill needs `module-structure.md`, `func-specs.md`, `semantic-ids.md`, `test-plain-files.md`, `requires-modules.md`, and `import-modules.md`.
+**Load the rules first.** Before you read, edit, or write any `.plain` file, invoke the `load-plain-reference` skill and read the rule files it routes you to. Skip this only if `load-plain-reference` already ran in this conversation.
 
 ## What changes
 
