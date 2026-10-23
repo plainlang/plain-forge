@@ -17,12 +17,12 @@ description: >-
 
 ## Scope
 
-This skill is intentionally **minimal**. It produces a runnable project skeleton — not a complete spec. **No `***definitions***` sections are written by this skill — not in the template module, not in the top module.** No functional specs, no concepts, no acceptance tests, no validation. The user will fill those in afterwards with `add-feature`, `add-concept`, `add-functional-spec`, etc.
+This skill is intentionally **minimal**. It produces a runnable project skeleton — not a complete spec. **No `***definitions***` sections are written by this skill — not in the template module, not in the top module.** No functional specs, no concepts, no test plain files, no validation. The user will fill those in afterwards with `add-feature`, `add-concept`, `add-functional-spec`, etc.
 
 What this skill writes:
 
 - `template/base.plain` — an import module with the project's base `***implementation reqs***` and `***test reqs***`.
-- `<project>.plain` — a top-level module that imports `base`. Frontmatter only — no body sections. The user adds `***functional specs***` later.
+- `<project>.plain` — a top-level module that imports `base`. Frontmatter only — no body sections. The user adds `***functional specs***` later, each with its test plain file.
 - `test_scripts/run_unittests_<lang>.<sh|ps1>` — always.
 - `test_scripts/run_conformance_tests_<lang>.<sh|ps1>` — only if conformance testing is enabled.
 - `test_scripts/prepare_environment_<lang>.<sh|ps1>` — only if conformance testing is enabled **and** the user opts in.
@@ -31,7 +31,7 @@ What this skill writes:
 What this skill does **not** do:
 
 - Run `plain-healthcheck`.
-- Author concepts, functional specs, or acceptance tests.
+- Author concepts, functional specs, or test plain files.
 - Probe the host environment (`check-plain-env` is a separate step the user can run later).
 
 ## Workflow
@@ -51,7 +51,7 @@ Follow up with a free-form prompt for anything the options didn't cover (e.g. sp
 Use **AskUserQuestion** for one tight batch covering:
 
 - **Unit testing framework** — propose the canonical one for the chosen language (pytest, Jest, Go `testing`, JUnit, ...) and let the user override.
-- **Conformance testing** — enabled or not. If the user is unsure, briefly explain it adds a `run_conformance_tests` script and per-spec acceptance tests later.
+- **Conformance testing** — enabled or not. If the user is unsure, briefly explain it adds a `run_conformance_tests` script and, for every functionality added later, a test plain file with conformance scenarios.
 - **Prepare-environment script** — only ask this if conformance testing was enabled in the previous question. Generate one or skip. Recommend "yes" when dependencies need installing (most stacks); recommend "skip" when there is genuinely nothing to set up. If conformance testing is disabled, skip this question entirely and do not generate a prepare-environment script.
 
 ### 3. Author `template/base.plain`
@@ -118,7 +118,7 @@ Do **not** invoke `init-config-file` or `plain-healthcheck` here — keeping thi
 Tell the user what was created and what's next:
 
 - Files written: `template/base.plain`, `<project>.plain`, the test scripts, `config.yaml`.
-- Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs`, or jump straight into `add-feature`.
+- Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs` (each new functionality gets its test plain file when conformance testing is enabled), or jump straight into `add-feature`.
 - Mention that the project has not been validated — they can run `plain-healthcheck` when they want validation.
 
 ## Validation checklist

@@ -54,7 +54,7 @@ Use the dedicated edit skills for every write — never hand-author a `***plain`
 
 ## Review loop
 
-After each authoring step, review **only what just changed** — never re-review the whole file. Pick the single most relevant snippet (one concept, one functional spec, the module frontmatter, one requirement, one acceptance test, one script change, one `config.yaml` entry) and embed it directly in the `AskUserQuestion` prompt so the user sees exactly what they approve. Frame each question around one of:
+After each authoring step, review **only what just changed** — never re-review the whole file. Pick the single most relevant snippet (one concept, one functional spec, the module frontmatter, one requirement, one test plain file, one script change, one `config.yaml` entry) and embed it directly in the `AskUserQuestion` prompt so the user sees exactly what they approve. Frame each question around one of:
 
 - **Missing parts** — something that should be in the snippet but isn't (an attribute, a validation rule, an edge case, a missing concept).
 - **Possible extensions** — behavior or detail that could reasonably be expanded.
@@ -84,7 +84,7 @@ When entering a phase, read its reference file and walk its topics **in order** 
 | 0 — What is the intent? | `references/phase-0-intent.md` | a concise intent brief covering the problem, primary user and outcome, and initial boundary is explicitly confirmed; nothing is written to disk |
 | 1 — What are we building? | `references/phase-1-product.md` | the new `***definitions***` and `***functional specs***`, plus any technology-free `***implementation reqs***`, are on disk and approved |
 | 2 — What tech should it use? | `references/phase-2-tech.md` | the new `***implementation reqs***` are on disk and approved |
-| 3 — How is testing done? | `references/phase-3-testing.md` | the `***test reqs***` (and `***acceptance tests***` if conformance is on) are on disk, the `test_scripts/` and `config.yaml`(s) exist, and `check-plain-env` passed or each gap was acknowledged |
+| 3 — How is testing done? | `references/phase-3-testing.md` | the `***test reqs***` (and the test plain files if conformance is on) are on disk, the `test_scripts/` and `config.yaml`(s) exist, and `check-plain-env` passed or each gap was acknowledged |
 | 4 — Validate and hand off | `references/phase-4-validate-handoff.md` | `plain-healthcheck` returned `PASS`, and the user has the render target plus every side-channel command |
 
 Between phases, summarize and get explicit overall confirmation before continuing — the intent brief

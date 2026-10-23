@@ -19,6 +19,7 @@ When this module is rendered:
 - The required module's generated code (`plain_modules/<required_module>/code`) is copied as the starting point.
 - The `***functional specs***` of the required module **and all its ancestors** become visible as **previous functional specs**.
 - Of the required module's definitions, only the concepts in its `exported_concepts` are visible, each with its full definition text. Export visibility is **not** transitive — to see an ancestor's exports, list that ancestor in `requires` too.
+- The required module's test plain files stay with the required module. The new module gets its own test plain files, one per functionality it adds (see `test-plain-files.md`).
 
 All modules connected by `requires` form a single tree with a common root. **Diamond joins are prohibited**: multiple `requires` entries must lie on one root-to-tip ancestor path. The deepest entry is the attachment point; the other entries exist only to make those ancestors' exports visible.
 
@@ -34,7 +35,7 @@ If you only need shared definitions and reqs (no functional specs, no generated 
 2. **Create the `.plain` file at the repository root** with YAML frontmatter containing the `requires` field. Modules with functional specs live at the root, not in `template/`.
 3. **Review the functional specs of the whole ancestor chain** — they will be treated as previous requirements. Your new functional specs must not conflict with any of them.
 4. **Review each listed module's `exported_concepts`** — only those concepts are available to reference; an ancestor's exports require listing that ancestor.
-5. **Add module-specific content** — definitions, implementation reqs, test reqs, and functional specs unique to this module.
+5. **Add module-specific content** — definitions, implementation reqs, test reqs, and functional specs unique to this module. Add every functional spec through `add-functional-spec` or `add-functional-specs`, which also create its test plain file.
 6. **Check for conflicts** between your new functional specs and any spec in the ancestor chain.
 
 ## Format
@@ -56,7 +57,8 @@ description: Extended module that builds on base_module
 
 ***functional specs***
 
-- :NewFeature: is available.
+# new-feature
+:NewFeature: is available.
 ```
 
 A module can use both `requires` and `import` together. `requires` points to other root-level modules; `import` resolves from the default `template/` directory (no prefix needed).
@@ -106,5 +108,6 @@ The current module may or may not be functionally related to the required module
 - [ ] Every listed module's `exported_concepts` provide the concepts you need
 - [ ] New functional specs do not conflict with any spec in the ancestor chain
 - [ ] Module has at least one functional spec and one implementation req
+- [ ] Every functional spec has its test plain file
 - [ ] Both `requires` and `import` are used correctly (not mixed up)
 - [ ] YAML frontmatter is correctly formatted between `---` markers

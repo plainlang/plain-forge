@@ -31,7 +31,7 @@ There are three possible outcomes — determine which one applies **before** mak
 | Outcome | Symptom | Fix |
 |---------|---------|-----|
 | **Implementation is incorrect** | Generated code doesn't match the spec's intent. The specs themselves are fine. | Clarify the ambiguous spec so the renderer interprets it correctly. Re-render. |
-| **Conformance tests are incorrect** | The tests don't accurately verify the spec. The implementation is actually correct. | Adjust `***test reqs***` or `***acceptance tests***` to guide better test generation. Re-render. |
+| **Conformance tests are incorrect** | The tests don't accurately verify the spec. The implementation is actually correct. | Adjust `***test reqs***`, or the scenarios in the test plain file via `add-test-scenarios`, to guide better test generation. Re-render. |
 | **Requirements truly conflict** | The two specs are inherently contradictory — no implementation can satisfy both. | One or both specs must be revised. See Step 3. |
 
 **How to diagnose:**
@@ -49,25 +49,29 @@ Before (ambiguous):
 ```plain
 ***functional specs***
 
-- All :Resource: items are returned.
+# list-resources
+All :Resource: items are returned.
 
-- Only active :Resource: items are returned.
+# list-active-resources
+Only active :Resource: items are returned.
 ```
 
 After (disambiguated):
 ```plain
 ***functional specs***
 
-- All :Resource: items are returned when no filter is specified.
+# list-resources
+All :Resource: items are returned when no filter is specified.
 
-- When the "active" filter is specified, only active :Resource: items are returned.
+# list-active-resources
+When the "active" filter is specified, only active :Resource: items are returned.
 ```
 
 **Strategy B: Revise the newer spec.** If the new spec introduced the conflict, rewrite it to be compatible with the established behavior from earlier specs.
 
 **Strategy C: Revise the older spec.** If the older spec was under-specified and the new requirement reveals a better design, update the older spec. This is more disruptive — all conformance tests for that spec and everything after it may need re-rendering.
 
-**Strategy D: Merge into one spec.** If the two specs describe overlapping behavior, combine them into a single, clear spec. Remove the redundant one. Be mindful of the 200 LOC limit.
+**Strategy D: Merge into one spec.** If the two specs describe overlapping behavior, combine them into a single, clear spec. Remove the redundant one and its test plain file, moving any still valid scenario into the kept functionality's file. Be mindful of the 200 LOC limit.
 
 ### Step 4: Validate the Resolution
 
@@ -75,7 +79,8 @@ After editing:
 1. Re-read the full `***functional specs***` section to confirm no new conflicts were introduced.
 2. Check that any revised spec still respects the 200 LOC limit.
 3. Check that chronological ordering still makes sense (earlier specs should not depend on later ones).
-4. If resolving via test adjustments, verify the `***test reqs***` or `***acceptance tests***` changes are appropriate.
+4. If resolving via test adjustments, verify the `***test reqs***` or test plain file changes are appropriate.
+5. For every revised functionality, invoke `add-test-scenarios` to bring its test plain file in step with the new text.
 
 ## Prevention (for use during add-functional-spec / add-functional-specs)
 
@@ -95,3 +100,4 @@ Before adding a new spec, run through this quick conflict check:
 - [ ] No new conflicts introduced by the fix
 - [ ] Chronological ordering preserved
 - [ ] All referenced `:Concepts:` are still defined
+- [ ] Test plain files of the revised functionalities brought in step via `add-test-scenarios`

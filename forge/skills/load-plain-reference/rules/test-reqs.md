@@ -9,7 +9,7 @@ When writing or editing a `***test reqs***` section in a `.plain` file, always f
 ## Conformance tests only
 - Test reqs specify how **conformance tests** should be written and run
 - Unit test guidance goes in `***implementation reqs***`, not here
-- Acceptance tests are nested under individual functional specs, not here
+- Test scenarios, conformance and acceptance, live in test plain files, not here — see `test-plain-files.md`
 - Behavioral requirements go in `***functional specs***`, not here
 
 ## `:ConformanceTests:` lives here (hard rule)
@@ -28,11 +28,11 @@ When writing or editing a `***test reqs***` section in a `.plain` file, always f
 
 ## Test type reference
 
-| Test type | Where to specify | Generated | Purpose |
-|-----------|-----------------|-----------|---------|
-| Unit tests | `***implementation reqs***` | Automatically | Test individual functionalities in isolation |
-| Conformance tests | `***test reqs***` | Automatically | Verify each functionality's implementation against its functional spec |
-| Acceptance tests | `***acceptance tests***` under a functional spec | Manually | Verify implementation of a functional spec through a specific end-to-end scenario |
+| Test type | Where to specify | Generated from | Purpose |
+|-----------|-----------------|----------------|---------|
+| Unit tests | `***implementation reqs***` | the implementation, by the renderer | Test individual functionalities in isolation |
+| Conformance tests | how: `***test reqs***`; what: `***conformance tests***` of the functionality's test plain file | the conformance scenarios, one test per scenario-id | Verify the expected use of one functionality, its main path |
+| Acceptance tests | how: `***test reqs***`; what: `***acceptance tests***` of the functionality's test plain file | the acceptance scenarios, one test per scenario-id | Verify one functionality under use that is not expected: invalid parameters, wrong or missing authentication, missing data |
 
 ## No duplication
 - Do not duplicate guidance already present in the file or its imports

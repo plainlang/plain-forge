@@ -20,7 +20,7 @@ Pick whichever entry point matches how much upfront design you want:
 ### 2. Grow an existing project
 
 - **`add-feature`** — takes a feature request in plain English and runs the same one-question-at-a-time loop that `forge-plain` uses, scoped to a single feature against an existing `.plain` file.
-- **Per-section authoring skills** — `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `add-test-requirement`, `add-concept`, `add-acceptance-test`, `add-resource`, `add-template`. Each enforces the relevant ***plain syntax rules (concept uniqueness, complexity limits, bullet syntax, linked-resource constraints, …) so hand-authoring doesn't drift from the language.
+- **Per-section authoring skills** — `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `add-test-requirement`, `add-concept`, `add-test-scenarios`, `add-resource`, `add-template`. Each enforces the relevant ***plain syntax rules (concept uniqueness, complexity limits, bullet syntax, linked-resource constraints, …) so hand-authoring doesn't drift from the language. `add-test-scenarios` writes the test plain file of a functionality — by convention `tests/<module>/<func-id>.plain` — with the conformance and acceptance scenarios the renderer implements, and nothing else.
 - **Module-management skills** — `create-import-module`, `create-requires-module`, `refactor-module`, `consolidate-concepts` for restructuring as the project grows.
 
 ### 3. Validate and maintain
@@ -279,7 +279,7 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 | `add-implementation-requirement` | Add a non-functional requirement to `***implementation reqs***` |
 | `add-test-requirement` | Add a testing requirement to `***test reqs***` |
 | `add-concept` | Define a new concept in `***definitions***` |
-| `add-acceptance-test` | Add verification criteria under a functional spec |
+| `add-test-scenarios` | Write or update the test plain file of a functionality (by convention `tests/<module>/<func-id>.plain`): conformance scenarios for its expected use and, when asked, acceptance scenarios for its unexpected use, in plain English |
 | `add-resource` | Link an external file (schema, API spec) to a spec |
 | `add-template` | Create or include a reusable Liquid template |
 
@@ -297,7 +297,7 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 | Skill | Description |
 |-------|-------------|
 | `init-config-file` | Build / finalize the project's `config.yaml` file(s) from the decisions made in Phase 3. Knows the full set of valid keys, refuses to write secrets or per-invocation options, and produces one config per part of the project. Run at the end of `forge-plain` (just before `plain-healthcheck`) and any time the testing surface changes. |
-| `plain-healthcheck` | Verification gate: validates every `config.yaml`, confirms each `*-script` field points at a real file in `test_scripts/`, runs `plain-parser check` on every top module, and checks every module against the rules. Run whenever anything in the project is finalized — at the end of `forge-plain`, at the end of `add-feature`, after `debug-specs`, and after any single-skill edit that touches the renderable surface. |
+| `plain-healthcheck` | Verification gate: validates every `config.yaml`, confirms each `*-script` field points at a real file in `test_scripts/`, runs `plain-parser check` on every top module, and checks every module and test plain file against the rules. Run whenever anything in the project is finalized — at the end of `forge-plain`, at the end of `add-feature`, after `debug-specs`, and after any single-skill edit that touches the renderable surface. |
 | `check-plain-env` | Read the project's `.plain` files, `test_scripts/`, `config.yaml`(s), and `resources/`, then probe the host for every requirement **the package manager can't install**: language toolchains (`python` + `pip`, `node` + `npm`, JDK + `mvn`, Go, Rust, .NET, etc.), external services (Postgres, Redis, Docker, ...), system binaries that language packages wrap (`ffmpeg`, `tesseract`, `pdftoppm`, browser binaries, ...), hardware / drivers / accelerators (NVIDIA driver → CUDA toolkit → cuDNN → framework-sees-GPU chain), credential env vars, and `plain-parser`. Does **not** probe individual language packages — `pip install -r requirements.txt` (and equivalents) handle those when the test scripts run. Emits a `PASS` / `WARN` / `FAIL` report with OS-specific install commands for any gaps. Read-only — never installs anything. Run on first-time setup, before rendering on a new machine, after adding a new tech to a project, or any time `command not found` shows up in test output. |
 | `analyze-if-func-spec-too-complex` | Check if a spec exceeds the 200-line complexity limit |
 | `analyze-func-specs` | Check a batch of specs (2+) against each other in one call and return every conflicting pair |

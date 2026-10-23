@@ -14,10 +14,11 @@ those specifications.
 ```text
 *.plain                  # Root specification modules
 template/*.plain         # Reusable import modules
+tests/<module>/<func-id>.plain   # Test plain files, one per functionality (conventional location)
 resources/               # Linked text artifacts such as schemas and fixtures
 plain_modules/           # Generated output, one directory per module
   <module>/code/         #   implementation and unit tests
-  <module>/tests/        #   conformance tests, one folder per functional spec
+  <module>/tests/        #   conformance tests, one folder per functionality, one test per scenario
 test_scripts/            # Unit, environment-preparation, and conformance runners
 config.yaml              # renderer configuration
 ```

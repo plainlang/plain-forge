@@ -72,7 +72,7 @@ For each affected module, determine the frontmatter changes:
 |--------|------|
 | Add the new import to `import` list | Module does not already import the target |
 | Remove concepts from `exported_concepts` | Concepts that were exported only to share definitions — now handled by the import |
-| Keep concepts in `exported_concepts` | Concepts that downstream `requires` modules still need via export (because those downstream modules do not import the new template) |
+| Keep concepts in `exported_concepts` | Concepts that downstream modules still need via export (because those downstream modules do not import the new template) |
 
 **Important:** `import` provides definitions to the importing module. `exported_concepts` on a `requires` module provides concepts to downstream modules in the build chain. If a downstream module will now `import` the shared template directly, the concept can be removed from `exported_concepts`. If a downstream module does **not** import the template, the concept must remain exported.
 
@@ -112,7 +112,7 @@ For each module that had concepts moved out:
 
 ### 3c. Update downstream modules (if applicable)
 
-If concepts were removed from a module's `exported_concepts` and downstream `requires` modules relied on them:
+If concepts were removed from a module's `exported_concepts` and downstream modules relied on them:
 1. Add the new import to the downstream module's `import` list so it gets the concepts directly.
 2. Verify the downstream module's specs can still resolve all concept references.
 
@@ -141,7 +141,7 @@ For every affected module (source modules, downstream modules, and the import mo
 - [ ] No `***functional specs***` were modified in any module
 - [ ] No `***implementation reqs***` were modified in any module
 - [ ] No `***test reqs***` were modified in any module
-- [ ] No `***acceptance tests***` were modified in any module
+- [ ] No test plain file was modified
 
 ### 4e. Structural validation
 
@@ -165,7 +165,7 @@ Read each modified `.plain` file in full and present the changes to the user for
 ### Moving a concept that is only used locally
 If a concept is only referenced within a single module, consolidating it into a shared import adds unnecessary coupling. Keep it local.
 
-### Forgetting to update downstream requires modules
+### Forgetting to update downstream modules
 When a concept is removed from `exported_concepts`, any module that `requires` the source module and references that concept will break — unless it now imports the shared template. Always trace the full dependency chain.
 
 ### Breaking concept ordering
@@ -175,7 +175,7 @@ Concepts in the import module must be topologically ordered. If `:Meal:` referen
 An import module cannot `import` a module that directly or indirectly imports it back. If the shared concepts reference concepts from an existing template, the new import module should itself import that template — not the other way around.
 
 ### Removing concepts from exported_concepts prematurely
-Only remove a concept from `exported_concepts` if **every** downstream `requires` module that needs it will now get it via `import`. If even one downstream module does not import the shared template, the export must stay.
+Only remove a concept from `exported_concepts` if **every** downstream module that needs it will now get it via `import`. If even one downstream module does not import the shared template, the export must stay.
 
 ## Validation Checklist
 
@@ -186,8 +186,8 @@ Only remove a concept from `exported_concepts` if **every** downstream `requires
 - [ ] Every affected module's `import` list includes the target import module
 - [ ] `exported_concepts` updated correctly — no missing exports, no unnecessary exports
 - [ ] All concept references in all affected modules resolve correctly
-- [ ] No functional specs, implementation reqs, test reqs, or acceptance tests were modified
+- [ ] No functional specs, implementation reqs, test reqs, or test plain files were modified
 - [ ] Import module is in `template/` and has no functional specs or requires
 - [ ] No circular imports introduced
-- [ ] Downstream requires modules updated if needed
+- [ ] Downstream modules updated if needed
 - [ ] User approved the final result

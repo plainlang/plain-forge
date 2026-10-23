@@ -4,7 +4,7 @@ description: Bullet and continuation syntax for every section in .plain files
 
 # Rules for bullets and continuations in `.plain` files
 
-These rules apply to every section and to concept explanations.
+These rules apply to `***definitions***`, `***implementation reqs***`, and `***test reqs***`, and to concept explanations. The body of a functionality and a scenario in a test plain file are free text; these rules do not apply there (see `func-specs.md` and `test-plain-files.md`).
 
 ## No line-length limit
 
@@ -25,14 +25,14 @@ clarification of the statement above it. There is no third, typographic reason t
   indistinguishable from a deliberate sub-point
 - The test: if content deserves its own line, it deserves its own `- ` bullet; if it doesn't,
   keep it on the parent's line
-- What the renderer does enforce is the top level: every statement in a section must be a `- `
-  list item — a flush-left prose line is a syntax error. A bare continuation, by contrast, is
-  accepted and folded into its parent item verbatim
+- What the renderer does enforce is the top level of `***definitions***`, `***implementation reqs***`,
+  and `***test reqs***`: every statement there must be a `- ` list item — a flush-left prose line is
+  a syntax error. A bare continuation, by contrast, is accepted and folded into its parent item verbatim
 
 BAD — line broken for width (bare continuation):
 
 ```plain
-***functional specs***
+***definitions***
 
 - :GatewayWebhook: hands off :StripeRequest: to :StripeIntegration:.handle(),
   which returns a list of :EventEnvelope: dicts conforming to the gateway contract.
@@ -41,25 +41,25 @@ BAD — line broken for width (bare continuation):
 GOOD — one valid list item:
 
 ```plain
-***functional specs***
+***definitions***
 
 - :GatewayWebhook: hands off :StripeRequest: to :StripeIntegration:.handle(), which returns a list of :EventEnvelope: dicts conforming to the gateway contract.
 ```
 
-BEST — separate clarifications expressed as nested bullets:
+BEST — separate clarifications, each as its own bullet:
 
 ```plain
-***functional specs***
+***definitions***
 
 - :GatewayWebhook: hands off :StripeRequest: to :StripeIntegration:.handle().
-  - The method returns a list of :EventEnvelope: dicts.
-  - The dicts conform to the gateway's :EventEnvelope: contract.
+- The method returns a list of :EventEnvelope: dicts.
+- The dicts conform to the gateway's :EventEnvelope: contract.
 ```
 
 ## Presenting `.plain` examples
 
 - Show every example under its owning section header
-- Separate top-level list items with one blank line
+- Separate top-level list items, functionalities, and scenarios with one blank line
 - Keep nested clarifications directly under their parent without a blank line
 - BAD, WRONG, `Before:`, and `Too complex:` examples may intentionally demonstrate invalid syntax
 
