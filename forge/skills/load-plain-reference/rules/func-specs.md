@@ -10,7 +10,6 @@ When writing or editing a `***functional specs***` section in a `.plain` file, a
 - Each functional spec, called a functionality, is a `# <func-id>` heading followed by its body; the func-id follows `semantic-ids.md`
 - The body is free text that describes the behavior: prose, `- ` bullets, or any other shape the developer prefers; its first line states the behavior
 - No body line starts with `# ` (that starts the next functionality) or with `***`
-- One blank line separates functionalities
 - The test scenarios of a functionality live in its test plain file, never in this section (see `test-plain-files.md`)
 
 ## Voice

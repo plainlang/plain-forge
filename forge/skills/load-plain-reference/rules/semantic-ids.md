@@ -16,17 +16,11 @@ Every functionality in `***functional specs***` and every scenario in a test pla
 ## Syntax
 - Lowercase letters, digits, and hyphens only: `add-task`, `export-csv-2`, `ctrl-d-exit`
 - The heading is `# ` (hash, one space) followed by the ID and nothing else
-- Nothing else is checked: an ID needs no meaning, no prefix, and no number
 
 ## Uniqueness
 - A func-id is unique in its module; two modules may use the same func-id
 - A scenario-id is unique for its functionality after every test plain file bound to that functionality is merged; two functionalities may use the same scenario-id
 - Before adding an ID, search the module (or the functionality's test plain files) for the same heading; a duplicate is a syntax error that `plain-parser check` reports
-
-## Qualified form
-- Where the module is not clear from context, write a func-id as `<module>:<func-id>`, for example `task-manager:add-task`
-- `<module>` is the module name: the `.plain` file name without its extension
-- Render ranges, render state, change detection, and logs use the qualified form; a test plain file binds with the frontmatter keys `module:` and `func_id:` instead (see `test-plain-files.md`)
 
 ## Stability
 - An ID is an identity, not a label: a functionality keeps its func-id for as long as it exists, even when its text changes
