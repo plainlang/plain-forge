@@ -46,14 +46,14 @@ GOOD — one valid list item:
 - :GatewayWebhook: hands off :StripeRequest: to :StripeIntegration:.handle(), which returns a list of :EventEnvelope: dicts conforming to the gateway contract.
 ```
 
-BEST — separate clarifications expressed as nested bullets:
+BEST — separate clarifications, each as its own bullet:
 
 ```plain
 ***definitions***
 
 - :GatewayWebhook: hands off :StripeRequest: to :StripeIntegration:.handle().
-  - The method returns a list of :EventEnvelope: dicts.
-  - The dicts conform to the gateway's :EventEnvelope: contract.
+- The method returns a list of :EventEnvelope: dicts.
+- The dicts conform to the gateway's :EventEnvelope: contract.
 ```
 
 ## Presenting `.plain` examples
