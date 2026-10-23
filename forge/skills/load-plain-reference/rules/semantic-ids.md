@@ -10,7 +10,7 @@ Every functionality in `***functional specs***` and every scenario in a test pla
 
 | ID | Written as | Identifies | Unique within |
 |---|---|---|---|
-| func-id | `# <func-id>` heading in `***functional specs***` of a core spec | one functionality | its module |
+| func-id | `# <func-id>` heading in `***functional specs***` of a spec plain file | one functionality | its module |
 | scenario-id | `# <scenario-id>` heading in `***conformance tests***` or `***acceptance tests***` of a test plain file | one scenario | its functionality, across every test plain file bound to that functionality |
 
 ## Syntax
@@ -39,7 +39,7 @@ Every functionality in `***functional specs***` and every scenario in a test pla
 - Pick the func-id before writing the functional spec text, check that it is unique in the module, then write the heading and the body (see `func-specs.md`)
 - A new functionality is finished only when its test plain file exists (by convention at `tests/<module>/<func-id>.plain`) with at least one conformance scenario (see `test-plain-files.md`)
 - A generated conformance or acceptance test carries the scenario-id of the scenario it implements; when a test fails, the scenario-id in its name leads back to the scenario text
-- Everything about one functionality is found through its func-id: the `# <func-id>` heading in the core spec, the test plain files whose frontmatter names it, and the generated tests labelled with its scenario-ids
+- Everything about one functionality is found through its func-id: the `# <func-id>` heading in the spec plain file, the test plain files whose frontmatter names it, and the generated tests labelled with its scenario-ids
 
 ## Format
 

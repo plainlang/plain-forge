@@ -59,7 +59,7 @@ Conformance tests are enabled for a module when the `config.yaml` that governs i
 - Values that matter to the check are concrete (`named "Buy milk"`, `returns 404`); descriptive values (`a valid name`) are not checkable.
 - One scenario per distinct outcome; the same outcome is never written twice in different words.
 - Framework, run command, and network policy belong in `***test reqs***`, never in a scenario.
-- No `***acceptance tests***` section is ever written into a core spec.
+- No `***acceptance tests***` section is ever written into a spec plain file.
 
 ## Format
 
@@ -93,4 +93,4 @@ Adding a :Task: named "Go" to an empty :TaskList: is rejected.
 - [ ] Scenario-ids follow `semantic-ids.md` and are unique across every test plain file bound to this functionality
 - [ ] Scenarios are black box and language-agnostic
 - [ ] Trimmed per `concise-specs.md`
-- [ ] No `***acceptance tests***` section was written into the core spec
+- [ ] No `***acceptance tests***` section was written into the spec plain file

@@ -10,14 +10,14 @@ A test plain file holds the test scenarios of one functionality. Conformance sce
 - A test plain file is a `.plain` file with YAML frontmatter and two sections, in this order: `***conformance tests***`, then `***acceptance tests***`
 - Both sections are required; `***acceptance tests***` may be empty
 - The frontmatter has exactly two keys, both required:
-  - `module:` the name of the module that holds the functionality (the core spec's file name without `.plain`)
+  - `module:` the name of the module that holds the functionality (the spec plain file's name without `.plain`)
   - `func_id:` the func-id of the functionality (see `semantic-ids.md`)
 - The pair `(module, func_id)` must name a functionality that exists; a pair with no match is an error
 - A test plain file has no `***definitions***`, `***implementation reqs***`, `***test reqs***`, or `***functional specs***`
-- Comment lines starting with `>` are allowed, as in a core spec
+- Comment lines starting with `>` are allowed, as in a spec plain file
 
 ## Location
-- By convention a test plain file lives at `tests/<module>/<func_id>.plain`, with `tests/` next to the core spec
+- By convention a test plain file lives at `tests/<module>/<func_id>.plain`, with `tests/` next to the spec plain file
 - The location and the file name are convention only: the renderer discovers test plain files by reading the frontmatter of every `.plain` file under its test folders
 - plain-forge always writes to the conventional path, one file per functionality
 - More than one test plain file may bind to the same functionality; their scenarios are merged, and scenario-ids must be unique across the merged set. Hand-written files may use this; plain-forge keeps one file per functionality

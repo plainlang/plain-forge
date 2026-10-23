@@ -24,9 +24,9 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 | `required_concepts` | Declare concepts an import module expects the importing module to define | `required-concepts.md` |
 
 ## Sections
-- A core spec has exactly four top-level section markers: `***definitions***`, `***implementation reqs***`, `***test reqs***`, and `***functional specs***`
+- A spec plain file has exactly four top-level section markers: `***definitions***`, `***implementation reqs***`, `***test reqs***`, and `***functional specs***`
 - Each section appears **at most once** per file; all are optional (which ones are allowed depends on the module kind below)
-- `***conformance tests***` and `***acceptance tests***` never appear in a core spec, not even nested under a functional spec; they are the two sections of a test plain file (see `test-plain-files.md`)
+- `***conformance tests***` and `***acceptance tests***` never appear in a spec plain file, not even nested under a functional spec; they are the two sections of a test plain file (see `test-plain-files.md`)
 - Write sections in canonical order: `***definitions***` → `***implementation reqs***` → `***test reqs***` → `***functional specs***`
   - Definitions come first because every concept must be defined before it is referenced
   - Functional specs come last because they are rendered incrementally
@@ -36,7 +36,7 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 - To be renderable, a root module needs at least one functional spec plus the implementation reqs to build it — its own or from an `import`ed module (implementation reqs are not inherited through `requires`). A frontmatter-only file is a valid scaffold, but it cannot be rendered until a functional spec is added
 - A **requires module** is a root module that is used by another root module via `requires` directive (see `requires-modules.md`)
 - An **import module** provides shared content that other modules pull in via `import`: it contains only `***definitions***`, `***implementation reqs***`, and/or `***test reqs***` — never `***functional specs***`, never `requires` (see `import-modules.md`)
-- A **test plain file** holds the scenarios of one functionality of a root module; its frontmatter `module:` and `func_id:` bind it to that functionality, by convention it lives under `tests/<module>/`, and it has no section of a core spec (see `test-plain-files.md`)
+- A **test plain file** holds the scenarios of one functionality of a root module; its frontmatter `module:` and `func_id:` bind it to that functionality, by convention it lives under `tests/<module>/`, and it has no section of a spec plain file (see `test-plain-files.md`)
 
 ## Section ownership (where a fact lives)
 - The renderer reads each kind of fact **only from its owning section** — a fact placed in the wrong section is silently ignored, not flagged
