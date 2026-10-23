@@ -37,15 +37,14 @@ A test plain file holds the test scenarios of one functionality. Conformance sce
 - Values that matter to the check are concrete (`named "Buy milk"`, `exits with status 0`), never descriptive (`a valid name`)
 
 ## Conformance scenarios
-- `***conformance tests***` holds the scenarios of the expected use of the functionality: its main path, with valid parameters, the expected caller, and the data present. For a REST endpoint: what it returns when the caller is authenticated, the data exists, and the parameters are valid
+- `***conformance tests***` holds the scenarios of the expected use of the functionality: its main path, with valid parameters, the expected caller, and the data present.
 - These scenarios gate the functionality: it is done only when every conformance scenario passes
-- They are written together with the functional spec, without a separate instruction; the developer may change them later, by hand or through a coding agent
 - When conformance tests are enabled for the module (its `config.yaml` has a `conformance-tests-script`), every functionality has at least one conformance scenario; an empty section is an error
 - Cover the main path first, then each variant of expected use the functional spec states (another valid input shape, an optional parameter); stop when every expected behavior has one scenario
 - Do not write the same scenario twice in different words; one scenario per distinct outcome
 
 ## Acceptance scenarios
-- `***acceptance tests***` holds the scenarios of use that is not expected: invalid parameters, wrong or missing authentication, missing data, an unavailable dependency. For the same REST endpoint: what it returns when authentication is wrong or the parameters are invalid
+- `***acceptance tests***` holds the scenarios of use that is not expected
 - Acceptance scenarios are written only on the developer's explicit instruction, through a coding agent or by hand; the section may be empty
 - An acceptance scenario is rendered after the conformance tests of its functionality pass
 - A scenario that needs a dependency to fail (a backend that does not respond, a database that is unavailable) is written only when `***test reqs***` let the test cause that failure, for example with a local mock of that dependency; otherwise ask the user before writing it
