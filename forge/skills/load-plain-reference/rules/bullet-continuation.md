@@ -59,8 +59,8 @@ BEST — separate clarifications expressed as nested bullets:
 
 # handle-stripe-webhook
 :GatewayWebhook: hands off :StripeRequest: to :StripeIntegration:.handle().
-  - The method returns a list of :EventEnvelope: dicts.
-  - The dicts conform to the gateway's :EventEnvelope: contract.
+- The method returns a list of :EventEnvelope: dicts.
+- The dicts conform to the gateway's :EventEnvelope: contract.
 ```
 
 ## Presenting `.plain` examples

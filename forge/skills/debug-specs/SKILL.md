@@ -98,7 +98,7 @@ Apply the fix based on the diagnosed root cause. Use the appropriate skill:
 
 | Root Cause | Skill to Use |
 |------------|-------------|
-| Ambiguous spec | Edit the spec inline — add indented `- ` bullets under the statement line or reword for clarity |
+| Ambiguous spec | Edit the spec inline — add detail under the statement line or reword for clarity |
 | Missing spec | `add-functional-spec` |
 | Conflicting specs | `resolve-spec-conflict` |
 | Incorrect spec | Edit the spec inline — rewrite the incorrect part |

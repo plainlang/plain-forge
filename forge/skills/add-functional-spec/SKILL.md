@@ -19,7 +19,7 @@ description: >-
 
 1. **Identify the target `.plain` file.** If ambiguous, ask the user.
 2. **Read the entire file** to understand existing definitions, implementation reqs, and all current functional specs (including those in `requires` modules).
-3. **Pick the func-id and draft the functional spec.** Choose a func-id per `semantic-ids.md` and confirm no `# <func-id>` heading with that id exists in the module. Draft the statement line and its indented `- ` clarifications following the rules below, then run the review pass in `concise-specs.md` over the draft — trim it to the shortest wording that keeps every fact before any other check.
+3. **Pick the func-id and draft the functional spec.** Choose a func-id per `semantic-ids.md` and confirm no `# <func-id>` heading with that id exists in the module. Draft the body, a statement line and any detail under it, following the rules below, then run the review pass in `concise-specs.md` over the draft — trim it to the shortest wording that keeps every fact before any other check.
 4. **Analyze complexity** — use the `analyze-if-func-spec-too-complex` skill to verify the drafted spec implies ≤ 200 LOC. If too complex, use the `break-down-func-spec` skill to split it, then repeat from step 3 for each resulting spec.
 5. **Check for conflicts** with every existing functional spec — this is critical. Run `analyze-func-specs` **once** with the new spec plus all existing specs (in the file and in any `requires` chain) as a single batch. The batched analyzer returns every conflicting pair in one call — do **not** invoke a pair-by-pair analyzer. For each conflicting pair it reports, run `resolve-spec-conflict` on that pair; re-run `analyze-func-specs` over the touched set after each resolution until the verdict is `COMPATIBLE`.
 6. **Append the spec** to the end of the `***functional specs***` section as a `# <func-id>` heading followed by its body, one blank line after the previous functionality (specs are chronological; new ones go last).
@@ -49,16 +49,16 @@ The new spec must not contradict any existing functional spec. Conflicting specs
 
 ### Disambiguation
 
-Each functional spec must be unambiguous — the renderer should have only one reasonable interpretation. If the statement line is not enough to fully disambiguate the behavior, add **indented `- ` bullets** under it. The bullets clarify the statement; they do not introduce separate functionality. Even with the bullets, the spec must still imply ≤ 200 LOC.
+Each functional spec must be unambiguous — the renderer should have only one reasonable interpretation. If the statement line is not enough to fully disambiguate the behavior, add `- ` bullets or sentences under it. The detail clarifies the statement; it does not introduce separate functionality. Even with the detail, the spec must still imply ≤ 200 LOC.
 
 ```plain
 ***functional specs***
 
 # send-message
 A :User: can send a :Message: to a :Conversation:.
-  - A :Message: must have non-empty content.
-  - The :Message: is appended to the end of the :Conversation:.
-  - All :Participant: members of the :Conversation: can see the new :Message:.
+- A :Message: must have non-empty content.
+- The :Message: is appended to the end of the :Conversation:.
+- All :Participant: members of the :Conversation: can see the new :Message:.
 ```
 
 

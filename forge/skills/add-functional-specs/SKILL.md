@@ -72,16 +72,16 @@ That coverage is achieved by running `analyze-func-specs` **once per spec being 
 
 ### Disambiguation (per spec)
 
-Each functional spec must be unambiguous — the renderer should have only one reasonable interpretation. If the statement line is not enough to fully disambiguate the behavior, add **indented `- ` bullets** under it. The bullets clarify the statement; they do not introduce separate functionality. Even with the bullets, the spec must still imply ≤ 200 LOC.
+Each functional spec must be unambiguous — the renderer should have only one reasonable interpretation. If the statement line is not enough to fully disambiguate the behavior, add `- ` bullets or sentences under it. The detail clarifies the statement; it does not introduce separate functionality. Even with the detail, the spec must still imply ≤ 200 LOC.
 
 ```plain
 ***functional specs***
 
 # send-message
 A :User: can send a :Message: to a :Conversation:.
-  - A :Message: must have non-empty content.
-  - The :Message: is appended to the end of the :Conversation:.
-  - All :Participant: members of the :Conversation: can see the new :Message:.
+- A :Message: must have non-empty content.
+- The :Message: is appended to the end of the :Conversation:.
+- All :Participant: members of the :Conversation: can see the new :Message:.
 ```
 
 

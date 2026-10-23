@@ -145,8 +145,8 @@ A standard :MealPlan: is generated using round-robin :Recipe: assignment.
 
 # generate-restrictive-plan
 A restrictive :MealPlan: is generated.
-  - Excluded :Ingredient: items are filtered out first.
-  - Round-robin :Recipe: assignment is then applied.
+- Excluded :Ingredient: items are filtered out first.
+- Round-robin :Recipe: assignment is then applied.
 
 # assign-custom-plan
 A :User: can manually assign :Recipe: items to :Slot: items for a custom :MealPlan:.
@@ -198,8 +198,8 @@ A :Report: is exported to PDF, laying out multi-page tables with repeating heade
 
 # pdf-renderer-tables
 :PdfRenderer: lays out multi-page tables from structured content.
-  - Table headers repeat at the top of each page.
-  - Each page shows its page number.
+- Table headers repeat at the top of each page.
+- Each page shows its page number.
 
 # export-report-pdf
 A :Report: is exported to PDF using :PdfRenderer:, embedding charts rendered from :Report: data.

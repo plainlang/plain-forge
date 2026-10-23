@@ -14,7 +14,7 @@ description: >-
 
 ## What this skill writes
 
-One test plain file per functionality, at `tests/<module>/<func-id>.plain`, with the frontmatter keys `module:` and `func_id:` and the two sections `***conformance tests***` and `***acceptance tests***`. Every scenario is a `# <scenario-id>` heading, one plain-English statement line, and `- ` bullets indented by two spaces when the line is not enough. Expected use goes under `***conformance tests***`, use that is not expected under `***acceptance tests***`. The renderer generates one test per scenario and nothing else, so the scenarios in this file are the only tests the functionality gets.
+One test plain file per functionality, at `tests/<module>/<func-id>.plain`, with the frontmatter keys `module:` and `func_id:` and the two sections `***conformance tests***` and `***acceptance tests***`. Every scenario is a `# <scenario-id>` heading, one plain-English statement line, and `- ` bullets when the line is not enough. Expected use goes under `***conformance tests***`, use that is not expected under `***acceptance tests***`. The renderer generates one test per scenario and nothing else, so the scenarios in this file are the only tests the functionality gets.
 
 ## When to Use
 
@@ -35,7 +35,7 @@ Conformance tests are enabled for a module when the `config.yaml` that governs i
 4. **List and sort the outcomes the spec states.** Walk the statement line and every clarification bullet. Write down the main path and each boundary, validation, and error case the spec names. Sort each outcome: expected use (the main path and its valid variants) goes to `***conformance tests***`; use that is not expected (invalid parameters, wrong or missing authentication, missing data, an unavailable dependency) goes to `***acceptance tests***`. Do not add an outcome the spec does not state: a scenario may not extend the spec. If a needed outcome is missing from the spec, ask the user one question and route the answer into the functional spec through `add-functional-spec` (or an inline edit of the clarification bullets) before writing the scenario.
 5. **Draft one scenario per outcome, in its section.** Give each a scenario-id per `semantic-ids.md` (short slug, unique for this functionality). Write the body in plain English:
    - One statement line: a sentence that names the action and the expected result, with concrete values.
-   - When that line is not enough, `- ` bullets indented by two spaces, in order: the state before the action, the one action under test, and each observable result, one fact per bullet.
+   - When that line is not enough, `- ` bullets, in order: the state before the action, the one action under test, and each observable result, one fact per bullet.
    - `given:` / `when:` / `then:` lists are allowed when the user asks for them; otherwise plain English, and one shape per project.
    Test the functionality through the interface the spec names, as a black box. A scenario may use earlier functionalities for its setup; a scenario that spans several functionalities is bound to the last one it exercises and is written only when the user asks for it.
 6. **Check what the test can cause.** A scenario that needs a dependency to fail (a backend that does not respond, a database that is unavailable) is written only when `***test reqs***` let the test cause that failure, for example with a local mock of that dependency. Otherwise ask the user one question: add such a test req, or leave the scenario out.
@@ -78,8 +78,8 @@ Adding a :Task: named "Buy milk" to an empty :TaskList: shows one :Task: named "
 
 # reject-short-name
 Adding a :Task: named "Go" to an empty :TaskList: is rejected.
-  - :App: shows the error "Name must be at least 3 characters".
-  - :TaskList: stays empty.
+- :App: shows the error "Name must be at least 3 characters".
+- :TaskList: stays empty.
 ```
 
 ## Validation Checklist

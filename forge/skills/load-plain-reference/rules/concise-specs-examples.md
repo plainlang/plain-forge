@@ -36,9 +36,9 @@ GOOD:
 
 # create-task
 A :User: can create a :Task: via `POST /tasks`.
-  - The request body is a :Task: without `id`.
-  - The response is `201` with the created :Task:.
-  - A request without a name returns `400`.
+- The request body is a :Task: without `id`.
+- The response is `201` with the created :Task:.
+- A request without a name returns `400`.
 ```
 
 Three bullets became one, and the rewrite names the method, the path, the request shape, and both status codes — none of which the padded version pinned down.
@@ -94,10 +94,10 @@ BAD:
 
 # list-orders
 :OrderApi: returns a list of :Order: items over HTTP.
-  - The list contains :Order: items.
-  - If there are no :Order: items, the list is empty.
-  - Each :Order: has an `id`, which is unique.
-  - The caller receives the response after the request is sent.
+- The list contains :Order: items.
+- If there are no :Order: items, the list is empty.
+- Each :Order: has an `id`, which is unique.
+- The caller receives the response after the request is sent.
 ```
 
 GOOD:
@@ -107,7 +107,7 @@ GOOD:
 
 # list-orders
 :OrderApi: returns the :Order: items of the authenticated :User: via `GET /orders`, newest first.
-  - The response is `200` with a JSON array, empty when the :User: has no :Order: items.
+- The response is `200` with a JSON array, empty when the :User: has no :Order: items.
 ```
 
 Every cut line was already implied: a list of :Order: items contains :Order: items, an identifier identifies, and a response follows a request. What survives is what a reader could *not* have guessed — the ownership filter, the sort order, and the response shape.
@@ -254,9 +254,9 @@ BAD:
 
 # archive-project
 A :User: can archive a :Project:.
-  - Archiving is an action the user performs on a project.
-  - The archive action is available to users who have access to the project.
-  - Once archived, the project is in the archived state.
+- Archiving is an action the user performs on a project.
+- The archive action is available to users who have access to the project.
+- Once archived, the project is in the archived state.
 ```
 
 GOOD:
@@ -266,8 +266,8 @@ GOOD:
 
 # archive-project
 A :User: can archive a :Project: they own.
-  - An archived :Project: is excluded from :ProjectList:.
-  - Archiving a :Project: that is already archived returns `409`.
+- An archived :Project: is excluded from :ProjectList:.
+- Archiving a :Project: that is already archived returns `409`.
 ```
 
 A sub-bullet earns its line by removing an ambiguity. If it only says the parent again in more words, it is filler.
@@ -281,8 +281,8 @@ BAD:
 
 # expire-session
 :SessionStore: expires a :Session: 30 minutes after its last use.
-  - Sessions do not live forever; they time out.
-  - The timeout is 30 minutes.
+- Sessions do not live forever; they time out.
+- The timeout is 30 minutes.
 ```
 
 GOOD:
@@ -292,7 +292,7 @@ GOOD:
 
 # expire-session
 :SessionStore: expires a :Session: 30 minutes after its last use.
-  - A request carrying an expired :Session: returns `401`.
+- A request carrying an expired :Session: returns `401`.
 ```
 
 ## Synonym drift
@@ -321,8 +321,8 @@ GOOD:
 
 # upload-document
 A :User: can upload a :Document:.
-  - :DocumentStore: stores the :Document: and assigns it a :DocumentId:.
-  - A :User: can retrieve a :Document: by its :DocumentId:.
+- :DocumentStore: stores the :Document: and assigns it a :DocumentId:.
+- A :User: can retrieve a :Document: by its :DocumentId:.
 ```
 
 ## Meta-commentary and scope disclaimers
@@ -352,8 +352,8 @@ GOOD:
 
 # export-csv
 :ExportService: writes the :Order: items of a :BillingPeriod: to a :CsvFile:.
-  - The header row is `id,customer,total,currency`.
-  - An empty :BillingPeriod: produces a :CsvFile: with only the header row.
+- The header row is `id,customer,total,currency`.
+- An empty :BillingPeriod: produces a :CsvFile: with only the header row.
 ```
 
 A spec describes the software, not itself. What the spec does *not* change is everything it does not mention, and what later specs will add belongs to those specs.
@@ -382,7 +382,7 @@ GOOD:
 
 # apply-discounts
 :PricingEngine: applies the :DiscountTier: matrix in [resources/discount-tiers.json](resources/discount-tiers.json) to an :Order: total.
-  - An :Order: below the lowest tier threshold gets no discount.
+- An :Order: below the lowest tier threshold gets no discount.
 ```
 
 A section holds `- ` list items. Matrices, schemas, and payloads are external artifacts and are linked from `resources/` — see `linked-resources.md`.
@@ -427,8 +427,8 @@ GOOD — each fact in the section that owns it:
 
 # resize-image
 :ImageResizer: produces a :Thumbnail: from an :Image:.
-  - An :Image: already within the :Thumbnail: bounds is returned unchanged.
-  - An :Image: that is not a supported format raises :UnsupportedImageError:.
+- An :Image: already within the :Thumbnail: bounds is returned unchanged.
+- An :Image: that is not a supported format raises :UnsupportedImageError:.
 ```
 
 Each section now answers one question, and the definition, the mechanism, and the behavior are each one line to check instead of clauses buried in a paragraph about resizing. Use the split whenever a bullet answers more than one of *what is it*, *what does it do*, *how is it built*, and *how is it tested* — see `module-structure.md` for section ownership and canonical section order.
@@ -455,7 +455,7 @@ GOOD:
 
 # create-project
 A signed-in :User: with no :Project: items creates a :Project: named `Apollo` and finds it in :ProjectList:.
-  - :ProjectList: contains exactly one :Project:, named `Apollo`.
+- :ProjectList: contains exactly one :Project:, named `Apollo`.
 ```
 
 One narrated paragraph becomes one checkable sentence, and "everything worked as

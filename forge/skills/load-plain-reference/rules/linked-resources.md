@@ -40,7 +40,7 @@ A linked resource **must not** be any of the following:
 
 # add-task
 A :User: can add a :Task: by POSTing :TaskCreateRequest: to the `POST /tasks` endpoint of :TasksAPI:.
-  - The endpoint responds per :TasksAPI:.
+- The endpoint responds per :TasksAPI:.
 ```
 
 ## Each linked resource is referenced from exactly one place

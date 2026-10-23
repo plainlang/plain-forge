@@ -33,7 +33,7 @@ A test plain file holds the test scenarios of one functionality. Conformance sce
 - Scenario text follows `concise-specs.md`: no narration, no rationale, no step a reader would assume
 
 ## The shape plain-forge writes
-- plain-forge writes every scenario in plain English, with the same shape as a functionality: one statement line, then `- ` bullets indented by two spaces when the line is not enough; hand-written scenarios may use any shape
+- plain-forge writes every scenario in plain English, one statement line, then `- ` bullets when the line is not enough; hand-written scenarios may use any shape
 - The statement line is one sentence that names the action and the expected result (`Adding a :Task: named "Go" to an empty :TaskList: is rejected.`)
 - The bullets list, in order, the state before the action, the action, and each observable result that the statement line does not already carry, one fact per bullet
 - `given:` / `when:` / `then:` lists or Gherkin steps are allowed when the user asks for them; keep one shape per project
