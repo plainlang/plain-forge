@@ -36,7 +36,7 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 - To be renderable, a root module needs at least one functional spec plus the implementation reqs to build it — its own or from an `import`ed module (implementation reqs are not inherited through `requires`). A frontmatter-only file is a valid scaffold, but it cannot be rendered until a functional spec is added
 - A **requires module** is a root module that is used by another root module via `requires` directive (see `requires-modules.md`)
 - An **import module** provides shared content that other modules pull in via `import`: it contains only `***definitions***`, `***implementation reqs***`, and/or `***test reqs***` — never `***functional specs***`, never `requires` (see `import-modules.md`)
-- A **test plain file** holds the scenarios of one functionality of a root module; its frontmatter `module:` and `func_id:` bind it to that functionality, it lives under `tests/`, and it has no section of a core spec (see `test-plain-files.md`)
+- A **test plain file** holds the scenarios of one functionality of a root module; its frontmatter `module:` and `func_id:` bind it to that functionality, by convention it lives under `tests/<module>/`, and it has no section of a core spec (see `test-plain-files.md`)
 
 ## Section ownership (where a fact lives)
 - The renderer reads each kind of fact **only from its owning section** — a fact placed in the wrong section is silently ignored, not flagged

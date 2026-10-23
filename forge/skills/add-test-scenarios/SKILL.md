@@ -2,7 +2,7 @@
 name: add-test-scenarios
 description: >-
   Write or update the test plain file of one functionality
-  (tests/<module>/<func-id>.plain): conformance scenarios for its expected use
+  (by convention tests/<module>/<func-id>.plain): conformance scenarios for its expected use
   and acceptance scenarios for its unexpected use, in plain English. Use after
   a functional spec is added or changed, when a functionality has no
   conformance scenario, or when the user asks for a test scenario.
@@ -14,7 +14,7 @@ description: >-
 
 ## What this skill writes
 
-One test plain file per functionality, at `tests/<module>/<func-id>.plain`, with the frontmatter keys `module:` and `func_id:` and the two sections `***conformance tests***` and `***acceptance tests***`. Every scenario is a `# <scenario-id>` heading, one plain-English statement line, and `- ` bullets when the line is not enough. Expected use goes under `***conformance tests***`, use that is not expected under `***acceptance tests***`. The renderer generates one test per scenario and nothing else, so the scenarios in this file are the only tests the functionality gets.
+One test plain file per functionality, by convention at `tests/<module>/<func-id>.plain`, with the frontmatter keys `module:` and `func_id:` and the two sections `***conformance tests***` and `***acceptance tests***`. Every scenario is a `# <scenario-id>` heading, one plain-English statement line, and `- ` bullets when the line is not enough. Expected use goes under `***conformance tests***`, use that is not expected under `***acceptance tests***`. The renderer generates one test per scenario and nothing else, so the scenarios in this file are the only tests the functionality gets.
 
 ## When to Use
 
@@ -31,7 +31,7 @@ Conformance tests are enabled for a module when the `config.yaml` that governs i
 
 1. **Identify the functionality.** Take the module name and func-id from the caller or the user. If the user points at a spec by its text, find its `# <func-id>` heading.
 2. **Read the context.** Read the functional spec (heading and body), the `***definitions***` the module sees (its own, its `import` modules, and the `exported_concepts` of its `requires` modules), the `***test reqs***`, and the functional specs that come before this one, because a scenario may rely on behavior they established.
-3. **Locate or create the test plain file.** Look for `tests/<module>/<func-id>.plain`. Also scan the frontmatter of every other `.plain` file under `tests/` for the same `(module, func_id)` pair; read those files too, so scenario-ids stay unique across the merged set. Create the file with the frontmatter and both sections if it does not exist.
+3. **Locate or create the test plain file.** Find every `.plain` file whose frontmatter binds to the pair `(module, func_id)`; by convention it is `tests/<module>/<func-id>.plain`, but only the frontmatter decides. Read every file found, so scenario-ids stay unique across the merged set. If none exists, create the file at the conventional path with the frontmatter and both sections.
 4. **List and sort the outcomes the spec states.** Walk the statement line and every clarification bullet. Write down the main path and each boundary, validation, and error case the spec names. Sort each outcome: expected use (the main path and its valid variants) goes to `***conformance tests***`; use that is not expected (invalid parameters, wrong or missing authentication, missing data, an unavailable dependency) goes to `***acceptance tests***`. Do not add an outcome the spec does not state: a scenario may not extend the spec. If a needed outcome is missing from the spec, ask the user one question and route the answer into the functional spec through `add-functional-spec` (or an inline edit of the clarification bullets) before writing the scenario.
 5. **Draft one scenario per outcome, in its section.** Give each a scenario-id per `semantic-ids.md` (short slug, unique for this functionality). Write the body in plain English:
    - One statement line: a sentence that names the action and the expected result, with concrete values.
@@ -49,7 +49,7 @@ Conformance tests are enabled for a module when the `config.yaml` that governs i
 - **The functionality was split.** Each new functionality gets its own test plain file; move each scenario to the functionality it tests and write new scenarios for outcomes that have none.
 - **The func-id was renamed.** Rename `func_id:` in every test plain file bound to it and move the file to the new conventional path.
 - **The functionality was deleted.** Delete its test plain file; confirm with the user first when it holds hand-written scenarios.
-- **The functionality moved to another module.** Move the file to that module's folder under `tests/` and update `module:`.
+- **The functionality moved to another module.** Update `module:` and move the file to the new conventional path.
 
 ## Rules
 
@@ -84,7 +84,7 @@ Adding a :Task: named "Go" to an empty :TaskList: is rejected.
 
 ## Validation Checklist
 
-- [ ] The file is at `tests/<module>/<func-id>.plain` with `module:` and `func_id:` naming an existing functionality
+- [ ] The file's `module:` and `func_id:` name an existing functionality
 - [ ] `***conformance tests***` comes first, `***acceptance tests***` second; both sections exist
 - [ ] At least one conformance scenario when conformance tests are enabled for the module
 - [ ] Every outcome the functional spec states has one scenario, in the section its kind of use decides; no scenario states an outcome the spec does not

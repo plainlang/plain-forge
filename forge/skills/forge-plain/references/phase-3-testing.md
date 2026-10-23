@@ -1,6 +1,6 @@
 # Phase 3 — How should testing be done?
 
-Gather the testing strategy. This phase covers `***test reqs***`, the test plain files under `tests/`, the scripts under `test_scripts/`, and the `config.yaml` file(s) that wire them in. Run the core loop (ask → author → review) from `SKILL.md` for each topic below, in order. When the user has no preference, propose a default that fits the language and stack chosen in Phase 2 and ask them to confirm.
+Gather the testing strategy. This phase covers `***test reqs***`, the test plain files, the scripts under `test_scripts/`, and the `config.yaml` file(s) that wire them in. Run the core loop (ask → author → review) from `SKILL.md` for each topic below, in order. When the user has no preference, propose a default that fits the language and stack chosen in Phase 2 and ask them to confirm.
 
 ## Hard partition (applies to every topic)
 

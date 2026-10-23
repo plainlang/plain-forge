@@ -22,12 +22,11 @@ This skill is intentionally **minimal**. It produces a runnable project skeleton
 What this skill writes:
 
 - `template/base.plain` — an import module with the project's base `***implementation reqs***` and `***test reqs***`.
-- `<project>.plain` — a top-level module that imports `base`. Frontmatter only — no body sections. The user adds `***functional specs***` later, each with its test plain file under `tests/<project>/`.
+- `<project>.plain` — a top-level module that imports `base`. Frontmatter only — no body sections. The user adds `***functional specs***` later, each with its test plain file.
 - `test_scripts/run_unittests_<lang>.<sh|ps1>` — always.
 - `test_scripts/run_conformance_tests_<lang>.<sh|ps1>` — only if conformance testing is enabled.
 - `test_scripts/prepare_environment_<lang>.<sh|ps1>` — only if conformance testing is enabled **and** the user opts in.
 - `config.yaml` at the project root — wired to whichever scripts were generated.
-- `tests/` — an empty folder at the project root, only if conformance testing is enabled. `add-functional-spec` later writes each functionality's test plain file to `tests/<project>/<func-id>.plain`.
 
 What this skill does **not** do:
 
@@ -91,11 +90,7 @@ Body: **none**. The file ends after the closing `---` of the frontmatter. Do **n
 
 The file must still be created on disk — an empty body is fine, but the file itself is required.
 
-### 5. Create the `tests/` folder
-
-Only if conformance testing is enabled: create an empty `tests/` folder at the project root. Test plain files land in `tests/<project>/` as functionalities are added. If conformance testing is disabled, create nothing.
-
-### 6. Generate the testing scripts
+### 5. Generate the testing scripts
 
 Call the corresponding implementation skills in order. Each skill knows how to write the right Bash or PowerShell variant for the host OS.
 
@@ -103,7 +98,7 @@ Call the corresponding implementation skills in order. Each skill knows how to w
 - `implement-conformance-testing-script` — only if conformance testing was enabled. If a prepare-environment script will also exist, choose the **activate-only** variant; otherwise the **install-inline** variant.
 - `implement-prepare-environment-script` — only if conformance testing was enabled **and** the user opted in.
 
-### 7. Write `config.yaml`
+### 6. Write `config.yaml`
 
 Create `config.yaml` at the project root with **only the keys for scripts that were actually generated**. Valid keys:
 
@@ -118,12 +113,12 @@ Always include `template_dir: template` because the project has a template impor
 
 Do **not** invoke `init-config-file` or `plain-healthcheck` here — keeping this skill light is the whole point. The user can run them later if they want a strict canonicalization or validation.
 
-### 8. Recap
+### 7. Recap
 
 Tell the user what was created and what's next:
 
-- Files written: `template/base.plain`, `<project>.plain`, the test scripts, `config.yaml`, and the `tests/` folder when conformance testing is enabled.
-- Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs` (each new functionality gets its test plain file under `tests/<project>/` when conformance testing is enabled), or jump straight into `add-feature`.
+- Files written: `template/base.plain`, `<project>.plain`, the test scripts, `config.yaml`.
+- Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs` (each new functionality gets its test plain file when conformance testing is enabled), or jump straight into `add-feature`.
 - Mention that the project has not been validated — they can run `plain-healthcheck` when they want validation.
 
 ## Validation checklist

@@ -37,7 +37,7 @@ Every functionality in `***functional specs***` and every scenario in a test pla
 ## How coding agents use IDs
 - Name a functionality by its func-id (`<module>:<func-id>` when the module is not obvious) in questions to the user, in review snippets, in commit messages, and in render commands; never by position ("the third spec")
 - Pick the func-id before writing the functional spec text, check that it is unique in the module, then write the heading and the body (see `func-specs.md`)
-- A new functionality is finished only when its test plain file exists at `tests/<module>/<func-id>.plain` with at least one conformance scenario (see `test-plain-files.md`)
+- A new functionality is finished only when its test plain file exists (by convention at `tests/<module>/<func-id>.plain`) with at least one conformance scenario (see `test-plain-files.md`)
 - A generated conformance or acceptance test carries the scenario-id of the scenario it implements; when a test fails, the scenario-id in its name leads back to the scenario text
 - Everything about one functionality is found through its func-id: the `# <func-id>` heading in the core spec, the test plain files whose frontmatter names it, and the generated tests labelled with its scenario-ids
 

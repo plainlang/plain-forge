@@ -49,7 +49,7 @@ Carry the confirmed brief into every later phase. Before advancing, check the Ph
 Keep this short. The goal is to know enough to ask the **very first** writable question — not to design the whole feature on paper.
 
 1. **Read the confirmed feature-intent brief.** Identify which existing `.plain` file(s) the feature most likely belongs to.
-2. **Read the target `.plain` file(s)**, following their `import` and `requires` chains, and the test plain files under `tests/`, so the existing definitions, implementation reqs, functional specs, test reqs, and scenarios are in context. This is what lets Phase 2 recognize impact when it surfaces.
+2. **Read the target `.plain` file(s)**, following their `import` and `requires` chains, and the module's test plain files, so the existing definitions, implementation reqs, functional specs, test reqs, and scenarios are in context. This is what lets Phase 2 recognize impact when it surfaces.
 3. **Pick the target module with one question — only if it is genuinely ambiguous** which file to modify. Otherwise skip it and start authoring immediately.
 
 End Phase 1 the moment the target file and a single concrete starter question are clear. Do **not** ask framing, scope, or multi-part design questions here.

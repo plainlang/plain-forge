@@ -40,7 +40,7 @@ The skill is a **detect → fix → re-run** loop. It does not stop at the first
 2. Identify **top modules** — every module that is not `requires`-ed by any other module. A single-stack project has one top module; a multi-part project (e.g. backend + frontend) has one top module per part.
 3. List every `config.yaml` in the repo (root and per-part directories such as `backend/`, `frontend/`).
 4. List every script under `test_scripts/`.
-5. List every test plain file: each `.plain` file under `tests/` (and under any other folder the user names) whose frontmatter has `module:` and `func_id:`. Record the pair it binds to.
+5. List every test plain file: each `.plain` file in the project whose frontmatter has `module:` and `func_id:` (by convention under `tests/`). Record the pair it binds to.
 6. Pair each top module with the `config.yaml` that governs it. The pairing rule is: the config file in the same directory as the top module wins; failing that, the repo-root `config.yaml`. A multi-part project must have one config per part — record any top module that has no governing config as a failure.
 
 Print a one-line inventory summary so the rest of the run is easy to follow, e.g. `Top modules: backend/api.plain (config: backend/config.yaml), frontend/web.plain (config: frontend/config.yaml). Scripts in test_scripts/: 4. Test plain files: 12.`

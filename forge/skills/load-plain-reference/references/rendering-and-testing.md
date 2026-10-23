@@ -6,7 +6,7 @@ Functional specs render from top to bottom. When rendering one functional spec, 
 the previous specs but not future specs. A required module's functional specs also count as previous
 specs according to the module rules.
 
-The renderer reads the test plain files under `tests/` and generates exactly the scenarios they hold,
+The renderer reads the test plain files and generates exactly the scenarios they hold,
 one labelled test per scenario-id; it never adds a test of its own. Each functionality receives its own
 conformance-test folder, named by its func-id. After a new spec renders, the renderer runs conformance
 tests for previous specs to detect regressions. A new failure can mean:

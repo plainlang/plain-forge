@@ -30,7 +30,7 @@ Generated code in `plain_modules/<module>/code/` and `plain_modules/<module>/tes
 
 ## Phase 1 — Understand the Context
 
-1. **Read the `.plain` file(s)** for the module — frontmatter, definitions, implementation reqs, test reqs, and all functional specs. Also read `import` and `requires` chains, and the test plain files under `tests/<module>/`.
+1. **Read the `.plain` file(s)** for the module — frontmatter, definitions, implementation reqs, test reqs, and all functional specs. Also read `import` and `requires` chains, and the module's test plain files.
 2. **Read the user's observation carefully.** Rephrase it back to confirm understanding. Identify:
    - What is the expected behavior?
    - What is the actual behavior?

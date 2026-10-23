@@ -19,7 +19,7 @@ When this module is rendered:
 - The required module's generated code (`plain_modules/<required_module>/code`) is copied as the starting point.
 - The `***functional specs***` of the required module **and all its ancestors** become visible as **previous functional specs**.
 - Of the required module's definitions, only the concepts in its `exported_concepts` are visible, each with its full definition text. Export visibility is **not** transitive — to see an ancestor's exports, list that ancestor in `requires` too.
-- The required module's test plain files stay with the required module. The new module gets its own test plain files under `tests/<module>/`, one per functionality it adds (see `test-plain-files.md`).
+- The required module's test plain files stay with the required module. The new module gets its own test plain files, one per functionality it adds (see `test-plain-files.md`).
 
 All modules connected by `requires` form a single tree with a common root. **Diamond joins are prohibited**: multiple `requires` entries must lie on one root-to-tip ancestor path. The deepest entry is the attachment point; the other entries exist only to make those ancestors' exports visible.
 
@@ -108,6 +108,6 @@ The current module may or may not be functionally related to the required module
 - [ ] Every listed module's `exported_concepts` provide the concepts you need
 - [ ] New functional specs do not conflict with any spec in the ancestor chain
 - [ ] Module has at least one functional spec and one implementation req
-- [ ] Every functional spec has its test plain file under `tests/<module>/`
+- [ ] Every functional spec has its test plain file
 - [ ] Both `requires` and `import` are used correctly (not mixed up)
 - [ ] YAML frontmatter is correctly formatted between `---` markers
