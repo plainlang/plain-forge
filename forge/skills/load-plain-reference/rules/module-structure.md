@@ -49,7 +49,7 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 | HOW the software is built — tech stack, architecture, coding standards — and **everything about `:UnitTests:`** | `***implementation reqs***` | `impl-reqs.md` |
 | **Everything about `:ConformanceTests:`** — framework, run command, mocking and network policy | `***test reqs***` | `test-reqs.md` |
 | WHAT the software does — observable, language-agnostic behavior | `***functional specs***` | `func-specs.md` |
-| Test scenarios of one functionality, conformance and acceptance | the test plain file `tests/<module>/<func-id>.plain` | `test-plain-files.md` |
+| Test scenarios of one functionality, conformance and acceptance | the test plain file (by convention `tests/<module>/<func-id>.plain`) | `test-plain-files.md` |
 
 ## Comments
 - Lines beginning with `>` are ignored when rendering

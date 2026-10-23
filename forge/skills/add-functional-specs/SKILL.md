@@ -95,7 +95,7 @@ Functionality must be self-contained in the spec text. `requires` modules only i
 
 ## Test Scenarios
 
-After the batch has been inserted, invoke `add-test-scenarios` once per inserted functionality, in order. It writes each `tests/<module>/<func-id>.plain` with at least one conformance scenario when conformance tests are enabled for the module. Do this per spec, not as part of the bulk pass.
+After the batch has been inserted, invoke `add-test-scenarios` once per inserted functionality, in order. It writes each functionality's test plain file (by convention `tests/<module>/<func-id>.plain`) with at least one conformance scenario when conformance tests are enabled for the module. Do this per spec, not as part of the bulk pass.
 
 ## Anti-Patterns
 

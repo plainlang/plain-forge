@@ -109,7 +109,7 @@ Create the first module in the chain:
 2. Add the `***definitions***` section with concepts used by this module's specs and concepts that need to be exported.
 3. Add `***implementation reqs***` and `***test reqs***` specific to this module (if not fully covered by the import template).
 4. Add the `***functional specs***` assigned to this module, preserving their original order and exact wording.
-5. Move the test plain files of the moved functionalities to `tests/<new-module>/` and set their `module:` key to the new module name; func-ids and scenario text stay unchanged.
+5. Set the `module:` key of the moved functionalities' test plain files to the new module name and move the files to the new module's conventional location; func-ids and scenario text stay unchanged.
 
 ### 3c. Create subsequent modules
 
@@ -178,7 +178,7 @@ If a concept defined in module A is referenced by a spec in module B (which requ
 This is a refactoring, not a rewrite. Spec text must be copied verbatim. If a spec needs rewording to work in its new module context, that is a sign the split boundary is wrong — adjust the grouping instead.
 
 ### Losing test plain files
-A test plain file binds to its functionality by `module:` and `func_id:`. When a functionality moves to a new module, its test plain file moves to `tests/<new-module>/` and its `module:` key changes; otherwise the renderer reports a pair that matches no functionality.
+A test plain file binds to its functionality by `module:` and `func_id:`. When a functionality moves to a new module, its `module:` key changes and the file moves to the new module's conventional location; otherwise the renderer reports a pair that matches no functionality.
 
 ## Validation Checklist
 
