@@ -53,9 +53,10 @@ meta-commentary, and duplication of an `import` — are in `concise-specs-exampl
 
 ## Keep the shape small
 
+- The bullet rules here apply to `***definitions***`, `***implementation reqs***`, and `***test reqs***`; the body of a functionality and a scenario are free text
 - One statement per bullet, one bullet per fact (see `bullet-continuation.md`)
 - Nest a sub-bullet only to remove a real ambiguity; a sub-bullet that merely elaborates is filler
-- Consecutive specs that share a subject are usually one spec: if a top-level bullet only tells part of the story of one operation, merge the set, lead with the operation's result, and demote the steps and failure modes to sub-bullets (see *One operation fragmented into several specs* in `concise-specs-integration-examples.md`)
+- Consecutive specs that share a subject are usually one spec: if a functionality only tells part of the story of one operation, merge the set, lead with the operation's result, and demote the steps and failure modes to detail under it (see *One operation fragmented into several specs* in `concise-specs-integration-examples.md`)
 - Tables, prose paragraphs, and code blocks do not belong in a section; external artifacts are linked from `resources/` (see `linked-resources.md`)
 - A bullet that answers more than one of *what is it*, *what does it do*, *how is it built*, and *how is it tested* is not one fact — split it across the sections that own those facts, which reads better and is the only way the renderer sees each part (see `module-structure.md`, and *Split one crowded bullet across its owning sections* in `concise-specs-examples.md`)
 
