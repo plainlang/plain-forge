@@ -1,0 +1,35 @@
+***definitions***
+
+- :App: is a terminal UI application.
+
+- :MainExecutableFile: is the main executable code file of :App:.
+
+
+***implementation reqs***
+
+- :Implementation: should be in Python.
+
+- :Implementation: should provide an interactive keyboard-driven terminal UI.
+
+- :Implementation: should use Textual library.
+
+- :Implementation: should keep domain logic separate from terminal rendering and input handling.
+
+- :Implementation: should include :UnitTests: using Unittest framework. If :UnitTests: are put in a subfolder, make sure to include __init__.py to make them discoverable.
+
+- :App: can be executed using the command "python :MainExecutableFile:".
+
+
+***test reqs***
+
+- :ConformanceTests: of :App: should be implemented in Python using Unittest framework. :ConformanceTests: will be run using "python -m unittest discover" command. Therefore, if :ConformanceTests: are put in a subfolder, make sure to include __init__.py to make them discoverable.
+
+- :ConformanceTests: must be implemented and executed - do not use unittest.skip() or any other test skipping functionality.
+
+- The current working directory contains :MainExecutableFile:.
+
+- Set TERM=xterm-256color before running :App: to ensure proper terminal rendering.
+
+- Use pexpect to run :App: in a pseudo-terminal and send key presses to simulate a real user in a terminal.
+
+- Use pyte to interpret terminal output and convert escape sequences into a structured screen buffer that tests can assert against.

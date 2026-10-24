@@ -1,0 +1,25 @@
+---
+description: Command-line program that prints a greeting.
+---
+
+***definitions***
+
+- :App: is a command-line program.
+
+***implementation reqs***
+
+- :Implementation: should be in Python 3.12, using only the standard library.
+
+- :App: is run as `python hello_world.py`.
+
+- :UnitTests: use the unittest framework.
+
+***test reqs***
+
+- :ConformanceTests: should be implemented using pytest framework.
+
+- :ConformanceTests: run :App: as a subprocess and check its standard output and exit code.
+
+***functional specs***
+
+- Running :App: with no arguments prints `hello, world` followed by a newline to standard output and exits with code 0.

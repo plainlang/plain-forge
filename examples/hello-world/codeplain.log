@@ -1,0 +1,8 @@
+[00:00:00] INFO codeplain: Render started. Render ID: 9644f8c7-5026-43d1-92ad-65cbd33e1743
+[00:00:00] INFO codeplain: -------------------------------------
+           Module: hello_world
+           Rendering functionality 1:
+           - Running :App: with no arguments prints `hello, world` followed by a newline to standard output and exits with code 0.
+           -------------------------------------
+[00:00:04] INFO codeplain: Refactoring the generated code...
+[00:00:05] INFO codeplain: ✓ Render of module hello_world completed successfully.

@@ -1,0 +1,6 @@
+{
+  "name": "codeplain",
+  "version": "0.1.0",
+  "description": "Runs codeplain headless with /regenerate and shows its progress in a pane beside the chat.",
+  "types": "./types/index.d.ts"
+}

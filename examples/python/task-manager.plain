@@ -1,0 +1,42 @@
+---
+description: 'A task manager application'
+import:
+  - python-tui-app-template # spec source available at https://github.com/Codeplain-ai/codeplain/blob/main/standard_template_library/
+---
+
+***definitions***
+
+- :User: is the user of :App:
+
+- :Task: describes an activity that needs to be done by :User:. :Task: has the following attributes
+  - Name - a short description of :Task:. This is a required attribute. The name must be at least 3 characters long.
+  - Notes - additional details about :Task:
+  - Due Date - optional date by which :User: is supposed to complete :Task:.
+
+- :TaskList: is a list of :Task: items.
+  - Initially :TaskList: should be empty.
+
+***implementation reqs***
+
+- :MainExecutableFile: of :App: should be called "taskmgr.py".
+
+***test reqs***
+> Test requirements are defined in 'python-console-app-template'.
+
+***functional specs***
+
+- Show header of :App:. The details of the user interface are provided in the file [task_list_ui_specification.yaml](task_list_ui_specification.yaml).
+
+- Show :TaskList:. The details of the user interface are provided in the file [task_list_ui_specification.yaml](task_list_ui_specification.yaml).
+
+- :User: should be able to add :Task:. Only valid :Task: items can be added. The details of the user interface are provided in the file [add_new_task_modal_specification.yaml](add_new_task_modal_specification.yaml).
+
+- :User: should be able to delete :Task:
+
+- :User: should be able to edit :Task:
+
+- :User: should be able to mark :Task: as completed.
+
+
+
+> see https://www.plainlang.org/ for more information on ***plain
