@@ -190,10 +190,19 @@ export function stopProgress(p: Progress): Progress {
 
 const ANSI = /\u001b\[[0-9;]*[A-Za-z]/g
 
-// The exit summary codeplain prints to stdout once the render is over.
+const HEAD = /(✓ rendering completed|✗ rendering failed|— rendering canceled)/
+
+// The exit summary codeplain prints to stdout once the render is over, as printed.
+export function summaryBlock(out: string): string | null {
+  const text = out.replace(ANSI, '')
+  const head = HEAD.exec(text)
+
+  return head ? text.slice(head.index).trimEnd() : null
+}
+
 export function parseSummary(out: string): Summary | null {
   const text = out.replace(ANSI, '')
-  const head = /(✓ rendering completed|✗ rendering failed|— rendering canceled)/.exec(text)
+  const head = HEAD.exec(text)
   if (!head) return null
   const rest = text.slice(head.index)
   const usage = /functionalities\s+(\d+)\s+used credits\s+\d+\s+render time\s+(\S+)/.exec(rest)

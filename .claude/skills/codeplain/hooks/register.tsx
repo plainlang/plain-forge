@@ -1,9 +1,9 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Item, ItemKey, LogLevel, Progress, Run, Scripts, Summary, View } from '../types'
+import type { Finished, Item, ItemKey, LogLevel, Progress, Run, Scripts, Summary, View } from '../types'
 
-import { parseLog, parseSummary, stopProgress } from './parse-log'
+import { parseLog, parseSummary, stopProgress, summaryBlock } from './parse-log'
 
 const PANE = 'codeplain'
 const POLL_MS = 1000
@@ -13,6 +13,7 @@ const READ_LIMIT = 3_500_000
 const run = atom({ plugin: 'codeplain', key: 'run' } as const, null, { shape: 'run-2' })
 const progress = atom({ plugin: 'codeplain', key: 'progress' } as const, null, { shape: 'progress-2' })
 const summary = atom({ plugin: 'codeplain', key: 'summary' } as const, null, { shape: 'summary-1' })
+const finished = atom({ plugin: 'codeplain', key: 'finished' } as const, [], { shape: 'finished-1' })
 const view = atom(
   { plugin: 'codeplain', key: 'view' } as const,
   { isLogs: false, isExpanded: false, level: 'INFO' as LogLevel },
@@ -139,6 +140,15 @@ async function settle($: EngineInterface, r: Run, p: Progress | null): Promise<v
   const out = await $.process.run(['tail', '-c', '20000', `${r.runDir}/out`]).catch(() => null)
   const s = out ? parseSummary(out.stdout) : null
   await update($, summary, () => s)
+  const text = out ? summaryBlock(out.stdout) : null
+  // A run started before runs carried a tag has no row to draw in: log the summary.
+  const tag = (r as Partial<Run>).tag
+  if (tag) {
+    const done: Finished = { tag, file: r.file, status: r.status, text }
+    await update($, finished, list => [...list.filter(one => one.tag !== tag), done].slice(-20))
+  } else if (text) {
+    $.ui.log(text)
+  }
   if (p && r.status !== 'succeeded') await update($, progress, () => stopProgress(p))
 
   const how =
@@ -151,6 +161,14 @@ async function settle($: EngineInterface, r: Run, p: Progress | null): Promise<v
           : `rendering failed (exit ${r.exitCode})`
   $.ui.toast(`codeplain: ${r.file} ${how}`)
   await update($, run, () => r)
+  // As the TUI gives way to the summary when codeplain runs standalone.
+  await $.ui.close({ id: PANE }).catch(() => undefined)
+}
+
+// Starts a render from the pane through /regenerate, so it gets a transcript
+// row for its summary like one the person typed.
+function rerun($: EngineInterface, args: string): void {
+  void $.command.run({ command: 'regenerate', args }).catch(() => undefined)
 }
 
 function startPolling($: EngineInterface): void {
@@ -187,11 +205,13 @@ async function launch($: EngineInterface, file: string, extra: string[]): Promis
   }
 
   const topModule = (file.split('/').pop() ?? file).replace(/\.plain$/, '')
+  const tag = runDir.split('codeplain-mod.').pop() ?? runDir
   lastSize = -1
   lastWritten = ''
   await update($, progress, () => null)
   await update($, summary, () => null)
   await update($, run, () => ({
+    tag,
     file,
     topModule,
     logPath,
@@ -207,7 +227,7 @@ async function launch($: EngineInterface, file: string, extra: string[]): Promis
   void $.ui.open({ id: PANE, title: 'codeplain' })
   startPolling($)
 
-  return `Regenerating ${file}${extra.length ? ` ${extra.join(' ')}` : ''}.`
+  return `Regenerating ${file}${extra.length ? ` ${extra.join(' ')}` : ''} · run ${tag}`
 }
 
 async function stop($: EngineInterface): Promise<string> {
@@ -306,6 +326,61 @@ export const register: Register = on => {
     result: describe(await read($, run), await read($, progress), await read($, summary)),
   }))
 
+  // The /regenerate row of a run that ended shows codeplain's exit summary, as
+  // standalone codeplain prints it once its TUI closes.
+  on('ui.render', { component: 'CommandOutput', props: { command: 'regenerate' } }, async ($, e, next) => {
+    const tag = / · run (\S+)$/.exec(e.props.text.trim())?.[1]
+    const done = tag ? (await read($, finished)).find(one => one.tag === tag) : undefined
+    if (!done) return next(e)
+    const { Box, Text } = $.ui.resolve(e)
+
+    if (!done.text) {
+      return (
+        <Box flexDirection="column">
+          <Text color="red">✗ {done.file}: the codeplain process ended without an exit summary</Text>
+        </Box>
+      )
+    }
+
+    const lines = done.text.split('\n')
+    const isFailed = /^✗/.test(lines[0] ?? '')
+    let isPastUsage = false
+
+    return (
+      <Box flexDirection="column">
+        {lines.map((line, i) => {
+          if (i === 0) {
+            return <Text color={line.startsWith('✓') ? 'green' : isFailed ? 'red' : undefined}>{line}</Text>
+          }
+          const field = /^\s*(render id|input file|generated code folder):\s*(.*)$/.exec(line)
+          if (field) {
+            return (
+              <Text>
+                <Text dimColor>{`  ${field[1]}:`.padEnd(26)}</Text>
+                {field[2]}
+              </Text>
+            )
+          }
+          const usage = /^functionalities\s+(\d+)\s+used credits\s+(\d+)\s+render time\s+(\S+)/.exec(line)
+          if (usage) {
+            isPastUsage = true
+            return (
+              <Text>
+                <Text dimColor>functionalities </Text>
+                {usage[1]}
+                <Text dimColor>  used credits </Text>
+                {usage[2]}
+                <Text dimColor>  render time </Text>
+                {usage[3]}
+              </Text>
+            )
+          }
+          return <Text color={isPastUsage && isFailed ? 'red' : undefined}>{line || ' '}</Text>
+        })}
+      </Box>
+    )
+  })
+
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Text, Button, Code } = $.ui.resolve(e)
     const r = await read($, run)
@@ -340,18 +415,18 @@ export const register: Register = on => {
         {isRunning ? (
           <Button key="stop" label={r.isStopRequested ? 'Force stop' : 'Stop'} hotkey="s" onPress={() => stop($)} />
         ) : (
-          <Button key="again" label="Regenerate" hotkey="g" onPress={() => launch($, r.file, [])} />
+          <Button key="again" label="Regenerate" hotkey="g" onPress={() => rerun($, r.file)} />
         )}
         {resumeFrom ? (
           <Button
             key="resume"
             label={`Resume from ${resumeFrom}`}
             hotkey="r"
-            onPress={() => launch($, r.file, ['--render-from', resumeFrom])}
+            onPress={() => rerun($, `${r.file} --render-from ${resumeFrom}`)}
           />
         ) : null}
         {!isRunning ? (
-          <Button key="force" label="Force re-render" hotkey="f" onPress={() => launch($, r.file, ['--force-render'])} />
+          <Button key="force" label="Force re-render" hotkey="f" onPress={() => rerun($, `${r.file} --force-render`)} />
         ) : null}
         <Button key="logs" label={v.isLogs ? 'Dashboard' : 'Logs'} hotkey="l" onPress={() => setView({ isLogs: !v.isLogs })} />
         {!v.isLogs && p?.spec ? (

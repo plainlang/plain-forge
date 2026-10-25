@@ -17,6 +17,7 @@ const PANE = {
 } as const
 
 const RUN = {
+  tag: 'AbC123',
   file: 'app.plain',
   topModule: 'app',
   logPath: '/tmp/codeplain.log',
@@ -65,3 +66,23 @@ for (const isLogs of [false, true]) {
     await ui.unmount()
   })
 }
+
+test('a finished run\'s /regenerate row shows codeplain\'s exit summary', async ($, on) => {
+  const text =
+    '✗ rendering failed\n\n  render id:\t\t\tabc\n  input file:\t\t\tapp.plain\n  generated code folder:\t-\n\nfunctionalities  0  used credits  0  render time  0s\nKeyboard interrupt'
+  on('state.get', () => ({
+    value: { value: { shape: 'finished-1', value: [{ tag: 'AbC123', file: 'app.plain', status: 'stopped', text }] }, version: 1 },
+  }))
+
+  const ui = await $.ui.mount({
+    plugin: 'codeplain',
+    component: 'CommandOutput',
+    surface: 'terminal',
+    props: { command: 'regenerate', args: 'app.plain', text: 'Regenerating app.plain · run AbC123', isErrored: false },
+  })
+
+  expect((await ui.find({ type: 'Text', text: /rendering failed/ }))?.text).toBe('✗ rendering failed')
+  expect((await ui.find({ type: 'Text', text: /render time/ }))?.text).toContain('render time 0s')
+  expect((await ui.find({ type: 'Text', text: /Keyboard interrupt/ }))?.text).toBe('Keyboard interrupt')
+  await ui.unmount()
+})

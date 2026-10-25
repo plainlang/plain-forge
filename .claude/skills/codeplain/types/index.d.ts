@@ -3,6 +3,8 @@ export type RunStatus = 'running' | 'succeeded' | 'failed' | 'stopped' | 'lost'
 export type Scripts = { unit: boolean; conformance: boolean; env: boolean }
 
 export type Run = {
+  // The run folder's suffix: names the run on its /regenerate transcript row.
+  tag: string
   file: string
   topModule: string
   logPath: string
@@ -52,6 +54,10 @@ export type Progress = {
   log: LogEntry[]
 }
 
+// A run that ended, with the exit summary codeplain printed (as it prints it
+// to the terminal when run standalone), drawn in place of its /regenerate row.
+export type Finished = { tag: string; file: string; status: RunStatus; text: string | null }
+
 export type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR'
 export type View = { isLogs: boolean; isExpanded: boolean; level: LogLevel }
 
@@ -62,6 +68,7 @@ declare module 'claude-code' {
       progress: Shaped<Progress | null>
       summary: Shaped<Summary | null>
       view: Shaped<View>
+      finished: Shaped<Finished[]>
     }
   }
 }
