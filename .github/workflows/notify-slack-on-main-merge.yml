@@ -2,8 +2,11 @@ name: notify-slack-on-main-merge
 
 # Posts to Slack when a PR lands on main. Opening a PR notifies nobody —
 # this channel reports what actually merged.
+# pull_request_target runs this file from main with secrets, so merged PRs from
+# forks post too. Nothing from the PR is checked out or run; the title only
+# reaches the shell through an env var.
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
     types: [closed]
 
@@ -23,7 +26,7 @@ jobs:
         env:
           TITLE: ${{ github.event.pull_request.title }}
         run: |
-          printf 'title=%s\n' "$(printf '%s' "$TITLE" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')" >> "$GITHUB_OUTPUT"
+          printf 'title=%s\n' "$(printf '%s' "$TITLE" | tr '\r\n' '  ' | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')" >> "$GITHUB_OUTPUT"
 
       - name: Notify Slack (merged to main)
         uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
