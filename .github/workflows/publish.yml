@@ -35,11 +35,8 @@ jobs:
     permissions:
       contents: read
 
-    env:
-      # A release builds from its tag; a merge builds from the merge commit.
-      REF: ${{ github.event.release.tag_name || github.sha }}
-
     steps:
+      # A release builds from its tag; a merge builds from the merge commit.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.release.tag_name || github.sha }}
@@ -49,19 +46,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-
-      - name: Notify Slack (tests failed)
-        if: ${{ failure() && vars.SLACK_CHANNEL_ID != '' }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          errors: true
-          payload: |
-            channel: ${{ vars.SLACK_CHANNEL_ID }}
-            text: >-
-              *plain-forge*: `${{ env.REF }}` halted — tests FAILED :x:. Nothing was published to npm.
-              See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
 
   publish:
     name: Publish to npm
@@ -76,6 +60,9 @@ jobs:
     permissions:
       contents: read       # read the tagged tree
       id-token: write      # OIDC token for trusted publishing
+    outputs:
+      version: ${{ steps.pkg.outputs.version }}
+      pyro: ${{ steps.pyro.outputs.version }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -157,33 +144,6 @@ jobs:
             npm publish --access public
           fi
 
-      # Before the success notice, so a failed success post cannot trigger it.
-      - name: Notify Slack (failure)
-        if: ${{ failure() && vars.SLACK_CHANNEL_ID != '' }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          errors: true
-          payload: |
-            channel: ${{ vars.SLACK_CHANNEL_ID }}
-            text: >-
-              *plain-forge*: publishing `${{ github.event.release.tag_name }}` to npm FAILED :x:.
-              See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
-
-      - name: Notify Slack (success)
-        if: ${{ success() && vars.SLACK_CHANNEL_ID != '' }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
-        with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          errors: true
-          payload: |
-            channel: ${{ vars.SLACK_CHANNEL_ID }}
-            text: >-
-              *plain-forge*: `v${{ steps.pkg.outputs.version }}` published to npm :white_check_mark:
-              (bundles pyro `${{ steps.pyro.outputs.version }}`). Install with `npx plain-forge@latest update`.
-
   # ---------------------------------------------------------------------------
   # Merge into main -> prerelease on the `next` dist-tag.
   #
@@ -203,11 +163,13 @@ jobs:
     permissions:
       contents: read
       id-token: write      # OIDC token for trusted publishing
+    outputs:
+      version: ${{ steps.pre.outputs.version }}
+      base: ${{ steps.pre.outputs.base }}
+      skip: ${{ steps.guard.outputs.skip }}
+      pyro: ${{ steps.pyro.outputs.version }}
 
     steps:
-      - name: Short SHA for Slack
-        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
@@ -295,9 +257,61 @@ jobs:
             echo "Try it: \`npx plain-forge@next install\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Before the success notice, so a failed success post cannot trigger it.
-      - name: Notify Slack (failure)
-        if: ${{ failure() && vars.SLACK_CHANNEL_ID != '' }}
+  # End-of-run notices run in their own job: a failed Slack post fails only this
+  # job, not the publish or its npm deployment, and "Re-run failed jobs" re-posts
+  # without publishing again.
+  notify:
+    name: Notify Slack
+    needs: [test, publish, prerelease]
+    if: ${{ !cancelled() && vars.SLACK_CHANNEL_ID != '' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
+
+      # A release builds from its tag; a merge builds from the merge commit.
+      - name: Notify Slack (tests failed)
+        if: ${{ needs.test.result == 'failure' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: `${{ github.event.release.tag_name || github.sha }}` halted — tests FAILED :x:. Nothing was published to npm.
+              See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
+
+      - name: Notify Slack (release failed)
+        if: ${{ needs.publish.result == 'failure' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: publishing `${{ github.event.release.tag_name }}` to npm FAILED :x:.
+              See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
+
+      - name: Notify Slack (release published)
+        if: ${{ needs.publish.result == 'success' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: `v${{ needs.publish.outputs.version }}` published to npm :white_check_mark:
+              (bundles pyro `${{ needs.publish.outputs.pyro }}`). Install with `npx plain-forge@latest update`.
+
+      - name: Notify Slack (prerelease failed)
+        if: ${{ needs.prerelease.result == 'failure' }}
         uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
           method: chat.postMessage
@@ -309,8 +323,8 @@ jobs:
               *plain-forge*: prerelease of `${{ env.SHORT_SHA }}` FAILED :x:. `latest` is unaffected.
               See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
 
-      - name: Notify Slack (published)
-        if: ${{ steps.guard.outputs.skip == 'false' && success() && vars.SLACK_CHANNEL_ID != '' }}
+      - name: Notify Slack (prerelease published)
+        if: ${{ needs.prerelease.result == 'success' && needs.prerelease.outputs.skip == 'false' }}
         uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
           method: chat.postMessage
@@ -319,15 +333,15 @@ jobs:
           payload: |
             channel: ${{ vars.SLACK_CHANNEL_ID }}
             text: >-
-              *plain-forge*: prerelease `${{ steps.pre.outputs.version }}` published to npm :package:
-              (bundles pyro `${{ steps.pyro.outputs.version }}`). Try it with `npx plain-forge@next install`.
-              `latest` is untouched at `${{ steps.pre.outputs.base }}`.
+              *plain-forge*: prerelease `${{ needs.prerelease.outputs.version }}` published to npm :package:
+              (bundles pyro `${{ needs.prerelease.outputs.pyro }}`). Try it with `npx plain-forge@next install`.
+              `latest` is untouched at `${{ needs.prerelease.outputs.base }}`.
               From <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ env.SHORT_SHA }}> by *${{ github.actor }}*.
 
       # A re-run of an already-published commit is a no-op, not a publish, so it
       # gets its own quiet line rather than claiming something shipped.
       - name: Notify Slack (nothing to publish)
-        if: ${{ steps.guard.outputs.skip == 'true' && success() && vars.SLACK_CHANNEL_ID != '' }}
+        if: ${{ needs.prerelease.result == 'success' && needs.prerelease.outputs.skip == 'true' }}
         uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
         with:
           method: chat.postMessage
@@ -336,7 +350,7 @@ jobs:
           payload: |
             channel: ${{ vars.SLACK_CHANNEL_ID }}
             text: >-
-              *plain-forge*: prerelease `${{ steps.pre.outputs.version }}` was already on npm — nothing published.
+              *plain-forge*: prerelease `${{ needs.prerelease.outputs.version }}` was already on npm — nothing published.
               See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
 
   # Release pipelines to be turned on only after the rest of the infrastructure
