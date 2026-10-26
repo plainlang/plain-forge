@@ -161,7 +161,7 @@ at the repo root — gitignored, and the only place a webhook should live locall
 | what | where | note |
 |---|---|---|
 | Trusted publisher | npmjs.com → `plain-forge` → Settings → Trusted Publisher | GitHub Actions, `plainlang/plain-forge`, workflow `publish.yml` |
-| `SLACK_WEBHOOK_URL` | repo secret | notifications are skipped without it |
+| `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` | org secret, org variable | CI notifications are skipped without the variable; `scripts/deploy.sh` still uses `SLACK_WEBHOOK_URL` |
 | `LINEAR_ACCESS_KEY` | repo secret | records the release in Linear; the job is currently commented out in `publish.yml` |
 | Branch protection | `main` | `Test (node 22 / 24)` required, no force pushes, no deletion |
 

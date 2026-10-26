@@ -36,7 +36,6 @@ jobs:
       contents: read
 
     env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       # A release builds from its tag; a merge builds from the merge commit.
       REF: ${{ github.event.release.tag_name || github.sha }}
 
@@ -52,11 +51,17 @@ jobs:
       - run: npm test
 
       - name: Notify Slack (tests failed)
-        if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}
-        run: |
-          curl -s -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: \`$REF\` halted — tests FAILED :x:. Nothing was published to npm. See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.\"}"
+        if: ${{ failure() && vars.SLACK_CHANNEL_ID != '' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: `${{ env.REF }}` halted — tests FAILED :x:. Nothing was published to npm.
+              See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
 
   publish:
     name: Publish to npm
@@ -71,9 +76,6 @@ jobs:
     permissions:
       contents: read       # read the tagged tree
       id-token: write      # OIDC token for trusted publishing
-
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -129,12 +131,20 @@ jobs:
       - name: Set the package version to match the tag
         run: npm version "${{ steps.pkg.outputs.version }}" --no-git-tag-version --allow-same-version
 
+      # Non-fatal: Slack being down must not block the publish.
       - name: Notify Slack (start)
-        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
-        run: |
-          curl -s -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: release \`v${{ steps.pkg.outputs.version }}\` published by *${{ github.actor }}* — shipping to npm...\"}"
+        if: ${{ vars.SLACK_CHANNEL_ID != '' }}
+        continue-on-error: true
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: release `v${{ steps.pkg.outputs.version }}` published by *${{ github.actor }}*
+              — shipping to npm...
 
       # No NODE_AUTH_TOKEN: npm exchanges the GitHub OIDC token for a
       # short-lived npm token. Provenance is attached automatically.
@@ -148,18 +158,30 @@ jobs:
           fi
 
       - name: Notify Slack (success)
-        if: ${{ success() && env.SLACK_WEBHOOK_URL != '' }}
-        run: |
-          curl -s -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: \`v${{ steps.pkg.outputs.version }}\` published to npm :white_check_mark: (bundles pyro \`${{ steps.pyro.outputs.version }}\`). Install with \`npx plain-forge@latest update\`.\"}"
+        if: ${{ success() && vars.SLACK_CHANNEL_ID != '' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: `v${{ steps.pkg.outputs.version }}` published to npm :white_check_mark:
+              (bundles pyro `${{ steps.pyro.outputs.version }}`). Install with `npx plain-forge@latest update`.
 
       - name: Notify Slack (failure)
-        if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}
-        run: |
-          curl -s -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: publishing \`${{ github.event.release.tag_name }}\` to npm FAILED :x:. See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.\"}"
+        if: ${{ failure() && vars.SLACK_CHANNEL_ID != '' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: publishing `${{ github.event.release.tag_name }}` to npm FAILED :x:.
+              See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
 
   # ---------------------------------------------------------------------------
   # Merge into main -> prerelease on the `next` dist-tag.
@@ -181,10 +203,10 @@ jobs:
       contents: read
       id-token: write      # OIDC token for trusted publishing
 
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
     steps:
+      - name: Short SHA for Slack
+        run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: true
@@ -273,27 +295,47 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Notify Slack (published)
-        if: ${{ steps.guard.outputs.skip == 'false' && success() && env.SLACK_WEBHOOK_URL != '' }}
-        run: |
-          curl -s -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: prerelease \`${{ steps.pre.outputs.version }}\` published to npm :package: (bundles pyro \`${{ steps.pyro.outputs.version }}\`). Try it with \`npx plain-forge@next install\`. \`latest\` is untouched at \`${{ steps.pre.outputs.base }}\`. From <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${GITHUB_SHA:0:7}> by *${{ github.actor }}*.\"}"
+        if: ${{ steps.guard.outputs.skip == 'false' && success() && vars.SLACK_CHANNEL_ID != '' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: prerelease `${{ steps.pre.outputs.version }}` published to npm :package:
+              (bundles pyro `${{ steps.pyro.outputs.version }}`). Try it with `npx plain-forge@next install`.
+              `latest` is untouched at `${{ steps.pre.outputs.base }}`.
+              From <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ env.SHORT_SHA }}> by *${{ github.actor }}*.
 
       # A re-run of an already-published commit is a no-op, not a publish, so it
       # gets its own quiet line rather than claiming something shipped.
       - name: Notify Slack (nothing to publish)
-        if: ${{ steps.guard.outputs.skip == 'true' && success() && env.SLACK_WEBHOOK_URL != '' }}
-        run: |
-          curl -s -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: prerelease \`${{ steps.pre.outputs.version }}\` was already on npm — nothing published. See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.\"}"
+        if: ${{ steps.guard.outputs.skip == 'true' && success() && vars.SLACK_CHANNEL_ID != '' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: prerelease `${{ steps.pre.outputs.version }}` was already on npm — nothing published.
+              See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
 
       - name: Notify Slack (failure)
-        if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}
-        run: |
-          curl -s -X POST "$SLACK_WEBHOOK_URL" \
-            -H 'Content-type: application/json' \
-            --data "{\"text\":\"*plain-forge*: prerelease of \`${GITHUB_SHA:0:7}\` FAILED :x:. \`latest\` is unaffected. See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.\"}"
+        if: ${{ failure() && vars.SLACK_CHANNEL_ID != '' }}
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: >-
+              *plain-forge*: prerelease of `${{ env.SHORT_SHA }}` FAILED :x:. `latest` is unaffected.
+              See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
 
   # Release pipelines to be turned on only after the rest of the infrastructure
   # is ready.
@@ -307,9 +349,6 @@ jobs:
   #
   #   permissions:
   #     contents: read
-  #
-  #   env:
-  #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
   #
   #   steps:
   #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -332,8 +371,14 @@ jobs:
   #     # continue-on-error keeps the job green, so this checks the step's own
   #     # outcome — `failure()` would never fire.
   #     - name: Notify Slack (release not recorded)
-  #       if: ${{ steps.linear.outcome == 'failure' && env.SLACK_WEBHOOK_URL != '' }}
-  #       run: |
-  #         curl -s -X POST "$SLACK_WEBHOOK_URL" \
-  #           -H 'Content-type: application/json' \
-  #           --data "{\"text\":\"*plain-forge*: \`${{ github.event.release.tag_name }}\` is on npm, but recording it in Linear FAILED :warning:. See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.\"}"
+  #       if: ${{ steps.linear.outcome == 'failure' && vars.SLACK_CHANNEL_ID != '' }}
+  #       uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+  #       with:
+  #         method: chat.postMessage
+  #         token: ${{ secrets.SLACK_BOT_TOKEN }}
+  #         errors: true
+  #         payload: |
+  #           channel: ${{ vars.SLACK_CHANNEL_ID }}
+  #           text: >-
+  #             *plain-forge*: `${{ github.event.release.tag_name }}` is on npm, but recording it in Linear FAILED :warning:.
+  #             See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.

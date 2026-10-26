@@ -1,0 +1,37 @@
+name: notify-slack-on-main-merge
+
+# Posts to Slack when a PR lands on main. Opening a PR notifies nobody —
+# this channel reports what actually merged.
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+permissions: {}
+
+jobs:
+  notify:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged && vars.SLACK_CHANNEL_ID != '' }}
+
+    steps:
+      # Slack reads <, > and & as markup: escape them so a PR title cannot
+      # mention @channel or rewrite the link.
+      - name: Escape the PR title for Slack
+        id: pr
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          printf 'title=%s\n' "$(printf '%s' "$TITLE" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack (merged to main)
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          # toJSON quotes the title, so quotes and colons in it keep the payload valid.
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            text: ${{ toJSON(format('*plain-forge*: <{0}|#{1} {2}> merged to `main` — by *{3}*.', github.event.pull_request.html_url, github.event.pull_request.number, steps.pr.outputs.title, github.event.pull_request.user.login)) }}
