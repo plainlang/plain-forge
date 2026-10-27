@@ -8,13 +8,26 @@ A test plain file holds the test scenarios of one functionality. Conformance sce
 
 ## File skeleton
 - A test plain file is a `.plain` file with YAML frontmatter and two sections, in this order: `***conformance tests***`, then `***acceptance tests***`
-- Both sections are required; `***acceptance tests***` may be empty
+- Both sections are required; both may be empty
 - The frontmatter has exactly two keys, both required:
   - `module:` the name of the module that holds the functionality (the spec plain file's name without `.plain`)
   - `func_id:` the func-id of the functionality (see `semantic-ids.md`)
 - The pair `(module, func_id)` must name a functionality that exists; a pair with no match is an error
 - A test plain file must not have `***definitions***`, `***implementation reqs***`, `***test reqs***`, or `***functional specs***`
 - Comment lines starting with `>` are allowed, as in a spec plain file
+- By convention an empty `***conformance tests***` section holds the comment `> add conformance test scenarios here`
+
+The minimal valid file is the frontmatter and the two section markers, even on adjacent lines:
+
+```plain
+---
+module: hello_world_python
+func_id: display-hello-world
+---
+
+***conformance tests***
+***acceptance tests***
+```
 
 ## Location
 - By convention a test plain file lives at `tests/<module>/<func_id>.plain`, with `tests/` next to the spec plain file
@@ -39,7 +52,7 @@ A test plain file holds the test scenarios of one functionality. Conformance sce
 ## Conformance scenarios
 - `***conformance tests***` holds the scenarios of the expected use of the functionality: its main path, with valid parameters, the expected caller, and the data present.
 - These scenarios gate the functionality: it is done only when every conformance scenario passes
-- When conformance tests are enabled for the module (its `config.yaml` has a `conformance-tests-script`), every functionality has at least one conformance scenario; an empty section is an error
+- When conformance tests are enabled for the module (its `config.yaml` has a `conformance-tests-script`), every functionality has a test plain file and should have at least one conformance scenario; an empty section is valid
 - Cover the main path first, then each variant of expected use the functional spec states (another valid input shape, an optional parameter); stop when every expected behavior has one scenario
 - Do not write the same scenario twice in different words; one scenario per distinct outcome
 

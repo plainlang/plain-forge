@@ -102,7 +102,7 @@ A :User: can add a :Task:. Only valid :Task: items are added.
 - Include relevant outputs, state changes, errors, or externally visible side effects
 - Do not rely on generated implementation details as the only way to verify the behavior
 - If a black-box conformance scenario cannot be written from the spec, make the behavior more explicit
-- When conformance tests are enabled, every functionality has a test plain file with at least one conformance scenario (see `test-plain-files.md`); write it in the same step as the functional spec
+- When conformance tests are enabled, every functionality has a test plain file, and it should hold at least one conformance scenario (see `test-plain-files.md`); write the file in the same step as the functional spec
 
 ## Deterministic interface
 - Specs must be detailed enough that a developer can use the built software without reading the generated code
