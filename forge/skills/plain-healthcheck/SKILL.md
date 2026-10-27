@@ -110,7 +110,7 @@ Check every `.plain` module against the rules loaded by `load-plain-reference`:
 1. **Section ownership.** No fact sits in a section that doesn't own it — `:UnitTests:` facts only in `***implementation reqs***`, `:ConformanceTests:` facts only in `***test reqs***`, technology only in `***implementation reqs***`.
 2. **Bullets and headings.** Every line in `***definitions***`, `***implementation reqs***`, and `***test reqs***` is a valid `- ` list item or a correctly indented sub-bullet — no bare continuation lines. Every functionality in `***functional specs***` is a `# <func-id>` heading followed by its body.
 3. **Linked resources.** Every linked resource is a single **text** file (not a binary), and no URL or folder path appears in the surrounding spec text unless it is a runtime value the generated software itself uses.
-4. **Test plain files.** Every test plain file binds to an existing functionality (`module:` names a module, `func_id:` one of its `# func-id` headings) and has both sections in order. Scenario-ids are unique per functionality across every file bound to it. When the module's `config.yaml` has a `conformance-tests-script`, every functionality has at least one conformance scenario; a functionality with none is a failure that names `add-test-scenarios`. A scenario under `***conformance tests***` that describes use that is not expected (invalid parameters, wrong or missing authentication, missing data), or one under `***acceptance tests***` that describes the expected use, is a failure that names `add-test-scenarios`.
+4. **Test plain files.** Every test plain file binds to an existing functionality (`module:` names a module, `func_id:` one of its `# func-id` headings) and has both sections in order. Scenario-ids are unique per functionality across every file bound to it. When the module's `config.yaml` has a `conformance-tests-script`, every functionality has a test plain file; a functionality without one is a failure that names `add-test-scenarios`. A test plain file with no scenario in either section is a **warning** (not a failure), listed under the verdict like an orphan script, and names `add-test-scenarios`; the verdict stays `PASS`. A scenario under `***conformance tests***` that describes use that is not expected (invalid parameters, wrong or missing authentication, missing data), or one under `***acceptance tests***` that describes the expected use, is a failure that names `add-test-scenarios`.
 
 Functional-spec complexity is checked when a spec is authored (`add-functional-spec(s)` → `analyze-if-func-spec-too-complex`). Re-run `analyze-if-func-spec-too-complex` here only for a spec that was hand-edited since it was authored.
 
@@ -131,7 +131,7 @@ If the failure is something the healthcheck cannot reasonably fix on its own (e.
 
 Emit one of:
 
-- **`PASS`** — followed by a short summary of what was checked: `N config.yaml(s) validated`, `M module(s) checked (plain-parser OK for every top module)`, `T test plain file(s) bound`, `K scripts referenced`. The caller (`forge-plain`, `add-feature`, `debug-specs`) can then continue to its hand-off step.
+- **`PASS`** — followed by a short summary of what was checked: `N config.yaml(s) validated`, `M module(s) checked (plain-parser OK for every top module)`, `T test plain file(s) bound`, `K scripts referenced`, then every warning (an orphan script, a test plain file with no scenario). The caller (`forge-plain`, `add-feature`, `debug-specs`) can then continue to its hand-off step.
 - **`FAIL`** — followed by a numbered list of every unresolved problem. Each entry must include: the file (config / `.plain` / script) it applies to, the concrete issue, and what the user needs to decide if the healthcheck couldn't resolve it.
 
 The verdict goes on the first line so callers can pattern-match without parsing the whole report.
@@ -155,5 +155,5 @@ The verdict goes on the first line so callers can pattern-match without parsing 
 - [ ] The parser probe passed, or the report says 3a is suspended and names the plain-parser release that is needed
 - [ ] `plain-parser check` printed `OK` for every top module, run from that module's directory
 - [ ] Every module passes every check in Step 3b (section ownership, bullets and headings, linked resources, test plain files)
-- [ ] Every test plain file binds to an existing functionality, and every functionality has at least one conformance scenario when conformance tests are enabled
+- [ ] Every test plain file binds to an existing functionality, every functionality has a test plain file when conformance tests are enabled, and a test plain file with no scenario was listed as a warning
 - [ ] Verdict (`PASS` / `FAIL`) is on the first line, with a numbered list of remaining problems if it failed
