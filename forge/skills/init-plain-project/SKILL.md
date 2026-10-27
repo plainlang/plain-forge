@@ -118,7 +118,7 @@ Do **not** invoke `init-config-file` or `plain-healthcheck` here — keeping thi
 Tell the user what was created and what's next:
 
 - Files written: `template/base.plain`, `<project>.plain`, the test scripts, `config.yaml`.
-- Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs` (each new functionality gets its test plain file when conformance testing is enabled), or jump straight into `add-feature`.
+- Suggested next steps: add concepts with `add-concept`, add functional specs with `add-functional-spec` or `add-functional-specs` (each new functionality gets its test plain file when conformance testing is enabled; an empty `***conformance tests***` section holds the comment `> add conformance test scenarios here`), or jump straight into `add-feature`.
 - Mention that the project has not been validated — they can run `plain-healthcheck` when they want validation.
 
 ## Validation checklist
