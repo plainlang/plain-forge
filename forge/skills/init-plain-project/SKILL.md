@@ -105,11 +105,12 @@ Create `config.yaml` at the project root with **only the keys for scripts that w
 ```yaml
 unittests-script: test_scripts/run_unittests_<lang>.<sh|ps1>
 conformance-tests-script: test_scripts/run_conformance_tests_<lang>.<sh|ps1>
+test-dir: tests
 prepare-environment-script: test_scripts/prepare_environment_<lang>.<sh|ps1>
 template_dir: template
 ```
 
-Always include `template_dir: template` because the project has a template import module from step 3. Use `.sh` on macOS/Linux and `.ps1` on Windows, matching whatever the implement-* skills produced.
+Always include `template_dir: template` because the project has a template import module from step 3. Use `.sh` on macOS/Linux and `.ps1` on Windows, matching whatever the implement-* skills produced. Include `test-dir: tests` whenever `conformance-tests-script` is included: `plain-parser` and the renderer read test plain files only from the folders this key names.
 
 Do **not** invoke `init-config-file` or `plain-healthcheck` here — keeping this skill light is the whole point. The user can run them later if they want a strict canonicalization or validation.
 

@@ -51,6 +51,7 @@ These keys reflect choices made in Phase 3 of `forge-plain`:
 |---|---|---|---|
 | `unittests-script` | path (string) | — | **Required.** Every project gets a unit-test runner. A relative path resolves against the config file's directory. |
 | `conformance-tests-script` | path (string) | — | Include when the user opted into conformance testing in Phase 3. |
+| `test-dir` | path (string) or list of paths | — | Include whenever `conformance-tests-script` is set. `plain-parser` and the renderer read test plain files only from these folders and have no default; use `tests`. A relative path resolves against the config file's directory. |
 | `prepare-environment-script` | path (string) | — | Include only when both (a) the user opted into a prepare-environment script and (b) `conformance-tests-script` is also set. Setting prepare without conformance is a hard `plain-healthcheck` failure. |
 | `test-script-timeout` | int (seconds) | `120` | Include only when the user explicitly raised/lowered the default. |
 | `template-dir` | path (string) | — | Include whenever the project has an import module or a custom template directory (e.g. `template/`). Required for projects with shared templates. `plain-parser check` reads it too, so `plain-healthcheck` finds the templates. |
@@ -85,7 +86,7 @@ For each part:
 
 1. Start from an empty key set.
 2. Add `unittests-script: test_scripts/run_unittests_<lang>.<sh|ps1>` — required. If the script doesn't exist yet, stop and tell the caller to run `implement-unit-testing-script` first.
-3. If the part has a conformance script on disk → add `conformance-tests-script: …`.
+3. If the part has a conformance script on disk → add `conformance-tests-script: …` and `test-dir: tests` (or the folder the user keeps test plain files in).
 4. If the part has a prepare-environment script on disk → first verify `conformance-tests-script` is also being added; if not, stop and surface this to the user (offer to either generate the missing conformance script via `implement-conformance-testing-script` or drop the prepare-environment script).
 5. If the project has shared templates → add `template-dir: template` (or whatever path the user used).
 6. **Always add `build-dest: dist`.** This skill pins the output destination on every config it writes, regardless of what Phase 3 said about it. If Phase 3 explicitly asked for a different `build-dest`, stop and surface the conflict to the user — do not silently honor the override.
@@ -107,9 +108,10 @@ For each part, write a clean YAML file:
 
 Example for a single-stack Python project with conformance testing and a prepare-environment script:
 
-```/dev/null/config.yaml.example#L1-5
+```/dev/null/config.yaml.example#L1-6
 unittests-script: test_scripts/run_unittests_python.sh
 conformance-tests-script: test_scripts/run_conformance_tests_python.sh
+test-dir: tests
 prepare-environment-script: test_scripts/prepare_environment_python.sh
 template-dir: template
 build-dest: dist
@@ -117,9 +119,10 @@ build-dest: dist
 
 Example for a multi-part project (`backend/config.yaml`):
 
-```/dev/null/config.yaml.example#L1-4
+```/dev/null/config.yaml.example#L1-5
 unittests-script: test_scripts/run_unittests_python.sh
 conformance-tests-script: test_scripts/run_conformance_tests_python.sh
+test-dir: tests
 template-dir: ../template
 build-dest: dist
 ```
@@ -134,6 +137,7 @@ Tell the caller exactly which file(s) were written and invoke `plain-healthcheck
 - **Mixing stacks in one config.** `backend/config.yaml` referencing a JS script is always a bug — split into per-part configs instead.
 - **Putting secrets or per-invocation options in `config.yaml`.**
 - **Emitting `prepare-environment-script` without `conformance-tests-script`.** A prepare-environment script only makes sense in service of conformance tests; without one, `plain-healthcheck` will fail.
+- **Emitting `conformance-tests-script` without `test-dir`.** `plain-parser check` refuses to run on that config, and the renderer reads no test plain file.
 - **Hand-merging into an existing config.yaml without re-running this skill.** If the user edited the config manually, re-run the skill to re-derive a clean canonical version (after confirming any custom fields with the user).
 
 ## Validation Checklist
@@ -142,6 +146,7 @@ Tell the caller exactly which file(s) were written and invoke `plain-healthcheck
 - [ ] Every `config.yaml` has at minimum `unittests-script`.
 - [ ] Every `*-script` value points at a file that exists on disk.
 - [ ] No `config.yaml` declares `prepare-environment-script` without also declaring `conformance-tests-script`.
+- [ ] Every `config.yaml` that declares `conformance-tests-script` also declares `test-dir`.
 - [ ] No `config.yaml` mixes stacks (every script in it targets the same language).
 - [ ] `build-dest` is set to `dist` in every emitted `config.yaml`.
 - [ ] `build-folder` ≠ `build-dest`.
