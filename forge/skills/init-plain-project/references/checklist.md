@@ -23,7 +23,7 @@ Use this to verify the scaffold was produced correctly — never as a substitute
 - [ ] Generated `implement-unit-testing-script` (always).
 - [ ] Generated `implement-conformance-testing-script` only if conformance was enabled (activate-only variant when a prepare-environment script will also exist, otherwise install-inline).
 - [ ] Generated `implement-prepare-environment-script` only if conformance was enabled **and** the user opted in.
-- [ ] Wrote `config.yaml` at the project root with only the keys for scripts actually generated, plus `template_dir: template`, using the correct `.sh`/`.ps1` extension for the host OS.
+- [ ] Wrote `config.yaml` at the project root with only the keys for scripts actually generated, plus `template_dir: template` and, when conformance was enabled, `test-dir: tests`, using the correct `.sh`/`.ps1` extension for the host OS.
 - [ ] Did **not** run `init-config-file`, `plain-healthcheck`, or `check-plain-env` (out of scope for this skill).
 
 ## Recap
