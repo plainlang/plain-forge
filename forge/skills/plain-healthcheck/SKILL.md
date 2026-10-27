@@ -40,7 +40,7 @@ The skill is a **detect → fix → re-run** loop. It does not stop at the first
 2. Identify **top modules** — every module that is not `requires`-ed by any other module. A single-stack project has one top module; a multi-part project (e.g. backend + frontend) has one top module per part.
 3. List every `config.yaml` in the repo (root and per-part directories such as `backend/`, `frontend/`).
 4. List every script under `test_scripts/`.
-5. List every test plain file: each `.plain` file in the project whose frontmatter has `module:` and `func_id:` (by convention under `tests/`). Record the pair it binds to.
+5. List every test plain file: each `.plain` file under the folders that `test-dir` names in the governing `config.yaml` (by convention `tests/`) whose frontmatter has `module:` and `func_id:`. Record the pair it binds to. Note a file with that frontmatter that lies outside those folders: the parser and the renderer never read it.
 6. Pair each top module with the `config.yaml` that governs it. The pairing rule is: the config file in the same directory as the top module wins; failing that, the repo-root `config.yaml`. A multi-part project must have one config per part — record any top module that has no governing config as a failure.
 
 Print a one-line inventory summary so the rest of the run is easy to follow, e.g. `Top modules: backend/api.plain (config: backend/config.yaml), frontend/web.plain (config: frontend/config.yaml). Scripts in test_scripts/: 4. Test plain files: 12.`
@@ -58,7 +58,8 @@ For each `config.yaml` in the inventory, check **all** of the following. Collect
 4. **No mixed stacks per config.** Every script referenced from a single `config.yaml` must target the same language/stack. For example, `backend/config.yaml` should not reference `run_unittests_js.sh`. If a config crosses stacks, that is a failure — the project should have been split into multiple configs per the applicable module rules loaded by `load-plain-reference`.
 5. **No dangling fields.** Any `*-script` field whose target file does not exist is a failure.
 6. **`prepare-environment-script` implies `conformance-tests-script`.** A `prepare-environment-script` only makes sense in service of conformance tests — the environment is what those tests run against. If a `config.yaml` declares `prepare-environment-script` but does **not** declare `conformance-tests-script`, that is a failure. Surface it to the user and offer to either (a) invoke `implement-conformance-testing-script` to add the missing script, or (b) remove the `prepare-environment-script` field if it was added in error. Do not auto-pick.
-7. **No orphan scripts.** Every script under `test_scripts/` should be referenced by *some* `config.yaml`. If a script is never referenced, surface it as a **warning** (not a hard failure — the user may be in the middle of authoring).
+7. **`conformance-tests-script` implies `test-dir`.** `plain-parser` and the renderer read test plain files only from the folders that `test-dir` names (a string or a list; a relative path resolves against the config file's directory). There is no default. A `config.yaml` that declares `conformance-tests-script` without `test-dir` is a failure: `plain-parser check` refuses to run on it. Offer to add `test-dir: tests`. A folder named in `test-dir` that does not exist is a failure as well, and so is a test plain file that lies outside every folder named there.
+8. **No orphan scripts.** Every script under `test_scripts/` should be referenced by *some* `config.yaml`. If a script is never referenced, surface it as a **warning** (not a hard failure — the user may be in the middle of authoring).
 
 For each failure, record the offending config path, the offending field, and the concrete problem (`file missing`, `not executable`, `mixed stack`, etc.).
 
@@ -98,10 +99,10 @@ Step 3 has two halves: a mechanical parse by `plain-parser`, then the checks tha
    cd <top-module-dir> && plain-parser check <top>.plain
    ```
 
-   Add `--config-name <name>` when the governing config is not named `config.yaml`. `plain-parser` reads `template-dir` from the config next to the `.plain` file or in the working directory, and exits `2` when it finds one in both — running from the module's own directory avoids that in multi-part projects.
+   Add `--config-name <name>` when the governing config is not named `config.yaml`. `plain-parser` reads `template-dir`, `test-dir` and `conformance-tests-script` from the config next to the `.plain` file or in the working directory, and exits `2` when it finds one in both — running from the module's own directory avoids that in multi-part projects.
 4. **Read the result.** Exit `0` prints `<file>: OK`. Exit `1` prints `Error: …` on stderr — record that message verbatim as a failure against the top module. Exit `2` is a usage or config error (ambiguous or malformed config) — record it against the config.
 
-`plain-parser` checks, among other things: frontmatter, that every `import` / `requires` entry exists and the graph has no cycles, that `requires` modules have one fixed order, that imported modules have no functional specs, section headings (allowed, not duplicated, `***definitions***` first), `# func-id` headings in `***functional specs***` with unique func-ids, test plain files (frontmatter `module:` and `func_id:` naming an existing functionality, both sections present, unique scenario-ids), concepts (defined, exported and required correctly), that a module with functional specs has implementation reqs, and that every linked resource and template resolves to an existing, relative, non-`.plain` file. It does not always report every error in one run, so after fixing what it reported, run it again until it prints `OK`.
+`plain-parser` checks, among other things: frontmatter, that every `import` / `requires` entry exists and the graph has no cycles, that `requires` modules have one fixed order, that imported modules have no functional specs, section headings (allowed, not duplicated, `***definitions***` first), `# func-id` headings in `***functional specs***` with unique func-ids, test plain files under the `test-dir` folders (frontmatter `module:` and `func_id:` naming an existing functionality, both sections present, unique scenario-ids, and one file per functionality when `conformance-tests-script` is set), concepts (defined, exported and required correctly), that a module with functional specs has implementation reqs, and that every linked resource and template resolves to an existing, relative, non-`.plain` file. It does not always report every error in one run, so after fixing what it reported, run it again until it prints `OK`.
 
 #### 3b. Check what the parser can't judge
 
@@ -151,6 +152,7 @@ The verdict goes on the first line so callers can pattern-match without parsing 
 - [ ] Every `*-script` field points at a file that exists under `test_scripts/`
 - [ ] No `config.yaml` mixes stacks (e.g. Python + JS scripts in the same file)
 - [ ] No `config.yaml` declares `prepare-environment-script` without also declaring `conformance-tests-script`
+- [ ] Every `config.yaml` that declares `conformance-tests-script` also declares `test-dir`, and every folder it names exists
 - [ ] Every `test_scripts/*` file is referenced by some `config.yaml` (or surfaced as a warning)
 - [ ] The parser probe passed, or the report says 3a is suspended and names the plain-parser release that is needed
 - [ ] `plain-parser check` printed `OK` for every top module, run from that module's directory
