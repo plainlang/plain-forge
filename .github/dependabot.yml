@@ -1,4 +1,5 @@
-# Keeps the SHA-pinned actions in publish.yml patched.
+# Weekly version updates. The actions entry keeps the SHA-pinned actions in
+# publish.yml patched; the npm entry covers the dev toolchain in package.json.
 version: 2
 
 updates:
@@ -13,6 +14,26 @@ updates:
       - "github-actions"
     groups:
       actions-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # Skip releases younger than two days. Security updates are never delayed.
+    cooldown:
+      default-days: 2
+    # "chore(deps-dev): ..." — also applies to npm security update PRs.
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+    groups:
+      npm-minor-and-patch:
         update-types:
           - "minor"
           - "patch"
