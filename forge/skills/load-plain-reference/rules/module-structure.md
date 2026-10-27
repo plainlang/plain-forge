@@ -9,7 +9,8 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 ## File skeleton
 - A `.plain` file is one **module**: optional YAML frontmatter between `---` markers, followed by sections marked with `***section name***` headers
 - The frontmatter, when present, must be the first thing in the file
-- Every content line inside a section must be a `- ` list item — see `bullet-continuation.md`
+- Every content line inside `***definitions***`, `***implementation reqs***`, and `***test reqs***` is a `- ` list item — see `bullet-continuation.md`
+- Every functionality in `***functional specs***` is a `# <func-id>` heading followed by its body — see `func-specs.md` and `semantic-ids.md`
 - Every line must be as short and plain as its content allows — see `concise-specs.md`
 
 ## Frontmatter fields
@@ -23,18 +24,19 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 | `required_concepts` | Declare concepts an import module expects the importing module to define | `required-concepts.md` |
 
 ## Sections
-- There are exactly four top-level section markers: `***definitions***`, `***implementation reqs***`, `***test reqs***`, and `***functional specs***`
+- A spec plain file has exactly four top-level section markers: `***definitions***`, `***implementation reqs***`, `***test reqs***`, and `***functional specs***`
 - Each section appears **at most once** per file; all are optional (which ones are allowed depends on the module kind below)
-- `***acceptance tests***` is **never a top-level section** — it appears only nested under a single functional spec (see `func-specs.md`)
+- `***conformance tests***` and `***acceptance tests***` never appear in a spec plain file, not even nested under a functional spec; they are the two sections of a test plain file (see `test-plain-files.md`)
 - Write sections in canonical order: `***definitions***` → `***implementation reqs***` → `***test reqs***` → `***functional specs***`
   - Definitions come first because every concept must be defined before it is referenced
-  - Functional specs come last because they are rendered incrementally and their nested acceptance tests close the file
+  - Functional specs come last because they are rendered incrementally
 
 ## Module kinds
 - A **root module** lives at the repository root and carries behavior: it contains `***functional specs***`
 - To be renderable, a root module needs at least one functional spec plus the implementation reqs to build it — its own or from an `import`ed module (implementation reqs are not inherited through `requires`). A frontmatter-only file is a valid scaffold, but it cannot be rendered until a functional spec is added
 - A **requires module** is a root module that is used by another root module via `requires` directive (see `requires-modules.md`)
 - An **import module** provides shared content that other modules pull in via `import`: it contains only `***definitions***`, `***implementation reqs***`, and/or `***test reqs***` — never `***functional specs***`, never `requires` (see `import-modules.md`)
+- A **test plain file** holds the scenarios of one functionality of a root module; its frontmatter `module:` and `func_id:` bind it to that functionality, by convention it lives under `tests/<module>/`, and it has no section of a spec plain file (see `test-plain-files.md`)
 
 ## Section ownership (where a fact lives)
 - The renderer reads each kind of fact **only from its owning section** — a fact placed in the wrong section is silently ignored, not flagged
@@ -47,7 +49,7 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 | HOW the software is built — tech stack, architecture, coding standards — and **everything about `:UnitTests:`** | `***implementation reqs***` | `impl-reqs.md` |
 | **Everything about `:ConformanceTests:`** — framework, run command, mocking and network policy | `***test reqs***` | `test-reqs.md` |
 | WHAT the software does — observable, language-agnostic behavior | `***functional specs***` | `func-specs.md` |
-| End-to-end workflow verification of one functional spec | nested `***acceptance tests***` | `func-specs.md` |
+| Test scenarios of one functionality, conformance and acceptance | the test plain file (by convention `tests/<module>/<func-id>.plain`) | `test-plain-files.md` |
 
 ## Comments
 - Lines beginning with `>` are ignored when rendering
@@ -67,9 +69,12 @@ When creating a new `.plain` file or reviewing the structure of a whole file, al
 
 ***functional specs***
 
-- A :Widget: can be created with up to {{ max_tags }} tags.
+# create-widget
+A :Widget: can be created with up to {{ max_tags }} tags.
 {% if max_tags > 1 %}
-- A :Widget: can have its tags listed.
+
+# list-widget-tags
+A :Widget: can have its tags listed.
 {% endif %}
 ```
 
@@ -99,7 +104,9 @@ import:
 
 ***functional specs***
 
-- A :Task: can be added to the :TaskList:.
+# add-task
+A :Task: can be added to the :TaskList:.
 
-- The :TaskList: is displayed.
+# show-task-list
+The :TaskList: is displayed.
 ```

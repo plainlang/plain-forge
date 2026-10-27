@@ -19,11 +19,14 @@ BAD:
 ```plain
 ***functional specs***
 
-- In order to provide users with a robust and seamless experience, :TaskService: exposes a comprehensive endpoint for the creation of new :Task: items.
+# create-task
+In order to provide users with a robust and seamless experience, :TaskService: exposes a comprehensive endpoint for the creation of new :Task: items.
 
-- The endpoint accepts a request and, provided that the incoming payload is valid and well-formed, proceeds to persist the :Task: appropriately.
+# persist-task
+The endpoint accepts a request and, provided that the incoming payload is valid and well-formed, proceeds to persist the :Task: appropriately.
 
-- If the payload is not valid, an appropriate error is returned to the caller so that the user is informed of the problem.
+# reject-invalid-payload
+If the payload is not valid, an appropriate error is returned to the caller so that the user is informed of the problem.
 ```
 
 GOOD:
@@ -31,10 +34,11 @@ GOOD:
 ```plain
 ***functional specs***
 
-- A :User: can create a :Task: via `POST /tasks`.
-  - The request body is a :Task: without `id`.
-  - The response is `201` with the created :Task:.
-  - A request without a name returns `400`.
+# create-task
+A :User: can create a :Task: via `POST /tasks`.
+- The request body is a :Task: without `id`.
+- The response is `201` with the created :Task:.
+- A request without a name returns `400`.
 ```
 
 Three bullets became one, and the rewrite names the method, the path, the request shape, and both status codes — none of which the padded version pinned down.
@@ -46,7 +50,8 @@ BAD:
 ```plain
 ***functional specs***
 
-- Because support staff frequently need to find customers quickly, and because scanning the full list is slow and error-prone, :CustomerDirectory: offers a search capability that greatly improves their daily workflow.
+# search-customers
+Because support staff frequently need to find customers quickly, and because scanning the full list is slow and error-prone, :CustomerDirectory: offers a search capability that greatly improves their daily workflow.
 ```
 
 GOOD:
@@ -54,7 +59,8 @@ GOOD:
 ```plain
 ***functional specs***
 
-- :CustomerDirectory: returns :Customer: items whose name or email contains a search term, case-insensitively.
+# search-customers
+:CustomerDirectory: returns :Customer: items whose name or email contains a search term, case-insensitively.
 ```
 
 Why the feature exists changes nothing about what is built. What "search" matches does.
@@ -86,11 +92,12 @@ BAD:
 ```plain
 ***functional specs***
 
-- :OrderApi: returns a list of :Order: items over HTTP.
-  - The list contains :Order: items.
-  - If there are no :Order: items, the list is empty.
-  - Each :Order: has an `id`, which is unique.
-  - The caller receives the response after the request is sent.
+# list-orders
+:OrderApi: returns a list of :Order: items over HTTP.
+- The list contains :Order: items.
+- If there are no :Order: items, the list is empty.
+- Each :Order: has an `id`, which is unique.
+- The caller receives the response after the request is sent.
 ```
 
 GOOD:
@@ -98,8 +105,9 @@ GOOD:
 ```plain
 ***functional specs***
 
-- :OrderApi: returns the :Order: items of the authenticated :User: via `GET /orders`, newest first.
-  - The response is `200` with a JSON array, empty when the :User: has no :Order: items.
+# list-orders
+:OrderApi: returns the :Order: items of the authenticated :User: via `GET /orders`, newest first.
+- The response is `200` with a JSON array, empty when the :User: has no :Order: items.
 ```
 
 Every cut line was already implied: a list of :Order: items contains :Order: items, an identifier identifies, and a response follows a request. What survives is what a reader could *not* have guessed — the ownership filter, the sort order, and the response shape.
@@ -113,11 +121,14 @@ BAD:
 ```plain
 ***functional specs***
 
-- :OrderService: validates all incoming data before processing it.
+# validate-input
+:OrderService: validates all incoming data before processing it.
 
-- :OrderService: handles errors and returns meaningful error messages.
+# handle-errors
+:OrderService: handles errors and returns meaningful error messages.
 
-- :OrderService: saves the :Order: to storage so that it is not lost.
+# save-order
+:OrderService: saves the :Order: to storage so that it is not lost.
 ```
 
 GOOD:
@@ -125,7 +136,8 @@ GOOD:
 ```plain
 ***functional specs***
 
-- :OrderService: rejects an :Order: whose `total` does not equal the sum of its :OrderLine: amounts, with `422`.
+# reject-wrong-total
+:OrderService: rejects an :Order: whose `total` does not equal the sum of its :OrderLine: amounts, with `422`.
 ```
 
 Validating input, reporting errors, and persisting on a save operation belong in the `***implementation reqs***` and a baseline is assumed. If there is a specific use case for a particular operation, it should be documented there, not in the `***functional specs***`. The one fact worth stating is *which* rule is enforced and what the caller sees when it fails.
@@ -218,7 +230,8 @@ BAD:
 ```plain
 ***functional specs***
 
-- :ReportGenerator: is responsible for facilitating the utilization of a plurality of :DataSource: instances in order to initiate the generation of a :Report: prior to the performance of the validation of the resulting output.
+# build-report
+:ReportGenerator: is responsible for facilitating the utilization of a plurality of :DataSource: instances in order to initiate the generation of a :Report: prior to the performance of the validation of the resulting output.
 ```
 
 GOOD:
@@ -226,7 +239,8 @@ GOOD:
 ```plain
 ***functional specs***
 
-- :ReportGenerator: builds a :Report: from one or more :DataSource: items, then validates it.
+# build-report
+:ReportGenerator: builds a :Report: from one or more :DataSource: items, then validates it.
 ```
 
 Same sequence, plain words. See the substitution table in `concise-specs.md`.
@@ -238,10 +252,11 @@ BAD:
 ```plain
 ***functional specs***
 
-- A :User: can archive a :Project:.
-  - Archiving is an action the user performs on a project.
-  - The archive action is available to users who have access to the project.
-  - Once archived, the project is in the archived state.
+# archive-project
+A :User: can archive a :Project:.
+- Archiving is an action the user performs on a project.
+- The archive action is available to users who have access to the project.
+- Once archived, the project is in the archived state.
 ```
 
 GOOD:
@@ -249,9 +264,10 @@ GOOD:
 ```plain
 ***functional specs***
 
-- A :User: can archive a :Project: they own.
-  - An archived :Project: is excluded from :ProjectList:.
-  - Archiving a :Project: that is already archived returns `409`.
+# archive-project
+A :User: can archive a :Project: they own.
+- An archived :Project: is excluded from :ProjectList:.
+- Archiving a :Project: that is already archived returns `409`.
 ```
 
 A sub-bullet earns its line by removing an ambiguity. If it only says the parent again in more words, it is filler.
@@ -263,9 +279,10 @@ BAD:
 ```plain
 ***functional specs***
 
-- :SessionStore: expires a :Session: 30 minutes after its last use.
-  - Sessions do not live forever; they time out.
-  - The timeout is 30 minutes.
+# expire-session
+:SessionStore: expires a :Session: 30 minutes after its last use.
+- Sessions do not live forever; they time out.
+- The timeout is 30 minutes.
 ```
 
 GOOD:
@@ -273,8 +290,9 @@ GOOD:
 ```plain
 ***functional specs***
 
-- :SessionStore: expires a :Session: 30 minutes after its last use.
-  - A request carrying an expired :Session: returns `401`.
+# expire-session
+:SessionStore: expires a :Session: 30 minutes after its last use.
+- A request carrying an expired :Session: returns `401`.
 ```
 
 ## Synonym drift
@@ -284,11 +302,14 @@ BAD:
 ```plain
 ***functional specs***
 
-- A :User: can upload a :Document:.
+# upload-document
+A :User: can upload a :Document:.
 
-- The system stores the submitted file in :DocumentStore:.
+# store-document
+The system stores the submitted file in :DocumentStore:.
 
-- The uploaded asset is retrievable by its identifier.
+# retrieve-document
+The uploaded asset is retrievable by its identifier.
 ```
 
 Three names — `:Document:`, "file", "asset" — read as three things. A reader cannot tell whether "asset" is a fourth concept, and the renderer cannot either.
@@ -298,9 +319,10 @@ GOOD:
 ```plain
 ***functional specs***
 
-- A :User: can upload a :Document:.
-  - :DocumentStore: stores the :Document: and assigns it a :DocumentId:.
-  - A :User: can retrieve a :Document: by its :DocumentId:.
+# upload-document
+A :User: can upload a :Document:.
+- :DocumentStore: stores the :Document: and assigns it a :DocumentId:.
+- A :User: can retrieve a :Document: by its :DocumentId:.
 ```
 
 ## Meta-commentary and scope disclaimers
@@ -310,13 +332,17 @@ BAD:
 ```plain
 ***functional specs***
 
-- This spec is intentionally kept small so that it stays within the complexity limit.
+# export-csv-size-note
+This spec is intentionally kept small so that it stays within the complexity limit.
 
-- As described above, :ExportService: writes a :CsvFile:.
+# export-csv-reference
+As described above, :ExportService: writes a :CsvFile:.
 
-- No changes are made to the existing :ImportService: or to the user interface.
+# export-csv-no-changes
+No changes are made to the existing :ImportService: or to the user interface.
 
-- Future specs will extend this behavior with additional formats.
+# export-csv-future
+Future specs will extend this behavior with additional formats.
 ```
 
 GOOD:
@@ -324,9 +350,10 @@ GOOD:
 ```plain
 ***functional specs***
 
-- :ExportService: writes the :Order: items of a :BillingPeriod: to a :CsvFile:.
-  - The header row is `id,customer,total,currency`.
-  - An empty :BillingPeriod: produces a :CsvFile: with only the header row.
+# export-csv
+:ExportService: writes the :Order: items of a :BillingPeriod: to a :CsvFile:.
+- The header row is `id,customer,total,currency`.
+- An empty :BillingPeriod: produces a :CsvFile: with only the header row.
 ```
 
 A spec describes the software, not itself. What the spec does *not* change is everything it does not mention, and what later specs will add belongs to those specs.
@@ -338,13 +365,14 @@ BAD:
 ```plain
 ***functional specs***
 
-- :PricingEngine: applies discounts.
-  The discount matrix is as follows:
-  | Tier | Volume | Discount |
-  |---|---|---|
-  | Bronze | 0-99 | 0% |
-  | Silver | 100-499 | 5% |
-  | Gold | 500+ | 12% |
+# apply-discounts
+:PricingEngine: applies discounts.
+The discount matrix is as follows:
+| Tier | Volume | Discount |
+|---|---|---|
+| Bronze | 0-99 | 0% |
+| Silver | 100-499 | 5% |
+| Gold | 500+ | 12% |
 ```
 
 GOOD:
@@ -352,8 +380,9 @@ GOOD:
 ```plain
 ***functional specs***
 
-- :PricingEngine: applies the :DiscountTier: matrix in [resources/discount-tiers.json](resources/discount-tiers.json) to an :Order: total.
-  - An :Order: below the lowest tier threshold gets no discount.
+# apply-discounts
+:PricingEngine: applies the :DiscountTier: matrix in [resources/discount-tiers.json](resources/discount-tiers.json) to an :Order: total.
+- An :Order: below the lowest tier threshold gets no discount.
 ```
 
 A section holds `- ` list items. Matrices, schemas, and payloads are external artifacts and are linked from `resources/` — see `linked-resources.md`.
@@ -373,7 +402,8 @@ BAD — everything in one place:
 
 ***functional specs***
 
-- :ImageResizer:, implemented as a Python class using Pillow with a thread pool of 4 workers, resizes an uploaded :Image: to a thumbnail, where a thumbnail is defined as a JPEG at most 256 pixels on its longest edge.
+# resize-image
+:ImageResizer:, implemented as a Python class using Pillow with a thread pool of 4 workers, resizes an uploaded :Image: to a thumbnail, where a thumbnail is defined as a JPEG at most 256 pixels on its longest edge.
 ```
 
 GOOD — each fact in the section that owns it:
@@ -395,9 +425,10 @@ GOOD — each fact in the section that owns it:
 
 ***functional specs***
 
-- :ImageResizer: produces a :Thumbnail: from an :Image:.
-  - An :Image: already within the :Thumbnail: bounds is returned unchanged.
-  - An :Image: that is not a supported format raises :UnsupportedImageError:.
+# resize-image
+:ImageResizer: produces a :Thumbnail: from an :Image:.
+- An :Image: already within the :Thumbnail: bounds is returned unchanged.
+- An :Image: that is not a supported format raises :UnsupportedImageError:.
 ```
 
 Each section now answers one question, and the definition, the mechanism, and the behavior are each one line to check instead of clauses buried in a paragraph about resizing. Use the split whenever a bullet answers more than one of *what is it*, *what does it do*, *how is it built*, and *how is it tested* — see `module-structure.md` for section ownership and canonical section order.
@@ -406,26 +437,26 @@ Use `resolve-section-ownership` to perform the split. It is not the same as spli
 
 The most common single case of this is a functional spec that states a mechanism rather than a result — a retry schedule, a cache, a token refresh. `impl-reqs.md` owns HOW; a functional spec keeps what a caller observes. `concise-specs-integration-examples.md` works through several.
 
-## Narrated acceptance tests
+## Narrated scenarios
 
 BAD:
 
 ```plain
-***acceptance tests***
+***conformance tests***
 
-- The tester should first open the application and log in with a valid account, then navigate to the projects area where they will be able to see the list of projects, and then they should create a new project by filling in the form, after which they should verify that everything worked as expected and the project shows up correctly.
+# create-project
+The tester should first open the application and log in with a valid account, then navigate to the projects area where they will be able to see the list of projects, and then they should create a new project by filling in the form, after which they should verify that everything worked as expected and the project shows up correctly.
 ```
 
 GOOD:
 
 ```plain
-***acceptance tests***
+***conformance tests***
 
-- A :User: creates a :Project: and finds it in :ProjectList:.
-  - Sign in as a :User: with no :Project: items.
-  - Create a :Project: named `Apollo`.
-  - :ProjectList: contains exactly one :Project:, named `Apollo`.
+# create-project
+A signed-in :User: with no :Project: items creates a :Project: named `Apollo` and finds it in :ProjectList:.
+- :ProjectList: contains exactly one :Project:, named `Apollo`.
 ```
 
-One narrated paragraph becomes an ordered set of checkable steps, and "everything worked as
+One narrated paragraph becomes one checkable sentence, and "everything worked as
 expected" becomes an assertion.

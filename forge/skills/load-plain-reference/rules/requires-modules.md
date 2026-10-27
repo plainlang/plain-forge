@@ -13,6 +13,7 @@ When creating or editing a `.plain` file that uses `requires`, or one that is re
 - The `***functional specs***` of the required module **and of all its ancestors** become visible as **previous functional specs** — this visibility **is transitive** down the whole chain
 - Of a required module's definitions, only the concepts listed in its `exported_concepts` are visible; the module's other definitions stay internal. Each exported concept arrives with its full definition text
 - Export visibility **is not transitive**: an ancestor's exports are visible only if that ancestor is itself listed in `requires`
+- The test plain files of a required module stay with that module; the current module never lists scenarios for a required module's functionality (see `test-plain-files.md`)
 
 ## Chain topology
 

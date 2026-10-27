@@ -10,10 +10,10 @@ The moment the user answers, write the resulting snippet to disk using the right
 
 - **Module structure** — create or update the `.plain` file(s) (single module, template + modules, or chained modules). Set up YAML frontmatter (`import`, `requires`, `description`) and the proposed module name. If a template is used, create it in `template/` **without** a `***functional specs***` section. Use the `create-import-module` skill where applicable.
 - **`***definitions***`** — add or refine concepts (entities, attributes, relationships). Define every concept before it is referenced. Use the `add-concept` skill.
-- **`***functional specs***`** — translate each answer into a single chronological, incremental spec (≤200 lines of code change, language-agnostic, no conflicts). Use `add-functional-spec` for one new spec; use `add-functional-specs` only when a single answer naturally decomposes into a tight cluster of specs flowing from the same answer (e.g. list / create / delete CRUD on one entity). **Never hand-author the `***functional specs***` section directly.**
+- **`***functional specs***`** — translate each answer into a single chronological, incremental spec (≤200 lines of code change, language-agnostic, no conflicts), headed by a func-id per `semantic-ids.md`. Use `add-functional-spec` for one new spec; use `add-functional-specs` only when a single answer naturally decomposes into a tight cluster of specs flowing from the same answer (e.g. list / create / delete CRUD on one entity). **Never hand-author the `***functional specs***` section directly.**
 - **`***implementation reqs***`** — only a requirement that can be stated without naming a technology: an error-handling or retry policy, an idempotency or ordering guarantee, a data-format or precision rule. Use the `add-implementation-requirement` skill, on the module whose behavior it constrains. The moment stating it takes a language, framework, library, storage engine, or deployment target, it is a Phase 2 answer — note it and steer back.
 
-Do **not** add `***test reqs***` or `***acceptance tests***` in this phase — they belong to later phases.
+Do **not** add `***test reqs***` or test plain files in this phase — they belong to later phases.
 
 ## Topics (in order)
 

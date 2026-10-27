@@ -31,11 +31,14 @@ BAD:
 
 ***functional specs***
 
-- :ProviderClient: retries the request when :ProviderApi: returns 408, 425, 429, 500, 502, 503, or 504, and also on connection errors, DNS failures, socket timeouts, TLS handshake failures, and connection resets.
+# retry-transient-errors
+:ProviderClient: retries the request when :ProviderApi: returns 408, 425, 429, 500, 502, 503, or 504, and also on connection errors, DNS failures, socket timeouts, TLS handshake failures, and connection resets.
 
-- :ProviderClient: does not retry on 400, 401, 403, 404, 405, 409, 410, 415, or 422, and raises immediately.
+# no-retry-permanent-errors
+:ProviderClient: does not retry on 400, 401, 403, 404, 405, 409, 410, 415, or 422, and raises immediately.
 
-- On 429, :ProviderClient: waits and tries again, unless the retry budget is exhausted.
+# retry-on-429
+On 429, :ProviderClient: waits and tries again, unless the retry budget is exhausted.
 ```
 
 GOOD:
@@ -91,13 +94,17 @@ BAD:
 
 ***functional specs***
 
-- :ProviderApi: returns `200` with a JSON body when a request succeeds.
+# provider-success-response
+:ProviderApi: returns `200` with a JSON body when a request succeeds.
 
-- :ProviderApi: returns `404` when the requested :Customer: does not exist.
+# provider-not-found
+:ProviderApi: returns `404` when the requested :Customer: does not exist.
 
-- :ProviderApi: rate-limits clients and includes the remaining quota in the response headers.
+# provider-rate-limit
+:ProviderApi: rate-limits clients and includes the remaining quota in the response headers.
 
-- :ProviderApi: requires the `Authorization` header on every request.
+# provider-auth-header
+:ProviderApi: requires the `Authorization` header on every request.
 ```
 
 GOOD:
@@ -123,7 +130,8 @@ GOOD:
 
 ***functional specs***
 
-- :ProviderClient: fetches a :Customer: from :ProviderApi: by :CustomerId:.
+# fetch-customer
+:ProviderClient: fetches a :Customer: from :ProviderApi: by :CustomerId:.
 ```
 
 Every BAD bullet is true, and none of them is deleted — they are moved. The success shape, the `404`, and the `Authorization` requirement are what an OpenAPI file exists to state; the rate-limit model has its own conventional files. Provider behavior with no machine-readable home goes in `resources/<provider>-notes.md`. `integrations.md` carries the full artifact table.
@@ -147,19 +155,23 @@ BAD — four specs, one operation:
 
 ***functional specs***
 
-- A call to `fetch` fails before any request to :ProviderApi: is sent when `PROVIDER_API_KEY` is unset or empty.
-  - The failure names `PROVIDER_API_KEY`.
+# fetch-requires-api-key
+A call to `fetch` fails before any request to :ProviderApi: is sent when `PROVIDER_API_KEY` is unset or empty.
+- The failure names `PROVIDER_API_KEY`.
 
-- A call to `fetch` reads the field catalogue from :ProviderApi: once, before requesting any :Record:.
-  - The catalogue yields the name of every field the account defines.
-  - A call to `fetch` whose catalogue read fails requests no :Record: items.
+# fetch-reads-catalogue
+A call to `fetch` reads the field catalogue from :ProviderApi: once, before requesting any :Record:.
+- The catalogue yields the name of every field the account defines.
+- A call to `fetch` whose catalogue read fails requests no :Record: items.
 
-- A request for :Record: items from :ProviderApi: names every field in the catalogue and asks for at most 100 records.
-  - Archived :Record: items are not requested.
+# fetch-requests-records
+A request for :Record: items from :ProviderApi: names every field in the catalogue and asks for at most 100 records.
+- Archived :Record: items are not requested.
 
-- A call to `fetch` requests pages until :ProviderApi: returns a response carrying no next-page cursor.
-  - Each page after the first is requested with the cursor from the previous response.
-  - The :Record: items of every page are carried forward together.
+# fetch-pages-records
+A call to `fetch` requests pages until :ProviderApi: returns a response carrying no next-page cursor.
+- Each page after the first is requested with the cursor from the previous response.
+- The :Record: items of every page are carried forward together.
 ```
 
 GOOD — one spec, with the result stated first:
@@ -175,10 +187,11 @@ GOOD — one spec, with the result stated first:
 
 ***functional specs***
 
-- :RecordSource: `fetch()` returns every non-archived :Record: with every field :ProviderApi: defines, paging under [resources/pagination.yaml](resources/pagination.yaml).
-  - :RecordSource: reads the field catalogue once per `fetch()`.
-  - `fetch()` fails before any request when `PROVIDER_API_KEY` is unset or empty, naming it.
-  - A failed catalogue read fails `fetch()` before any :Record: is requested.
+# fetch-records
+:RecordSource: `fetch()` returns every non-archived :Record: with every field :ProviderApi: defines, paging under [resources/pagination.yaml](resources/pagination.yaml).
+- :RecordSource: reads the field catalogue once per `fetch()`.
+- `fetch()` fails before any request when `PROVIDER_API_KEY` is unset or empty, naming it.
+- A failed catalogue read fails `fetch()` before any :Record: is requested.
 ```
 
 Merging is not in tension with the complexity limit. Split a spec when it implies more than 200 changed lines of code (`analyze-if-func-spec-too-complex`, then `break-down-func-spec`); merge when several specs implement one operation that fits inside that budget. Fragment count is not a measure of size.
@@ -190,9 +203,11 @@ BAD:
 ```plain
 ***functional specs***
 
-- :ProviderAuth: first reads the client id and the client secret, then builds a form-encoded body containing `grant_type=client_credentials`, the client id, and the client secret, then posts that body to the token endpoint, then parses the JSON response, then extracts the `access_token` and the `expires_in` fields, then stores the token in memory together with the moment it expires, and then attaches it to subsequent requests as a bearer token.
+# obtain-token
+:ProviderAuth: first reads the client id and the client secret, then builds a form-encoded body containing `grant_type=client_credentials`, the client id, and the client secret, then posts that body to the token endpoint, then parses the JSON response, then extracts the `access_token` and the `expires_in` fields, then stores the token in memory together with the moment it expires, and then attaches it to subsequent requests as a bearer token.
 
-- Before each request, :ProviderAuth: compares the current time to the stored expiry and, if the token has expired or is about to expire, repeats the whole procedure described above to obtain a new token.
+# refresh-token
+Before each request, :ProviderAuth: compares the current time to the stored expiry and, if the token has expired or is about to expire, repeats the whole procedure described above to obtain a new token.
 ```
 
 GOOD:
