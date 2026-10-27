@@ -37,7 +37,7 @@ A box is met only when its source confirms it. Return `APPROVED` only when every
 - [ ] **[disk]** `.plain` module structure created with YAML frontmatter; template (if any) has no `***functional specs***`.
 - [ ] **[both]** Every concept authored in `***definitions***` via `add-concept`, defined before use.
 - [ ] **[both]** Every feature authored as functional specs via `add-functional-spec(s)`, each ≤200 LOC, in chronological build order.
-- [ ] **[disk]** No `***test reqs***` or `***acceptance tests***` written in this phase.
+- [ ] **[disk]** No `***test reqs***` or test plain files written in this phase.
 - [ ] **[disk]** Every `***implementation reqs***` bullet written this phase is technology-free policy — none names a language, framework, library, storage engine, or deployment target.
 - [ ] **[record]** Summarized the full feature list and module/concept layout; got explicit overall confirmation.
 
@@ -45,7 +45,7 @@ A box is met only when its source confirms it. Return `APPROVED` only when every
 
 - [ ] **[record]** Read `references/phase-2-tech.md` and walked its topics in order (language, frameworks, storage, external services, structure/architecture, other constraints, anything else).
 - [ ] **[disk]** Every requirement authored into `***implementation reqs***` at the right scope (shared → template, module-specific → module).
-- [ ] **[disk]** No `***test reqs***` or `***acceptance tests***` written in this phase.
+- [ ] **[disk]** No `***test reqs***` or test plain files written in this phase.
 - [ ] **[record]** Summarized the tech stack and architecture; got explicit overall confirmation.
 
 ## Phase 3 — How is testing done?
@@ -54,7 +54,7 @@ A box is met only when its source confirms it. Return `APPROVED` only when every
 - [ ] **[disk]** Honored the hard partition — every `:UnitTests:` fact in `***implementation reqs***`, every `:ConformanceTests:` fact in `***test reqs***`; never shared a bullet.
 - [ ] **[record]** Walked topics in order (unit framework, unit types/architecture, conformance decision, prepare-environment decision, layout, execution, other constraints, anything else).
 - [ ] **[disk]** Generated the needed scripts under `test_scripts/` via the `implement-*-script` skills and added each `*-script:` entry to the right `config.yaml`.
-- [ ] **[both]** Conformance decision was asked explicitly; if yes, walked every Phase-1 functional spec one at a time for acceptance tests via `add-acceptance-test` (acceptance tests present on disk when the decision was yes).
+- [ ] **[both]** Conformance decision was asked explicitly; if yes, walked every Phase-1 functionality one at a time via `add-test-scenarios` (a test plain file with at least one conformance scenario on disk for every functionality when the decision was yes).
 - [ ] **[record]** Prepare-environment decision was asked explicitly and recorded.
 - [ ] **[record]** Recapped the testing strategy; got explicit overall confirmation.
 - [ ] **[record]** Ran `check-plain-env`; it returned `PASS`, or `WARN`/`FAIL` with each remaining item explicitly acknowledged by the user (re-invoked after any install).

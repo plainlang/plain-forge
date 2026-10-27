@@ -27,12 +27,12 @@ Use this to verify the workflow was followed — never as a substitute for it. R
 - [ ] New concepts defined before they are referenced, with no circular references.
 - [ ] Any answer that contradicted an earlier snippet was fixed in place before the next question — no stale intent left on disk.
 - [ ] Every conflict / break / augment surfaced by the analyzers was put to the user as the *next* question (keep / augment / replace) and resolved before continuing.
-- [ ] `***test reqs***` / `***acceptance tests***` authored only when the Conformance gate holds (a `config.yaml` with a valid `conformance-tests-script` pointing at an existing script).
+- [ ] `***test reqs***` / test plain files authored only when the Conformance gate holds (a `config.yaml` with a valid `conformance-tests-script` pointing at an existing script).
 - [ ] Asked the user whether the feature is fully covered before leaving the loop.
 
 ## Phase 3 — Final review
 
 - [ ] Read the modified `.plain` file(s) in full.
-- [ ] Verified: concepts defined before use, no cycles, chronological ordering correct end-to-end, functional specs language-agnostic, every external interface explicit (endpoints, methods, CLI args, formats), acceptance tests consistent with their parent specs.
+- [ ] Verified: concepts defined before use, no cycles, chronological ordering correct end-to-end, functional specs language-agnostic, every external interface explicit (endpoints, methods, CLI args, formats), every new or changed functionality's test plain file in step with its spec.
 - [ ] Presented the final diff and got the user's approval (change requests dropped back into the one-question loop, not a restart).
 - [ ] Ran `plain-healthcheck`; worked its numbered list to `PASS` (fixing only `.plain`/`config.yaml`/scripts — never generated code) before declaring the feature ready and reminding the user to re-render `<module>.plain`.
