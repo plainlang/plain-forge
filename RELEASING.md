@@ -54,7 +54,7 @@ leading `v` — but every message, link and convention here assumes the prefix.
 | Refuse duplicates | fails if that version is already on npm |
 | Set version | `npm version --no-git-tag-version` in the runner only |
 | Publish | `npm publish --access public`, or `--tag next` for a pre-release |
-| Record | Deployment under the `npm` environment; Slack start / success / failure |
+| Record | Deployment under the `npm` environment; Slack start notice, with success / failure replied in its thread |
 
 Auth is **OIDC trusted publishing** — there is no npm token in this repo. npm exchanges
 the workflow's OIDC token for a short-lived credential and attaches a SLSA provenance
