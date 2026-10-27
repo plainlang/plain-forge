@@ -281,7 +281,7 @@ jobs:
           payload: |
             channel: ${{ vars.SLACK_CHANNEL_ID }}
             text: >-
-              *plain-forge*: `${{ github.event.release.tag_name || github.sha }}` halted — tests FAILED :x:. Nothing was published to npm.
+              *plain-forge*: `${{ github.event.release.tag_name || env.SHORT_SHA }}` halted — tests FAILED :x:. Nothing was published to npm.
               See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
 
       - name: Notify Slack (release failed)
