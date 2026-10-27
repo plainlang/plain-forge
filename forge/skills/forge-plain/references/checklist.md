@@ -54,7 +54,7 @@ A box is met only when its source confirms it. Return `APPROVED` only when every
 - [ ] **[disk]** Honored the hard partition — every `:UnitTests:` fact in `***implementation reqs***`, every `:ConformanceTests:` fact in `***test reqs***`; never shared a bullet.
 - [ ] **[record]** Walked topics in order (unit framework, unit types/architecture, conformance decision, prepare-environment decision, layout, execution, other constraints, anything else).
 - [ ] **[disk]** Generated the needed scripts under `test_scripts/` via the `implement-*-script` skills and added each `*-script:` entry to the right `config.yaml`.
-- [ ] **[both]** Conformance decision was asked explicitly; if yes, walked every Phase-1 functionality one at a time via `add-test-scenarios` (a test plain file with at least one conformance scenario on disk for every functionality when the decision was yes).
+- [ ] **[both]** Conformance decision was asked explicitly; if yes, walked every Phase-1 functionality one at a time via `add-test-scenarios` (a test plain file on disk for every functionality when the decision was yes; each should hold at least one conformance scenario).
 - [ ] **[record]** Prepare-environment decision was asked explicitly and recorded.
 - [ ] **[record]** Recapped the testing strategy; got explicit overall confirmation.
 - [ ] **[record]** Ran `check-plain-env`; it returned `PASS`, or `WARN`/`FAIL` with each remaining item explicitly acknowledged by the user (re-invoked after any install).
