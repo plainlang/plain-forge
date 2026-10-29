@@ -324,6 +324,22 @@ jobs:
               *plain-forge*: `v${{ needs.publish.outputs.version }}` published to npm :white_check_mark:
               (bundles pyro `${{ needs.publish.outputs.pyro }}`). Install with `npx plain-forge@latest update`.
 
+      # Success also puts a ✅ on the start notice, so the result shows in the
+      # channel without another message. Needs the app's reactions:write scope.
+      # Non-fatal: the result is already posted, and a re-run gets already_reacted.
+      - name: Notify Slack (✅ on the start notice)
+        if: ${{ needs.publish.result == 'success' && env.THREAD_TS != 'null' }}
+        continue-on-error: true
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: reactions.add
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            timestamp: ${{ env.THREAD_TS }}
+            name: white_check_mark
+
       - name: Notify Slack (prerelease failed)
         if: ${{ needs.prerelease.result == 'failure' }}
         uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
