@@ -61,6 +61,8 @@ jobs:
       contents: read       # read the tagged tree
       id-token: write      # OIDC token for trusted publishing
     outputs:
+      # The notify job replies in the start notice's thread.
+      slack-ts: ${{ steps.slack-start.outputs.ts }}
       version: ${{ steps.pkg.outputs.version }}
       pyro: ${{ steps.pyro.outputs.version }}
 
@@ -120,6 +122,7 @@ jobs:
 
       # Non-fatal: Slack being down must not block the publish.
       - name: Notify Slack (start)
+        id: slack-start
         if: ${{ vars.SLACK_CHANNEL_ID != '' }}
         continue-on-error: true
         uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
@@ -266,6 +269,14 @@ jobs:
     if: ${{ !cancelled() && vars.SLACK_CHANNEL_ID != '' }}
     runs-on: ubuntu-latest
 
+    env:
+      # Release notices reply in the publish job's start notice thread, quoted so
+      # YAML keeps the ts a string. Without a start notice (its post failed or never
+      # ran) this is null, which the Slack client drops, and they post to the
+      # channel. Failures are also broadcast to the channel; success stays in the
+      # thread. The prerelease path posts a single notice, so it does not thread.
+      THREAD_TS: ${{ needs.publish.outputs.slack-ts && format('"{0}"', needs.publish.outputs.slack-ts) || 'null' }}
+
     steps:
       - name: Short SHA
         run: echo "SHORT_SHA=${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
@@ -293,6 +304,8 @@ jobs:
           errors: true
           payload: |
             channel: ${{ vars.SLACK_CHANNEL_ID }}
+            thread_ts: ${{ env.THREAD_TS }}
+            reply_broadcast: ${{ env.THREAD_TS != 'null' }}
             text: >-
               *plain-forge*: publishing `${{ github.event.release.tag_name }}` to npm FAILED :x:.
               See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
@@ -306,9 +319,26 @@ jobs:
           errors: true
           payload: |
             channel: ${{ vars.SLACK_CHANNEL_ID }}
+            thread_ts: ${{ env.THREAD_TS }}
             text: >-
               *plain-forge*: `v${{ needs.publish.outputs.version }}` published to npm :white_check_mark:
               (bundles pyro `${{ needs.publish.outputs.pyro }}`). Install with `npx plain-forge@latest update`.
+
+      # Success also puts a ✅ on the start notice, so the result shows in the
+      # channel without another message. Needs the app's reactions:write scope.
+      # Non-fatal: the result is already posted, and a re-run gets already_reacted.
+      - name: Notify Slack (✅ on the start notice)
+        if: ${{ needs.publish.result == 'success' && env.THREAD_TS != 'null' }}
+        continue-on-error: true
+        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          method: reactions.add
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: ${{ vars.SLACK_CHANNEL_ID }}
+            timestamp: ${{ env.THREAD_TS }}
+            name: white_check_mark
 
       - name: Notify Slack (prerelease failed)
         if: ${{ needs.prerelease.result == 'failure' }}
@@ -388,6 +418,9 @@ jobs:
   #     # outcome — `failure()` would never fire.
   #     - name: Notify Slack (release not recorded)
   #       if: ${{ steps.linear.outcome == 'failure' && vars.SLACK_CHANNEL_ID != '' }}
+  #       env:
+  #         # See the notify job.
+  #         THREAD_TS: ${{ needs.publish.outputs.slack-ts && format('"{0}"', needs.publish.outputs.slack-ts) || 'null' }}
   #       uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
   #       with:
   #         method: chat.postMessage
@@ -395,6 +428,7 @@ jobs:
   #         errors: true
   #         payload: |
   #           channel: ${{ vars.SLACK_CHANNEL_ID }}
+  #           thread_ts: ${{ env.THREAD_TS }}
   #           text: >-
   #             *plain-forge*: `${{ github.event.release.tag_name }}` is on npm, but recording it in Linear FAILED :warning:.
   #             See <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|the run log>.
