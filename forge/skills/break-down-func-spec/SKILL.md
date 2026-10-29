@@ -211,7 +211,7 @@ The extracted component spec and the rewritten original must together still cove
 
 The replacement specs take the position of the original spec. Earlier specs remain unchanged. The first replacement spec should make sense given only the specs above it. Each subsequent replacement spec can reference behavior from the ones before it.
 
-The original functionality's test plain file is split the same way: each scenario moves to the replacement functionality it tests, a scenario that no longer fits one replacement is rewritten, and each replacement should end with at least one conformance scenario when conformance tests are enabled (see `add-test-scenarios`).
+The original functionality's test plain file is split the same way: each scenario moves to the replacement functionality it tests, a scenario that no longer fits one replacement is rewritten, and each replacement gets its own test plain file (see `add-test-scenarios`).
 
 ## Validation Checklist
 

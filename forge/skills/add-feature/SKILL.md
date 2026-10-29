@@ -112,7 +112,7 @@ Most checks already happened in the loop; this is a slim consistency pass whose 
    - Chronological ordering is correct end-to-end — no spec depends on something that comes after it.
    - Functional specs are language-agnostic.
    - Every external interface is explicit (endpoint paths, methods, CLI args, formats).
-   - Every new or changed functionality has a test plain file whose scenarios follow from its spec; when conformance tests are enabled, the file exists and should hold at least one conformance scenario.
+   - When conformance tests are enabled, every new or changed functionality has a test plain file whose scenarios follow from its spec.
 3. Present the final diff for the modified file(s) and get the user's approval.
 4. If the user requests changes, drop **straight back into the one-question loop** — one question, one write, one fix at a time. Do not restart the loop from scratch.
 5. **Run `plain-healthcheck`** — the last check this skill runs. It validates every `config.yaml`, runs `plain-parser check` on every top module, and checks every module against the rules, so a feature is never finished while the project would fail to render. If it returns `FAIL`, work through its numbered list (fixing only `.plain` files / `config.yaml` / scripts — never generated code) by dropping back into the loop, then re-run. Repeat until `PASS`. Only then tell the user the feature is ready to render as `<module>.plain`.
