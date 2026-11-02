@@ -95,7 +95,7 @@ Functionality must be self-contained in the spec text. `requires` modules only i
 
 ## Test Scenarios
 
-After the batch has been inserted, invoke `add-test-scenarios` once per inserted functionality, in order. It writes each functionality's test plain file (by convention `tests/<module>/<func-id>.plain`). Do this per spec, not as part of the bulk pass.
+After the batch has been inserted, invoke `add-test-scenarios` once per inserted functionality, in order. It writes each functionality's test plain file under the folder that `tests-folder` names in the governing `config.yaml`, and sets the key first when it is missing. Do this per spec, not as part of the bulk pass.
 
 ## Anti-Patterns
 
