@@ -56,7 +56,7 @@ This prompts you to pick an agent and a scope using an arrow-key menu. You can a
 npx plain-forge install --agent claude --scope project
 ```
 
-`install` also installs [`plain-parser`](https://pypi.org/project/plain-parser/), the Python CLI that `plain-healthcheck` uses to validate `.plain` files. It installs it with [uv](https://docs.astral.sh/uv/), installing uv first if it is missing, on Linux, macOS and Windows alike. On Linux and macOS uv is downloaded by Node itself, so it also works in minimal Docker images without curl, wget or CA certificates; uv then fetches a Python for plain-parser if the host has none. uv puts plain-parser in `~/.local/bin`, which may not be on your `PATH` yet — `install` prints the `export PATH=…` line to add it. If plain-parser is already on your `PATH`, nothing is installed. Pass `--skip-plain-parser` to leave both alone.
+`install` also installs [`plain-parser`](https://pypi.org/project/plain-parser/), the Python CLI that `plain-healthcheck` uses to validate `.plain` files. It installs it with [uv](https://docs.astral.sh/uv/), installing uv first if it is missing, on Linux, macOS and Windows alike. On Linux and macOS uv is downloaded by Node itself, so it also works in minimal Docker images without curl, wget or CA certificates; uv then fetches a Python for plain-parser if the host has none. uv puts plain-parser in `~/.local/bin`, which may not be on your `PATH` yet — `install` prints the `export PATH=…` line to add it. If plain-parser is already on your `PATH`, `install` checks that it is 0.2.0 or newer, the first release that reads the current syntax, and upgrades an older one with `uv tool upgrade plain-parser`; `update` does the same. Pass `--skip-plain-parser` to leave both alone.
 
 **Agent options:**
 
@@ -152,7 +152,7 @@ If an install has **no manifest** (e.g. one that predates manifests), `uninstall
 
 1. Open your project folder and start a session in your favorite AI coding agent (Claude Code, OpenCode, Codex, …).
 2. Make sure the plain-forge skills are available in that session.
-3. Make sure [`plain-parser`](https://pypi.org/project/plain-parser/) is installed. `plain-healthcheck` uses it to validate `.plain` files. `npx plain-forge install` installs it for you; otherwise run `uv tool install plain-parser` or `pipx install plain-parser` (Python 3.11 or newer).
+3. Make sure [`plain-parser`](https://pypi.org/project/plain-parser/) is installed. `plain-healthcheck` uses it to validate `.plain` files. `npx plain-forge install` installs it for you; otherwise run `uv tool install plain-parser` or `pipx install plain-parser` (Python 3.11 or newer). plain-forge needs plain-parser 0.2.0 or newer; `npx plain-forge update` upgrades an older one, or run `uv tool upgrade plain-parser`.
 
 ### Starting a new project
 
@@ -220,7 +220,7 @@ forge/                       # canonical content, copied verbatim on install
 
 bin/
   cli.mjs                    # the `plain-forge` CLI — `install` and `update` commands
-  python-tools.mjs           # installs uv + plain-parser during `install` (until plain-parser ships on npm)
+  python-tools.mjs           # installs or upgrades uv + plain-parser during `install` and `update` (until plain-parser ships on npm)
   download-uv.mjs            # downloads uv with Node's fetch, for hosts without curl/wget or CA certificates
 
 vendor/

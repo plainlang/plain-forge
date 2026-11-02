@@ -68,7 +68,7 @@ jobs:
         working-directory: ${{ runner.temp }}/project
         run: |
           printf '%s\n' '***implementation reqs***' '' '- :Implementation: should be in Python.' '' \
-            '***functional specs***' '' '- :Implementation: prints "hello".' > app.plain
+            '***functional specs***' '' '# say-hello' '' ':Implementation: prints "hello".' > app.plain
           plain-parser check app.plain
           sed 's/:Implementation: prints/:Undefined: prints/' app.plain > bad.plain
           if plain-parser check bad.plain; then echo "bad.plain should fail"; exit 1; fi
@@ -102,6 +102,6 @@ jobs:
             grep -E "plain-parser: installed" install.log
             export PATH="$HOME/.local/bin:$PATH"
             printf "%s\n" "***implementation reqs***" "" "- :Implementation: should be in Python." "" \
-              "***functional specs***" "" "- :Implementation: prints hello." > app.plain
+              "***functional specs***" "" "# say-hello" "" ":Implementation: prints hello." > app.plain
             plain-parser check app.plain
           '
