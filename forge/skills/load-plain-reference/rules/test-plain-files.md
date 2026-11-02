@@ -30,9 +30,9 @@ func_id: display-hello-world
 ```
 
 ## Location
-- By convention a test plain file lives at `tests/<module>/<func_id>.plain`, with `tests/` next to the spec plain file
+- A test plain file lives under a folder that `tests-folder` in `config.yaml` names, by convention `tests` next to the `config.yaml`, at `<tests-folder>/<module>/<func_id>.plain`
 - The location and the file name are convention only: the parser and the renderer read every `.plain` file under the folders that `tests-folder` in `config.yaml` names and bind each one by its frontmatter. There is no default folder; when conformance tests are enabled, `config.yaml` names `tests`
-- plain-forge always writes to the conventional path, one file per functionality
+- plain-forge writes one file per functionality at `<tests-folder>/<module>/<func_id>.plain`, under the first folder `tests-folder` names. When `tests-folder` is not set, it uses the folder that already holds test plain files, or `tests` when there is none, and sets `tests-folder` in `config.yaml` before writing
 - More than one test plain file may bind to the same functionality; their scenarios are merged, and scenario-ids must be unique across the merged set. Hand-written files may use this; plain-forge keeps one file per functionality
 
 ## Scenarios
