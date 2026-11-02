@@ -39,10 +39,53 @@ const localUv = (exe = "uv") => path.join(HOME, ".local", "bin", exe);
 const installs = (host) => host.calls.filter((c) => c.inherit).map((c) => [c.cmd, ...c.args].join(" "));
 
 describe("ensurePlainParser", () => {
-  test("does nothing when plain-parser is already on PATH", () => {
-    const host = fakeHost({ onPath: ["plain-parser"] });
+  const NEW_HELP = "usage: plain-parser check [--template-dir DIR] [--tests-folder DIR]...\n";
+  const OLD_HELP = "usage: plain-parser check [--template-dir DIR]\n";
+
+  test("does nothing when the installed plain-parser reads the current syntax", () => {
+    const host = fakeHost({
+      onPath: ["plain-parser"],
+      handlers: { "plain-parser check --help": () => ({ stdout: NEW_HELP }) },
+    });
     assert.deepEqual(ensurePlainParser(host.opts()), { status: "present" });
     assert.deepEqual(installs(host), []);
+  });
+
+  test("upgrades an old plain-parser with uv", () => {
+    const host = fakeHost({
+      onPath: ["plain-parser", "uv"],
+      handlers: {
+        "plain-parser check --help": (h) => ({ stdout: h.upgraded ? NEW_HELP : OLD_HELP }),
+        "uv tool upgrade": (h) => {
+          h.upgraded = true;
+          return { status: 0 };
+        },
+      },
+    });
+    assert.deepEqual(ensurePlainParser(host.opts()), { status: "upgraded" });
+    assert.deepEqual(installs(host), ["uv tool upgrade plain-parser"]);
+  });
+
+  test("prints the upgrade command when uv is missing", () => {
+    const host = fakeHost({
+      onPath: ["plain-parser"],
+      handlers: { "plain-parser check --help": () => ({ stdout: OLD_HELP }) },
+    });
+    assert.deepEqual(ensurePlainParser(host.opts()), { status: "outdated" });
+    assert.deepEqual(installs(host), []);
+    assert.ok(host.logs.some((l) => l.includes("uv tool upgrade plain-parser")));
+  });
+
+  test("prints the upgrade command when uv cannot upgrade plain-parser", () => {
+    const host = fakeHost({
+      onPath: ["plain-parser", "uv"],
+      handlers: {
+        "plain-parser check --help": () => ({ stdout: OLD_HELP }),
+        "uv tool upgrade": () => ({ status: 1 }),
+      },
+    });
+    assert.deepEqual(ensurePlainParser(host.opts()), { status: "outdated" });
+    assert.ok(host.logs.some((l) => l.includes("uv tool upgrade plain-parser")));
   });
 
   test("installs plain-parser with uv from PATH", () => {

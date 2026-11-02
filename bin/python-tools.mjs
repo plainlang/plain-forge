@@ -1,5 +1,6 @@
 // Installs plain-parser, the Python CLI `plain-healthcheck` uses to validate
-// `.plain` files, together with uv, the tool that installs it.
+// `.plain` files, together with uv, the tool that installs it, and upgrades a
+// plain-parser that is too old for the current ***plain syntax.
 //
 // Temporary: once plain-parser ships as an npm package it becomes a regular
 // dependency in package.json and this file goes away.
@@ -13,6 +14,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const PLAIN_PARSER = "plain-parser";
+// The oldest plain-parser that reads the current ***plain syntax: `# func-id`
+// headings, test plain files, the `tests-folder` config key.
+const MIN_PLAIN_PARSER = "0.2.0";
 
 const DOWNLOAD_UV = path.join(path.dirname(fileURLToPath(import.meta.url)), "download-uv.mjs");
 const UV_RELEASES = "https://github.com/astral-sh/uv/releases/latest/download";
@@ -89,6 +93,13 @@ function isOnPath(cmd, run) {
   return !r.error && r.status === 0;
 }
 
+// Whether the installed plain-parser reads the current ***plain syntax. It has
+// no --version; the `--tests-folder` option of `check` arrived with 0.2.0.
+function readsCurrentSyntax(run) {
+  const r = run(PLAIN_PARSER, ["check", "--help"]);
+  return !r.error && r.status === 0 && r.stdout.includes("--tests-folder");
+}
+
 // Where the uv installer puts uv. A fresh install is not on this process's
 // PATH, so look for it here before giving up.
 function uvCandidates(platform, env, home) {
@@ -138,8 +149,11 @@ function ensurePlainParser({
   log = console.log,
 } = {}) {
   if (isOnPath(PLAIN_PARSER, run)) {
-    log(`  plain-parser: already installed`);
-    return { status: "present" };
+    if (readsCurrentSyntax(run)) {
+      log(`  plain-parser: already installed`);
+      return { status: "present" };
+    }
+    return upgradePlainParser({ platform, env, home, run, exists, log });
   }
 
   let uv = findUv({ platform, env, home, run, exists });
@@ -174,6 +188,25 @@ function ensurePlainParser({
     return { status: "installed" };
   }
   return warnOffPath(log, binDir, platform);
+}
+
+// plain-forge needs plain-parser MIN_PLAIN_PARSER or newer. Upgrade an older one
+// with uv; when uv is not there, or it did not install this plain-parser (pipx
+// did, say), print the command instead.
+function upgradePlainParser({ platform, env, home, run, exists, log }) {
+  log(`  plain-parser: the installed one predates ${MIN_PLAIN_PARSER}; plain-forge needs ${MIN_PLAIN_PARSER} or newer`);
+  const uv = findUv({ platform, env, home, run, exists });
+  if (uv) {
+    const r = run(uv, ["tool", "upgrade", PLAIN_PARSER], { inherit: true });
+    if (!r.error && r.status === 0 && readsCurrentSyntax(run)) {
+      log(`  plain-parser: upgraded`);
+      return { status: "upgraded" };
+    }
+  }
+  log(`  upgrade it yourself with:`);
+  log(`    uv tool upgrade ${PLAIN_PARSER}`);
+  log(`  (or "pipx upgrade ${PLAIN_PARSER}" when you installed it with pipx)`);
+  return { status: "outdated" };
 }
 
 export { ensurePlainParser, uvInstallers, uvCandidates };

@@ -618,7 +618,7 @@ describe("detectInstalls", () => {
 // `install` would otherwise download uv and plain-parser; python-tools.test.mjs
 // covers that step without the network.
 function runCli(args, { cwd, home, input } = {}) {
-  if (args[0] === "install") args = [...args, "--skip-plain-parser"];
+  if (args[0] === "install" || args[0] === "update") args = [...args, "--skip-plain-parser"];
   return spawnSync("node", [CLI, ...args], {
     cwd,
     input,

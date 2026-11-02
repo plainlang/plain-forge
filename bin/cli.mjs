@@ -125,6 +125,7 @@ Install options:
 Update options:
   -y, --yes                                    Remove deprecated files without
                                                confirming each one
+  --skip-plain-parser                          Don't upgrade plain-parser
 
 Uninstall options:
   --agent <claude|codex|copilot|forgecode|opencode|universal|*>
@@ -143,7 +144,8 @@ Examples:
 "install" fails if plain-forge is already installed at the target — use
 "update" to refresh it. Missing install flags are prompted interactively.
 "install" also installs plain-parser, which the healthcheck uses to validate
-.plain files, with uv (installing uv first if it is missing).
+.plain files, with uv (installing uv first if it is missing); "install" and
+"update" upgrade a plain-parser older than 0.2.0.
 "update" auto-detects installs and prunes only files plain-forge wrote
 (confirming each removal), leaving your own and third-party skills untouched.
 "uninstall" deletes exactly the files recorded in the install manifest, then
@@ -889,6 +891,9 @@ async function cmdUpdate(args) {
   } else {
     console.log(`updated ${updated} installation(s) to v${version}.`);
   }
+  // The parser is checked on update too: an install from before plain-parser
+  // 0.2.0 needs the upgrade for the current ***plain syntax.
+  if (!args.skipPlainParser) ensurePlainParser();
 }
 
 async function cmdUninstall(args) {

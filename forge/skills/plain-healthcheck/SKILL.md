@@ -92,7 +92,7 @@ Step 3 has two halves: a mechanical parse by `plain-parser`, then the checks tha
    :Implementation: starts.
    ```
 
-   If it prints `OK`, continue. If it reports an error, the installed plain-parser predates the current syntax (`# func-id` headings, test plain files). Then record one failure against the project — `plain-parser <version> does not parse the current ***plain syntax; install the release that does and run plain-healthcheck again` — skip steps 3 and 4 of 3a, still run 3b, and report `FAIL`. Never rewrite the specs into an older syntax to satisfy the old parser.
+   If it prints `OK`, continue. If it reports an error, the installed plain-parser predates the current syntax (`# func-id` headings, test plain files). Then record one failure against the project — `plain-parser <version> does not parse the current ***plain syntax; plain-forge needs 0.2.0 or newer: run uv tool upgrade plain-parser (or plain-forge update) and run plain-healthcheck again` — skip steps 3 and 4 of 3a, still run 3b, and report `FAIL`. Never rewrite the specs into an older syntax to satisfy the old parser.
 3. **Run it from the top module's own directory**, once per top module:
 
    ```bash
