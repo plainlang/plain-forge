@@ -55,6 +55,7 @@ leading `v` — but every message, link and convention here assumes the prefix.
 | Set version | `npm version --no-git-tag-version` in the runner only |
 | Publish | `npm publish --access public`, or `--tag next` for a pre-release |
 | Record | Deployment under the `npm` environment; Slack start notice. The publish result replies in its thread, or posts to the channel without one; failures are also broadcast, and success adds a ✅ to the start notice |
+| Linear | stable releases only: records the release in Linear with the PRs merged since the previous one and these release notes, `#N` references linked to this repo. The Slack success notice links it |
 
 Auth is **OIDC trusted publishing** — there is no npm token in this repo. npm exchanges
 the workflow's OIDC token for a short-lived credential and attaches a SLSA provenance
@@ -162,7 +163,7 @@ at the repo root — gitignored, and the only place a webhook should live locall
 |---|---|---|
 | Trusted publisher | npmjs.com → `plain-forge` → Settings → Trusted Publisher | GitHub Actions, `plainlang/plain-forge`, workflow `publish.yml` |
 | `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` | org secret, org variable | CI notifications are skipped without the variable; `scripts/deploy.sh` still uses `SLACK_WEBHOOK_URL` |
-| `LINEAR_ACCESS_KEY` | repo secret | records the release in Linear; the job is currently commented out in `publish.yml` |
+| `LINEAR_ACCESS_KEY` | repo secret | records stable releases in Linear, with their PRs and the GitHub release text; only logged until the `LINEAR_RELEASE_MODE` variable is `live` |
 | Branch protection | `main` | `Test (node 22 / 24)` required, no force pushes, no deletion |
 
 **The workflow filename is part of the trust contract.** Renaming `publish.yml` breaks
