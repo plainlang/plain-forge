@@ -326,7 +326,7 @@ jobs:
             thread_ts: ${{ env.THREAD_TS }}
             text: >-
               *plain-forge*: `v${{ needs.publish.outputs.version }}` published to npm :white_check_mark:
-              (bundles pyro `${{ needs.publish.outputs.pyro }}`). Install with `npx plain-forge@latest update`.${{ env.RELEASE_URL != '' && format(' <{0}|View release>.', env.RELEASE_URL) || needs.linear-release.outputs.outcome == 'failure' && ' Recording it in Linear failed :warning:.' || '' }}
+              (bundles pyro `${{ needs.publish.outputs.pyro }}`). Install with `npx plain-forge@latest update`.${{ env.RELEASE_URL != '' && format(' <{0}|View release>.', env.RELEASE_URL) || (needs.linear-release.result == 'failure' || needs.linear-release.outputs.outcome == 'failure') && ' Recording it in Linear failed :warning:.' || '' }}
 
       # Success also puts a ✅ on the start notice, so the result shows in the
       # channel without another message. Needs the app's reactions:write scope.

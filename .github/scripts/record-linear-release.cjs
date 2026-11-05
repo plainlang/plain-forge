@@ -19,10 +19,10 @@ const MAX_BASE_CANDIDATES = 20;
 
 // On GitHub, "#12" is a PR or issue of the same repo. Linear matches a bare "#12" against every
 // repo it knows, so it can link a PR from another repo. Every reference is therefore written out
-// as a full link, except in code, existing links and URLs. GitHub redirects /pull/N to /issues/N
-// when N is an issue.
+// as a full link, except in code (fenced or inline), existing links and URLs. GitHub redirects
+// /pull/N to /issues/N when N is an issue.
 function linkReferences(text, owner, repo) {
-  const untouched = /(`[^`\n]*`|\[[^\]\n]*\]\([^)\n]*\)|<[^>\n]*>|https?:\/\/[^\s)]+)/;
+  const untouched = /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`|\[[^\]\n]*\]\([^)\n]*\)|<[^>\n]*>|https?:\/\/[^\s)]+)/;
   return text
     .split(untouched)
     .map((part, i) =>
@@ -55,7 +55,7 @@ function prNotes(prs, owner, repo) {
 }
 
 // The PRs merged into `branch` since the newest earlier release in this pipeline.
-async function pullRequestsSince({ github, owner, repo, branch, head, releases }) {
+async function pullRequestsSince({ github, owner, repo, branch, head, version, releases }) {
   const compare = async (base, target, page = 1, perPage = 1) =>
     (await github.rest.repos.compareCommitsWithBasehead({ owner, repo, basehead: `${base}...${target}`, page, per_page: perPage }))
       .data;
@@ -66,9 +66,10 @@ async function pullRequestsSince({ github, owner, repo, branch, head, releases }
   }
 
   // Sorted by completion time, since an older release whose notes were edited can be listed first.
-  // A release that is not on the branch is a branch deploy and is never a base.
+  // A release that is not on the branch is a branch deploy and is never a base. This release itself
+  // (a re-run) is skipped, but another version at the same commit is a base, and leaves no new PRs.
   const candidates = releases
-    .filter((r) => r.commitSha && r.commitSha !== head)
+    .filter((r) => r.commitSha && r.version !== version)
     .sort((a, b) => Date.parse(b.completedAt || b.createdAt) - Date.parse(a.completedAt || a.createdAt))
     .slice(0, MAX_BASE_CANDIDATES);
   let base;
@@ -102,7 +103,9 @@ async function pullRequestsSince({ github, owner, repo, branch, head, releases }
 
 module.exports = async ({ github, context, core }) => {
   const key = process.env.LINEAR_ACCESS_KEY;
+  const live = process.env.LINEAR_RELEASE_MODE === 'live';
   if (!key) {
+    if (live) throw new Error('LINEAR_RELEASE_MODE is live, but this pipeline has no Linear access key');
     core.notice('No Linear access key for this pipeline, so the release is not recorded.');
     return;
   }
@@ -113,7 +116,6 @@ module.exports = async ({ github, context, core }) => {
   const head = required('RELEASE_SHA');
   const version = process.env.RELEASE_VERSION || head.slice(0, 7);
   const branch = process.env.RELEASE_BRANCH || 'main';
-  const live = process.env.LINEAR_RELEASE_MODE === 'live';
   const { owner, repo } = context.repo;
 
   const linear = async (query, variables) => {
@@ -131,7 +133,7 @@ module.exports = async ({ github, context, core }) => {
   const { recentReleasesByAccessKey: releases } = await linear(
     'query { recentReleasesByAccessKey(limit: 50) { commitSha version completedAt createdAt } }',
   );
-  const { prs, base, reason } = await pullRequestsSince({ github, owner, repo, branch, head, releases });
+  const { prs, base, reason } = await pullRequestsSince({ github, owner, repo, branch, head, version, releases });
 
   const links = [{ label: 'GitHub run', url: `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}` }];
   let notes;
@@ -165,6 +167,8 @@ module.exports = async ({ github, context, core }) => {
     'mutation ($input: ReleaseSyncInputBase!) { releaseSyncByAccessKey(input: $input) { success release { url } } }',
     { input },
   );
+  // Linear can report a failed sync with HTTP 200.
+  if (!result.success || !result.release) throw new Error(`Linear did not record ${version}: ${JSON.stringify(result)}`);
   core.setOutput('release-url', result.release.url);
   core.notice(`Recorded ${version} in Linear: ${result.release.url}`);
 };
