@@ -121,6 +121,7 @@ module.exports = async ({ github, context, core }) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: key },
       body: JSON.stringify({ query, variables }),
+      signal: AbortSignal.timeout(30_000),
     });
     const body = await res.json().catch(() => ({}));
     if (!res.ok || body.errors) throw new Error(`Linear API ${res.status}: ${JSON.stringify(body.errors || body)}`);
