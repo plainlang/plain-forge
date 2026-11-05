@@ -20,7 +20,8 @@ const MAX_BASE_CANDIDATES = 20;
 /**
  * Splits markdown into fenced code blocks and the text between them. A fence opens with three or more
  * backticks or tildes, and closes with the same character, at least as many, on a line of its own.
- * A fence that never closes runs to the end, as in CommonMark.
+ * Fences inside block quotes count, and end with their quote. A fence that never closes runs to the
+ * end, as in CommonMark.
  * @returns {{ code: boolean, text: string }[]}
  */
 function splitFences(text) {
@@ -28,24 +29,32 @@ function splitFences(text) {
   let buffer = '';
   let fence = null;
   for (const line of text.split(/(?<=\n)/)) {
-    if (!fence) {
-      const open = line.match(/^ {0,3}(`{3,}|~{3,})/);
-      // A backtick fence's info string can't contain a backtick.
-      if (open && !(open[1][0] === '`' && line.slice(open[0].length).includes('`'))) {
-        parts.push({ code: false, text: buffer });
-        buffer = line;
-        fence = open[1];
-      } else {
-        buffer += line;
-      }
-    } else {
+    const quote = line.match(/^(?: {0,3}> ?)*/)[0];
+    const depth = (quote.match(/>/g) || []).length;
+    const rest = line.slice(quote.length);
+    if (fence && depth < fence.depth) {
+      parts.push({ code: true, text: buffer });
+      buffer = '';
+      fence = null;
+    }
+    if (fence) {
       buffer += line;
-      const close = line.match(/^ {0,3}(`{3,}|~{3,})[ \t]*\r?\n?$/);
-      if (close && close[1][0] === fence[0] && close[1].length >= fence.length) {
+      const close = rest.match(/^ {0,3}(`{3,}|~{3,})[ \t]*\r?\n?$/);
+      if (close && close[1][0] === fence.marker[0] && close[1].length >= fence.marker.length) {
         parts.push({ code: true, text: buffer });
         buffer = '';
         fence = null;
       }
+      continue;
+    }
+    const open = rest.match(/^ {0,3}(`{3,}|~{3,})/);
+    // A backtick fence's info string can't contain a backtick.
+    if (open && !(open[1][0] === '`' && rest.slice(open[0].length).includes('`'))) {
+      parts.push({ code: false, text: buffer });
+      buffer = line;
+      fence = { marker: open[1], depth };
+    } else {
+      buffer += line;
     }
   }
   parts.push({ code: fence !== null, text: buffer });
@@ -55,30 +64,29 @@ function splitFences(text) {
 /**
  * Writes every GitHub reference out as a full link. On GitHub, "#12" is a PR or issue of the same repo;
  * Linear matches a bare "#12" against every repo it knows, so it can link a PR from another repo.
- * Code (fenced or inline), existing links and URLs are left alone. GitHub redirects /pull/N to
- * /issues/N when N is an issue.
+ * Code (fenced, or inline with any number of backticks), existing links and URLs are left alone.
+ * GitHub redirects /pull/N to /issues/N when N is an issue.
  */
 function linkReferences(text, owner, repo) {
-  const untouched = /(`[^`\n]*`|\[[^\]\n]*\]\([^)\n]*\)|<[^>\n]*>|https?:\/\/[^\s)]+)/;
-  const link = (prose) =>
-    prose
-      .split(untouched)
-      .map((part, i) =>
-        i % 2
-          ? part
-          : part
-              .replace(
-                /(^|[^\w/#&])([\w.-]+)\/([\w.-]+)#(\d+)\b/g,
-                (_, pre, o, r, n) => `${pre}[${o}/${r}#${n}](https://github.com/${o}/${r}/pull/${n})`,
-              )
-              .replace(
-                /(^|[^\w/#&[]|\bPR ?)#(\d+)\b/g,
-                (_, pre, n) => `${pre}[#${n}](https://github.com/${owner}/${repo}/pull/${n})`,
-              ),
+  const untouched = /(?<!`)(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)|\[[^\]\n]*\]\([^)\n]*\)|<[^>\n]*>|https?:\/\/[^\s)]+/g;
+  const linkPlain = (plain) =>
+    plain
+      .replace(
+        /(^|[^\w/#&])([\w.-]+)\/([\w.-]+)#(\d+)\b/g,
+        (_, pre, o, r, n) => `${pre}[${o}/${r}#${n}](https://github.com/${o}/${r}/pull/${n})`,
       )
-      .join('');
+      .replace(/(^|[^\w/#&[]|\bPR ?)#(\d+)\b/g, (_, pre, n) => `${pre}[#${n}](https://github.com/${owner}/${repo}/pull/${n})`);
+  const linkProse = (prose) => {
+    let out = '';
+    let last = 0;
+    for (const match of prose.matchAll(untouched)) {
+      out += linkPlain(prose.slice(last, match.index)) + match[0];
+      last = match.index + match[0].length;
+    }
+    return out + linkPlain(prose.slice(last));
+  };
   return splitFences(text)
-    .map((part) => (part.code ? part.text : link(part.text)))
+    .map((part) => (part.code ? part.text : linkProse(part.text)))
     .join('');
 }
 
