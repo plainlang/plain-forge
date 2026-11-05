@@ -415,6 +415,8 @@ jobs:
       - name: Record release in Linear
         id: linear
         continue-on-error: true
+        # A hung API call must not hold up the Slack notice.
+        timeout-minutes: 10
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           LINEAR_ACCESS_KEY: ${{ secrets.LINEAR_ACCESS_KEY }}
