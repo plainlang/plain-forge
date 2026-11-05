@@ -17,30 +17,72 @@
 const LINEAR_API = 'https://api.linear.app/graphql';
 const MAX_BASE_CANDIDATES = 20;
 
-// On GitHub, "#12" is a PR or issue of the same repo. Linear matches a bare "#12" against every
-// repo it knows, so it can link a PR from another repo. Every reference is therefore written out
-// as a full link, except in code (fenced or inline), existing links and URLs. GitHub redirects
-// /pull/N to /issues/N when N is an issue.
+/**
+ * Splits markdown into fenced code blocks and the text between them. A fence opens with three or more
+ * backticks or tildes, and closes with the same character, at least as many, on a line of its own.
+ * A fence that never closes runs to the end, as in CommonMark.
+ * @returns {{ code: boolean, text: string }[]}
+ */
+function splitFences(text) {
+  const parts = [];
+  let buffer = '';
+  let fence = null;
+  for (const line of text.split(/(?<=\n)/)) {
+    if (!fence) {
+      const open = line.match(/^ {0,3}(`{3,}|~{3,})/);
+      // A backtick fence's info string can't contain a backtick.
+      if (open && !(open[1][0] === '`' && line.slice(open[0].length).includes('`'))) {
+        parts.push({ code: false, text: buffer });
+        buffer = line;
+        fence = open[1];
+      } else {
+        buffer += line;
+      }
+    } else {
+      buffer += line;
+      const close = line.match(/^ {0,3}(`{3,}|~{3,})[ \t]*\r?\n?$/);
+      if (close && close[1][0] === fence[0] && close[1].length >= fence.length) {
+        parts.push({ code: true, text: buffer });
+        buffer = '';
+        fence = null;
+      }
+    }
+  }
+  parts.push({ code: fence !== null, text: buffer });
+  return parts;
+}
+
+/**
+ * Writes every GitHub reference out as a full link. On GitHub, "#12" is a PR or issue of the same repo;
+ * Linear matches a bare "#12" against every repo it knows, so it can link a PR from another repo.
+ * Code (fenced or inline), existing links and URLs are left alone. GitHub redirects /pull/N to
+ * /issues/N when N is an issue.
+ */
 function linkReferences(text, owner, repo) {
-  const untouched = /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`|\[[^\]\n]*\]\([^)\n]*\)|<[^>\n]*>|https?:\/\/[^\s)]+)/;
-  return text
-    .split(untouched)
-    .map((part, i) =>
-      i % 2
-        ? part
-        : part
-            .replace(
-              /(^|[^\w/#&])([\w.-]+)\/([\w.-]+)#(\d+)\b/g,
-              (_, pre, o, r, n) => `${pre}[${o}/${r}#${n}](https://github.com/${o}/${r}/pull/${n})`,
-            )
-            .replace(
-              /(^|[^\w/#&[]|\bPR ?)#(\d+)\b/g,
-              (_, pre, n) => `${pre}[#${n}](https://github.com/${owner}/${repo}/pull/${n})`,
-            ),
-    )
+  const untouched = /(`[^`\n]*`|\[[^\]\n]*\]\([^)\n]*\)|<[^>\n]*>|https?:\/\/[^\s)]+)/;
+  const link = (prose) =>
+    prose
+      .split(untouched)
+      .map((part, i) =>
+        i % 2
+          ? part
+          : part
+              .replace(
+                /(^|[^\w/#&])([\w.-]+)\/([\w.-]+)#(\d+)\b/g,
+                (_, pre, o, r, n) => `${pre}[${o}/${r}#${n}](https://github.com/${o}/${r}/pull/${n})`,
+              )
+              .replace(
+                /(^|[^\w/#&[]|\bPR ?)#(\d+)\b/g,
+                (_, pre, n) => `${pre}[#${n}](https://github.com/${owner}/${repo}/pull/${n})`,
+              ),
+      )
+      .join('');
+  return splitFences(text)
+    .map((part) => (part.code ? part.text : link(part.text)))
     .join('');
 }
 
+/** The release notes of a deploy: one line per PR, with Dependabot's PRs folded into one. */
 function prNotes(prs, owner, repo) {
   const link = (n) => `[#${n}](https://github.com/${owner}/${repo}/pull/${n})`;
   const dependabot = prs.filter((pr) => pr.user.login === 'dependabot[bot]');
@@ -54,7 +96,7 @@ function prNotes(prs, owner, repo) {
   return lines.join('\n');
 }
 
-// The PRs merged into `branch` since the newest earlier release in this pipeline.
+/** The PRs merged into `branch` since the newest earlier release in this pipeline. */
 async function pullRequestsSince({ github, owner, repo, branch, head, version, releases }) {
   const compare = async (base, target, page = 1, perPage = 1) =>
     (await github.rest.repos.compareCommitsWithBasehead({ owner, repo, basehead: `${base}...${target}`, page, per_page: perPage }))
@@ -66,11 +108,14 @@ async function pullRequestsSince({ github, owner, repo, branch, head, version, r
   }
 
   // Sorted by completion time, since an older release whose notes were edited can be listed first.
-  // A release that is not on the branch is a branch deploy and is never a base. This release itself
-  // (a re-run) is skipped, but another version at the same commit is a base, and leaves no new PRs.
+  // A release that is not on the branch is a branch deploy and is never a base. A re-run of a
+  // recorded version only looks at releases before it. Another version at the same commit is a
+  // base, and leaves no new PRs.
+  const time = (r) => Date.parse(r.completedAt || r.createdAt);
+  const own = releases.find((r) => r.version === version);
   const candidates = releases
-    .filter((r) => r.commitSha && r.version !== version)
-    .sort((a, b) => Date.parse(b.completedAt || b.createdAt) - Date.parse(a.completedAt || a.createdAt))
+    .filter((r) => r.commitSha && r.version !== version && (!own || time(r) < time(own)))
+    .sort((a, b) => time(b) - time(a))
     .slice(0, MAX_BASE_CANDIDATES);
   let base;
   for (const release of candidates) {
@@ -101,6 +146,7 @@ async function pullRequestsSince({ github, owner, repo, branch, head, version, r
   return { prs: [...prs.values()], base };
 }
 
+/** Records the release in Linear, or logs what it would record. */
 module.exports = async ({ github, context, core }) => {
   const key = process.env.LINEAR_ACCESS_KEY;
   const live = process.env.LINEAR_RELEASE_MODE === 'live';
