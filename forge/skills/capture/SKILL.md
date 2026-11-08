@@ -57,7 +57,7 @@ Exit `2` means a usage, git, or manifest error; read stderr, fix the cause, and 
 3. If `plain/` already holds a ***plain project without a manifest, adopt it: new modules go next to the existing ones, and nothing existing is moved or renamed.
    - Run `plain-parser check` on each existing top module before writing anything. Record every failure as pre-existing, show the list to the user, and ask whether to proceed. Capture does not fix modules it did not write.
    - If an existing import module holds only host-wide facts (stack, conventions, unit-test policy), it is the host context: Phase 3 updates it instead of creating `template/host_context.plain`. An import module that also carries rules for other modules is left as it is; Phase 3 creates `template/host_context.plain` beside it, and the final report names the facts the two share.
-   - If the existing test scripts cannot stage the unit's paths into the host, the unit gets its own scripts and `config.yaml`; the existing ones are not changed.
+   - If the existing test scripts cannot stage the unit's paths into the host, the unit gets its own part folder, `plain/<module>/`, with its own `config.yaml`, `test_scripts/`, and `tests/`, sharing `plain/template/` and `plain/resources/`; the existing ones are not changed.
 
 ## Phase 0 — Intent
 
@@ -76,9 +76,10 @@ If `inventory` reports uncommitted files, tell the user the capture describes `H
    - the paths it owns and the files in its boundary;
    - its interface (entry points with file and line);
    - its tests, its state (stateless or what it owns), and the third parties it calls.
-2. If the chosen candidate is **stateful**, tell the user that capture does not migrate state: the schema, migrations, and stored data stay with the host. Ask whether to proceed with the state kept in the boundary, or to pick the nearest stateless candidate. If the state cannot stay in the boundary, do not capture it.
-3. If the chosen candidate has **leaks** (host code that reaches past its interface), ask one question per leak: widen the unit to include the leaking code, or treat the leaked symbol as part of the interface.
-4. Add the unit to `units` in the manifest with `"status": "capturing"`, its `id`, `module` (the root `.plain` module name), `paths`, `exclude`, and `boundary`, as described in `references/manifest.md`.
+2. If the chosen candidate has **any state** — tables, files, queues, or keys it writes into a host-owned record (see *state* in `references/phase-1-scan.md`) — tell the user that capture does not migrate state: the schema, the stored data, and the host-owned records stay with the host. Ask whether to proceed with the state kept in the boundary, or to pick the nearest stateless candidate. If the state cannot stay in the boundary, do not capture it.
+3. If the chosen candidate has **leaks** (host code that reaches past its interface), ask one question per kind of leak (`boot`, `registry`, `test pin`, `call`), listing every leak of that kind: widen the unit to include the leaking code, or treat the leaked names and signatures as part of the interface.
+4. If the host already tests the unit, ask where the rendered `:UnitTests:` go: a separate folder (recommended — the host's own tests stay, join the boundary, and keep checking every render), or over the host's tests (they join the unit's `paths`, and a render replaces them).
+5. Add the unit to `units` in the manifest with `"status": "capturing"`, its `id`, `module` (the root `.plain` module name), `paths`, `exclude`, and `boundary`, as described in `references/manifest.md`.
 
 ## Phase 3 — Write the unit as ***plain
 

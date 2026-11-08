@@ -3,7 +3,7 @@
 // Deterministic state for the `capture` skill: what a host looks like, and
 // what changed in a captured unit since it was last captured.
 //
-//   node capture-state.mjs inventory [--root <dir>] [--depth <n>] [--under <folder>]
+//   node capture-state.mjs inventory [--root <dir>] [--depth <n>] [--under <folder>] [--paths <p>...]
 //   node capture-state.mjs status    [--manifest <file>] [--unit <id>]
 //   node capture-state.mjs snapshot  --unit <id> [--manifest <file>] [--revert] [--paths <p>...]
 //
@@ -562,9 +562,20 @@ function cmdInventory(opts) {
   }
 
   const asList = (map) => [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  // A candidate is often a file plus a folder of the same name: total any set of prefixes.
+  let pathsTotal = null;
+  if (opts.paths.length) {
+    const prefixes = opts.paths.map(normalizePrefix);
+    pathsTotal = { paths: prefixes, files: 0, lines: 0 };
+    for (const f of listFiles(root).filter((f) => underAny(f, prefixes))) {
+      pathsTotal.files++;
+      pathsTotal.lines += countLines(path.join(root, f)) ?? 0;
+    }
+  }
   const report = {
     host_root: root,
     under: under || null,
+    paths_total: pathsTotal,
     head: head(root),
     uncommitted: dirtyFiles(root).size,
     files: files.length,
@@ -616,7 +627,7 @@ function parseArgs(argv) {
 }
 
 const USAGE = `Usage:
-  capture-state.mjs inventory [--root <dir>] [--depth <n>] [--under <folder>]
+  capture-state.mjs inventory [--root <dir>] [--depth <n>] [--under <folder>] [--paths <p>...]
   capture-state.mjs status    [--manifest <file>] [--unit <id>]
   capture-state.mjs snapshot  --unit <id> [--manifest <file>] [--revert] [--paths <p>...]`;
 

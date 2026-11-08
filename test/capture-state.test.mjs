@@ -114,6 +114,13 @@ describe("capture-state inventory", () => {
     );
   });
 
+  test("--paths totals the files and lines of a candidate made of a file and a folder", () => {
+    const h = makeHost();
+    const r = h.run("inventory", "--paths", "src/unit/a.js", "src/host/");
+    assert.equal(r.code, 0, r.err);
+    assert.deepEqual(r.json.paths_total, { paths: ["src/unit/a.js", "src/host/"], files: 3, lines: 3 });
+  });
+
   test("skips nested repositories and symlinked folders instead of reading them", () => {
     const h = makeHost();
     const nested = path.join(h.root, "vendor", "lib");

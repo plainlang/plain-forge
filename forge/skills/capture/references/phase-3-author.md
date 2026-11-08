@@ -6,6 +6,7 @@ The goal is a set of `.plain` modules that, once rendered, replace the unit's co
 
 - Through `load-plain-reference`, load the rules for every section written below. A captured unit is embedded in its host, so the router also sends you to `rules/host-embedded.md` and `rules/integration-embedded-testing.md`. If the unit calls a third party, the integration rules apply as well.
 - Write what the code does at the captured commit. The code answers most questions; read it before asking.
+- Verify every resource adopted from an existing project against the code, claim by claim, before linking it. A resource written for a replacement of the unit can describe behavior the unit's code does not have. Each divergence is a "behavior looks unintended" question; the unit then links its own copy under `resources/<module>/`, corrected as the user decided, and the adopted file stays as it is.
 - Keep a running list of func-ids and the source files each was written from. It becomes `functionalities` in the manifest in Phase 5.
 
 ## Layout
@@ -22,11 +23,13 @@ All files live in `plain/` at the host root (an existing ***plain project there 
 | `test_scripts/`, `config.yaml` | The test scripts and renderer configuration. |
 | `capture.json` | The capture manifest. |
 
+When the unit has its own part folder (`plain/<module>/`, see SKILL.md Step 0), its module, `config.yaml`, `test_scripts/`, and `tests/` live there, `template-dir` is `../template`, and every link to a shared resource starts with `../`. Links inside `template/host_context.plain` resolve from the folder of the module being rendered, so write them for that depth (`../resources/host/...`) and keep every part folder at the same depth.
+
 ## Steps
 
 Write each step to disk immediately through the named skill, then review it (see *Review* below) before the next step.
 
-1. **Host context.** If `template/host_context.plain`, or an adopted import module that holds only host-wide facts, exists and still matches the host, keep it and update it in place. Otherwise create `template/host_context.plain` with `create-import-module`, then `add-concept` for the host codebase concept and `add-implementation-requirement` for the host stack and conventions, transcribed from the Phase 1 facts.
+1. **Host context.** If `template/host_context.plain`, or an adopted import module that holds only host-wide facts, exists and still matches the host, keep it and update it in place. Otherwise create `template/host_context.plain` with `create-import-module`, then `add-concept` for the host codebase concept and the environment variables test scripts use to reach the host, and `add-implementation-requirement` for the host stack and conventions, transcribed from the Phase 1 facts. When a copied lint or build configuration pulls rules from gems or files outside `plain/`, also write the effective rules as requirements: the renderer sees the copy, not what it loads.
 2. **Interface and boundary.** With `add-concept`, define the unit's interface: copy the host files that define it to `resources/host/<host path>` and link the copies. Define each host symbol the unit uses by its fully qualified name, marked as imported from the host and not to be redefined. The interface is the contract with the rest of the host: names, signatures, the errors callers catch, and the side effects callers rely on must all survive regeneration.
 3. **Domain concepts.** With `add-concept`, define the unit's own concepts, before any spec that uses them.
 4. **Functional specs.** With `add-functional-specs`, write one functionality per behavior observable through the interface:
@@ -38,7 +41,8 @@ Write each step to disk immediately through the named skill, then review it (see
 7. **Testing.** When the user wants conformance tests, or the host already tests the unit:
    - with `add-test-requirement`, state that `:ConformanceTests:` run through the host's own test runner against the host with the rendered unit staged into it;
    - with `add-test-scenarios`, write a test plain file per functionality, turning the host's existing tests of the unit into scenarios and adding one where no test covers the functionality;
-   - generate the test scripts with the `implement-*-testing-script` skills, staging the rendered unit into the host as `rules/integration-embedded-testing.md` describes;
+   - generate the test scripts with the `implement-*-testing-script` skills, staging the rendered unit into the host as `rules/integration-embedded-testing.md` describes. A captured unit's render lands on the host's own files, so every staging script backs them up first, restores them on exit, and checks that the process running the tests sees the staged files;
+   - put the rendered `:UnitTests:` where Phase 2 decided, and run the host's own tests of the unit with them when they stay;
    - build `config.yaml` with `init-config-file`.
 8. **Manifest.** In the unit's entry in `plain/capture.json`, write `functionalities` from the running list, and `render_map` from the paths the test scripts copy the rendered unit to (see `references/manifest.md`). A unit file that no func-id describes is either wiring only (say so in the review) or a missed functionality (go back to step 4).
 
@@ -53,4 +57,4 @@ Capture is not an interview. Ask one question, showing the code excerpt with fil
 
 ## Review
 
-Review each step once, not each snippet: after a step, show what it wrote — for functional specs, each func-id with one line and its source files — in one question with the options "Approve", "Correct an item", and a free-form catch-all. Apply a correction through the same skill, then show the corrected item again. Continue to the next step only after approval.
+Review each step once, not each snippet; steps 1 to 3 (host context, interface, domain concepts) may share one review. After a step, show what it wrote — for functional specs, each func-id with one line and its source files — in one question with the options "Approve", "Correct an item", and a free-form catch-all. Apply a correction through the same skill, then show the corrected item again. Continue to the next step only after approval.

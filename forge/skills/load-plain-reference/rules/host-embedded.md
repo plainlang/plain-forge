@@ -65,6 +65,7 @@ Run host discovery **before** the first question to the user. Treat the results 
 ## Reference host symbols by fully qualified import path
 
 - Every host class, interface, struct, exception, or type alias that appears in a spec must be written with its full dotted / slashed import path (e.g. `host_project.integrations.base.IntegrationContract`, `@host/integrations#Contract`) and tagged in the spec text as **"imported from the host codebase; do not redefine"**
+- In a language whose path separator is `::` (Ruby, C++, Rust), a path of three or more segments contains `:Segment:`, which the parser reads as a concept reference even inside backticks. Write such a symbol as its name and the modules it is nested in, outermost first — "the class `PTOImportBuilder`, nested in `Integrations`, `Drivers`, `HRIS` and `BambooHR`" — and keep the tag
 - The renderer is allowed to redefine **only** symbols the host does not provide
 - Naming the symbol by FQN is not optional decoration — it tells the renderer where the type comes from, which prevents a duplicate definition under `plain_modules/`
 

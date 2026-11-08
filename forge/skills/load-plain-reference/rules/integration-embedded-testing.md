@@ -120,6 +120,17 @@ output=$(mvn test --no-transfer-progress 2>&1)
 - **Never duplicate a fact across sections.** `:UnitTests:` facts belong **only** in `***implementation reqs***`; `:ConformanceTests:` facts belong **only** in `***test reqs***`. The two groups never overlap — the script generators read each from its own section
 - **For non-Java languages**, the facts have language-specific equivalents — Python: `src/foo/`, `tests/foo/`, `tests.foo`; Node: `src/foo/`, `test/foo/`, `test/foo/**/*.test.ts`. The `implement-*-testing-script` skills know the mapping per language, but the spec still has to declare the host-relative paths and packages so the skill knows what to put in the script bodies
 
+## Hosts that test in their own environment, and captured units
+
+The staging model above assumes the conformance suite can run as a separate project. Two cases change that:
+
+- **The host's tests need its application environment** (a Rails, Django, or Spring app whose tests load the app, its factories, and its test databases). Then `:ConformanceTests:` cannot run from `/tmp/<lang>_conformance/`: the conformance script copies `$2` into a dedicated folder inside the host's test tree (e.g. `spec/plain_conformance/<module>/`), runs the host's own test runner there, and removes that folder on exit
+- **The module is a unit captured from the host** (see `capture`). Its render lands on files the host already has. Every staging script backs up the host's own files at the unit's paths before copying, restores them on exit (`trap ... EXIT`), and removes the empty folders it created, so a test run leaves the host checkout unchanged
+
+In both cases, when the tests run in a container or another process that mounts the host, the script checks that it sees the staged files — compare the checksum of one staged file inside and outside — and exits `69` on a mismatch. Without that check, a script pointed at the wrong host root tests the host's own code and passes green.
+
+**Live OAuth with rotating refresh tokens.** When the provider issues a new refresh token on every refresh, a refresh inside a test invalidates the stored credentials. The prepare script refreshes once per run and writes the new access token and the rotated refresh token back to the `.env` file it read them from, never printing them or passing them on a command line; tests stub the token endpoint.
+
 ## Common contract (all three scripts)
 
 All three scripts are invoked by the renderer with positional arguments. They MUST:
