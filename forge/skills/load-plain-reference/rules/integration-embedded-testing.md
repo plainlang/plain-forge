@@ -6,8 +6,10 @@ description: Rules for authoring the three test scripts that an embedded ***plai
 
 When an embedded integration ships its three `test_scripts/` (prepare-environment, unit,
 conformance), these rules apply on top of the contracts in the corresponding
-`implement-*-testing-script` skills. Use `load-plain-reference` for the rendering and testing
-workflow overview when needed.
+`implement-*-testing-script` skills. They apply the same way to every other module embedded in a
+host (see `host-embedded.md`), such as a unit captured with `capture`: read "integration" below
+as "embedded module". Use `load-plain-reference` for the rendering and testing workflow overview
+when needed.
 
 ## Staging model (read this first)
 

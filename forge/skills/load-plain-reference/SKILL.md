@@ -52,6 +52,7 @@ All paths are relative to this `SKILL.md`.
 | Definitions, implementation reqs, or test reqs text | `rules/bullet-continuation.md` |
 | Any `.plain` text or example | `rules/concise-specs.md` |
 | Drafting or trimming spec wording, or reviewing a spec for verbosity | `rules/concise-specs-examples.md` |
+| A module embedded in an existing host codebase — an embedded integration, or a unit captured with `capture` | `rules/host-embedded.md`, plus `rules/integration-embedded-testing.md` for its test scripts |
 
 For a whole-file review or a task spanning several sections, load the union of the applicable rule
 files. Do not load every rule by default.
@@ -64,7 +65,7 @@ For an integration spec, always read:
 
 Then read the rule matching the integration shape:
 
-- Embedded integration: `rules/integration-embedded.md`
+- Embedded integration: `rules/host-embedded.md` and `rules/integration-embedded.md`
 - Standalone integration: `rules/integration-standalone.md`
 - Embedded integration test scripts: `rules/integration-embedded-testing.md`
 
@@ -73,12 +74,9 @@ When drafting or trimming the wording of an integration spec, also read
 
 Do not load integration rules for ordinary non-integration specs.
 
-A unit captured from an existing host (see `capture`) is embedded in that host even when it is not
-an integration. For it, read `rules/integration-embedded.md` and
-`rules/integration-embedded-testing.md` and apply their host rules: the host dictates the stack,
-host symbols are named by fully qualified path, host files are linked where they are, and test
-scripts stage the rendered unit into the host. Their provider-specific parts, and
-`rules/integrations.md`, apply only when the unit also calls a third-party API.
+A unit captured from an existing host (see `capture`) is embedded in that host but is not an
+integration: read `rules/host-embedded.md` and `rules/integration-embedded-testing.md`, and load
+the integration rules above only when the unit also calls a third-party API.
 
 ## 4. Load operational references only when needed
 

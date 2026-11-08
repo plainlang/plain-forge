@@ -4,7 +4,7 @@ The goal is a set of `.plain` modules that, once rendered, replace the unit's co
 
 ## Before writing
 
-- Through `load-plain-reference`, load the rules for every section written below. A captured unit is embedded in its host, so the router also sends you to `rules/integration-embedded.md` and `rules/integration-embedded-testing.md`; follow their host rules. If the unit calls a third party, the full integration route applies.
+- Through `load-plain-reference`, load the rules for every section written below. A captured unit is embedded in its host, so the router also sends you to `rules/host-embedded.md` and `rules/integration-embedded-testing.md`. If the unit calls a third party, the integration rules apply as well.
 - Write what the code does at the captured commit. The code answers most questions; read it before asking.
 - Keep a running list of func-ids and the source files each was written from. It becomes `functionalities` in the manifest in Phase 5.
 
