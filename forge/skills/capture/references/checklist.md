@@ -6,6 +6,7 @@ The Phase 4 review agent runs this list. Check each item by its tag: `[disk]` ag
 
 - [ ] `[record]` When an existing ***plain project was adopted, its pre-existing `plain-parser` failures were shown to the user before anything was written, and the user chose to proceed.
 - [ ] `[record]` The intent was stated or confirmed before scanning.
+- [ ] `[both]` Every question in the evidence record, with its answer, is in `answers` in `plain/capture.json` (the unit's, or the project's for Step 0), and the unit's `intent` is set.
 - [ ] `[disk]` `scan.commit` in `plain/capture.json` is the commit the unit was captured from, and every candidate has paths, an interface with file and line, a boundary, tests, state, and fit.
 - [ ] `[record]` The user chose the unit, and answered: every kind of leak, every piece of state it writes and reads back (keys in host-owned records included), and, when the host tests the unit, where the rendered `:UnitTests:` go.
 - [ ] `[disk]` The unit's `paths`, `exclude`, and `boundary` in the manifest match the chosen candidate and those answers; every leak site and every host test of the unit kept as an oracle is in the boundary.

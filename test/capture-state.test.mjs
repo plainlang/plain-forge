@@ -296,6 +296,37 @@ describe("capture-state snapshot and status", () => {
     assert.deepEqual(r.json.stale_copies, [{ path: "src/host/base.js", issue: "differs" }]);
   });
 
+  test("snapshot keeps the recorded answers and intent, in the order they were given", () => {
+    const h = makeHost();
+    const m = JSON.parse(h.manifest());
+    m.answers = [{ topic: "adopt", question: "Proceed despite old modules?", answer: "proceed" }];
+    m.units[0].intent = "make the unit regenerable";
+    m.units[0].answers = [
+      { topic: "state", question: "Keep state in the boundary?", answer: "proceed", commit: h.first },
+      { topic: "leak:boot", question: "Keep the constant?", answer: "keep name and value" },
+    ];
+    h.write("plain/capture.json", JSON.stringify(m));
+    h.commit("record answers");
+    assert.equal(h.run("snapshot", "--unit", "unit").code, 0);
+    const once = h.manifest();
+    assert.equal(h.run("snapshot", "--unit", "unit").code, 0);
+    assert.equal(h.manifest(), once);
+    const after = JSON.parse(once);
+    assert.equal(after.answers[0].answer, "proceed");
+    assert.equal(after.units[0].intent, "make the unit regenerable");
+    assert.deepEqual(after.units[0].answers.map((a) => a.topic), ["state", "leak:boot"]);
+  });
+
+  test("rejects an answer without a topic", () => {
+    const h = makeHost();
+    const m = JSON.parse(h.manifest());
+    m.units[0].answers = [{ answer: "proceed" }];
+    h.write("plain/capture.json", JSON.stringify(m));
+    const r = h.run("status");
+    assert.equal(r.code, 2);
+    assert.match(r.err, /needs a non-empty "topic" and "answer"/);
+  });
+
   test("rejects a manifest with an unknown version", () => {
     const h = makeHost();
     h.write("plain/capture.json", JSON.stringify({ version: 2, units: [] }));

@@ -193,8 +193,21 @@ function readManifest(file) {
     if (!Array.isArray(u.paths) || u.paths.length === 0) {
       throw new UsageError(`${file}: unit "${u.id}" needs a non-empty "paths" array.`);
     }
+    checkAnswers(file, u.answers, `unit "${u.id}"`);
   }
+  checkAnswers(file, m.answers, "the project");
   return m;
+}
+
+// Every answer the user gave, so a capture resumed in another session neither re-asks nor loses it.
+function checkAnswers(file, answers, owner) {
+  if (answers === undefined) return;
+  if (!Array.isArray(answers)) throw new UsageError(`${file}: "answers" of ${owner} must be an array.`);
+  for (const a of answers) {
+    if (!a || typeof a.topic !== "string" || !a.topic || typeof a.answer !== "string" || !a.answer) {
+      throw new UsageError(`${file}: every answer of ${owner} needs a non-empty "topic" and "answer".`);
+    }
+  }
 }
 
 function sortedObject(obj) {
@@ -213,6 +226,8 @@ function canonicalUnit(u) {
     id: u.id,
     module: u.module,
     status: u.status ?? "capturing",
+    intent: u.intent ?? null,
+    answers: (u.answers ?? []).map(canonicalAnswer),
     paths: [...u.paths].map(normalizePrefix).sort(),
     exclude: [...(u.exclude ?? [])].map(normalizePrefix).sort(),
     boundary: [...(u.boundary ?? [])].map(normalizePrefix).sort(),
@@ -226,10 +241,16 @@ function canonicalUnit(u) {
   };
 }
 
+// Answers keep the order they were given in: it is the history of the capture.
+function canonicalAnswer(a) {
+  return { topic: a.topic, question: a.question ?? null, answer: a.answer, commit: a.commit ?? null };
+}
+
 function writeManifest(file, m) {
   const out = {
     version: MANIFEST_VERSION,
     host_root: m.host_root ?? "..",
+    answers: (m.answers ?? []).map(canonicalAnswer),
     scan: m.scan ?? null,
     units: m.units.map(canonicalUnit).sort((a, b) => a.id.localeCompare(b.id)),
   };

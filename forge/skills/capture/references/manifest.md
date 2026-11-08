@@ -9,6 +9,7 @@ Paths use forward slashes and are relative to the host root, except `render_map[
 | Field | Written by |
 |---|---|
 | `version`, `host_root`, `scan` | `capture`, by hand, in Phase 1 |
+| `answers`, `units[].answers`, `units[].intent` | `capture`, by hand, the moment the user answers |
 | `units[].id`, `module`, `paths`, `exclude`, `boundary` | `capture`, by hand, in Phase 2 (and when a re-capture widens the boundary) |
 | `units[].render_map`, `functionalities` | `capture`, by hand, at the end of Phase 3 (and when a re-capture adopts a change) |
 | `units[].status`, `last_captured`, `files`, `decisions` | `capture-state.mjs snapshot` only |
@@ -21,6 +22,9 @@ Paths use forward slashes and are relative to the host root, except `render_map[
 {
   "version": 1,
   "host_root": "..",
+  "answers": [
+    { "topic": "adopt", "question": "Existing modules fail plain-parser (bamboo_hr.plain); proceed?", "answer": "proceed", "commit": "<commit>" }
+  ],
   "scan": {
     "commit": "<HEAD when scanned>",
     "candidates": [
@@ -46,6 +50,11 @@ Paths use forward slashes and are relative to the host root, except `render_map[
       "id": "app-integrations-bamboo-hr",
       "module": "bamboo_hr",
       "status": "captured",
+      "intent": "make an integration driver regenerable",
+      "answers": [
+        { "topic": "unit", "question": "Which unit?", "answer": "app-integrations-bamboo-hr", "commit": "<commit>" },
+        { "topic": "leak:registry", "question": "Keep the class name the marketplace registry names?", "answer": "keep the class name", "commit": "<commit>" }
+      ],
       "paths": ["app/integrations/bamboo_hr/"],
       "exclude": [],
       "boundary": ["app/integrations/base_driver.rb", "app/models/employee.rb"],
@@ -69,6 +78,9 @@ Paths use forward slashes and are relative to the host root, except `render_map[
 
 | Field | Meaning |
 |---|---|
+| `answers` | Answers that concern the project rather than one unit, such as proceeding past pre-existing failures in Step 0. |
+| `units[].intent` | The Phase 0 intent the unit was chosen for. |
+| `units[].answers` | Every answer the user gave about the unit, in the order given. Each has a `topic`, the `question` as asked (one line), the `answer` (the option chosen, plus any note), and the `commit` it was given at. |
 | `scan.commit` | The `HEAD` the candidates describe. A scan of the same commit is reused, never repeated. |
 | `scan.candidates[]` | The ranked candidates from Phase 1, recommended first. Free-form beyond the fields shown. |
 | `units[].id` | Kebab-case id, equal to the id of the candidate it came from. |
@@ -81,3 +93,7 @@ Paths use forward slashes and are relative to the host root, except `render_map[
 | `units[].last_captured` | The commit at which every file of the unit and its boundary last matched the record. Advances only when nothing is left to decide. |
 | `units[].files` | For each file of the unit and its boundary: its SHA-256 and the commit at which it was recorded. That commit is the base of the diff shown for a later change. |
 | `units[].decisions` | Files whose hand edit the user chose to revert, with the hash of the edit. They stay listed as awaiting a render until the file changes again. |
+
+## Answer topics
+
+One topic per question, so a resumed capture can tell what is already settled: `adopt` (Step 0), `unit`, `state`, `leak:<kind>` (`boot`, `registry`, `test pin`, `call`), `unit-tests`, `testing`, `review:<step>` (a Phase 3 review), `behavior:<func-id or file:line>` (behavior that looked unintended, or code left out), `resource:<file>` (a divergence in an adopted resource), and `<topic>` for anything else. A later answer to the same topic replaces the earlier one: remove the earlier entry when you add it.
