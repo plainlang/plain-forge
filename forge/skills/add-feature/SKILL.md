@@ -7,7 +7,8 @@ description: >-
   test scenarios) to disk — asking, authoring, and reviewing per
   functionality — then closes with a plain-healthcheck gate. Use when the user
   wants to add a feature to an existing project. Not for bootstrapping a new
-  project from scratch (use forge-plain) or for editing generated code (the
+  project from scratch (use forge-plain), for bringing existing code without
+  .plain specs under ***plain (use capture), or for editing generated code (the
   .plain specs are the source of truth).
 ---
 

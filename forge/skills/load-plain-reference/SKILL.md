@@ -73,6 +73,13 @@ When drafting or trimming the wording of an integration spec, also read
 
 Do not load integration rules for ordinary non-integration specs.
 
+A unit captured from an existing host (see `capture`) is embedded in that host even when it is not
+an integration. For it, read `rules/integration-embedded.md` and
+`rules/integration-embedded-testing.md` and apply their host rules: the host dictates the stack,
+host symbols are named by fully qualified path, host files are linked where they are, and test
+scripts stage the rendered unit into the host. Their provider-specific parts, and
+`rules/integrations.md`, apply only when the unit also calls a third-party API.
+
 ## 4. Load operational references only when needed
 
 Authoring rules remain authoritative if a reference appears to conflict with them.
