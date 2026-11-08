@@ -266,6 +266,29 @@ describe("capture-state snapshot and status", () => {
     assert.deepEqual(JSON.parse(h.manifest()).units[0].decisions, {});
   });
 
+  test("a capturing unit lists no changes", () => {
+    const h = makeHost();
+    const u = h.run("status").json.units[0];
+    assert.equal(u.state, "capturing");
+    assert.deepEqual([u.unit_changes, u.boundary_changes], [[], []]);
+  });
+
+  test("a host-file copy under resources/host is flagged once its host file changes", () => {
+    const h = makeHost();
+    capture(h);
+    h.write("plain/resources/host/src/host/base.js", "export class Base {}\n");
+    h.commit("copy the base class");
+    const fresh = h.run("status");
+    assert.equal(fresh.code, 0, fresh.out);
+    assert.deepEqual(fresh.json.stale_copies, []);
+
+    h.write("src/host/base.js", "export class Base { y() {} }\n");
+    h.commit("host changed its base class");
+    const r = h.run("status");
+    assert.equal(r.code, 1);
+    assert.deepEqual(r.json.stale_copies, [{ path: "src/host/base.js", issue: "differs" }]);
+  });
+
   test("rejects a manifest with an unknown version", () => {
     const h = makeHost();
     h.write("plain/capture.json", JSON.stringify({ version: 2, units: [] }));

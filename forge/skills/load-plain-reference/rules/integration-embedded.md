@@ -4,7 +4,7 @@ description: Rules for authoring ***plain specs for REST API integrations embedd
 
 # Rules for **embedded** integration specs
 
-When an integration `.plain` module is **embedded** — meaning the generated code in `plain_modules/` is consumed in-process by an existing host codebase as a library / module — it is a module embedded in a host, so every rule in [`host-embedded.md`](host-embedded.md) applies: the host dictates the stack, the project lives under `plain/`, discovery comes before questions, host symbols are referenced by fully qualified path, host files are linked in place, and the test scripts stage into the host. The rules below are what an **integration** adds on top of those and of the shared rules in [`integrations.md`](integrations.md). If anything below contradicts a guess made from memory, the rules here win.
+When an integration `.plain` module is **embedded** — meaning the generated code in `plain_modules/` is consumed in-process by an existing host codebase as a library / module — it is a module embedded in a host, so every rule in [`host-embedded.md`](host-embedded.md) applies: the host dictates the stack, the project lives under `plain/`, discovery comes before questions, host symbols are referenced by fully qualified path, host files are copied into `resources/host/` and linked there, and the test scripts stage into the host. The rules below are what an **integration** adds on top of those and of the shared rules in [`integrations.md`](integrations.md). If anything below contradicts a guess made from memory, the rules here win.
 
 > **For test-script authoring**, follow [`integration-embedded-testing.md`](integration-embedded-testing.md), as `host-embedded.md` describes.
 
@@ -52,6 +52,6 @@ Before declaring an embedded integration done, walk the completion checklist in 
 
 ## Anti-patterns specific to embedded integrations
 
-- **Inlining a host base class body into the contract spec.** Reference the host file as a linked resource **at its original host-relative path** — do not inline its contents and do not copy it into `resources/`
+- **Inlining a host base class body into the contract spec.** Link its copy under `resources/host/` (see [`host-embedded.md`](host-embedded.md)) — do not inline its contents
 - **Restating the host base class's fields or methods in the contract schema** instead of extending it with `allOf` / `$ref`
 - **Authoring an integration spec that contradicts an existing integration in the same host** without first surfacing the conflict and getting explicit user confirmation

@@ -17,7 +17,8 @@ All files live in `plain/` at the host root (an existing ***plain project there 
 | `template/host_context.plain` | Import module shared by every captured unit of this host: the host codebase concept, the host stack, and host-wide conventions. Created once, updated in place. |
 | `<module>.plain` | Root module of the unit; imports `host_context`. A large unit is a chain of modules joined by `requires`, one per sub-level. |
 | `tests/<module>/<func-id>.plain` | Test plain files, when conformance tests are on. |
-| `resources/` | Only artifacts that no host file holds (a captured provider response, a provider contract). Host files are linked where they are, never copied here. |
+| `resources/host/` | Copies of the host files the specs link, each at its path in the host (`resources/host/lib/...`). The renderer receives only `plain/`, so nothing outside it is ever linked. |
+| `resources/` (elsewhere) | Artifacts no host file holds (a captured provider response, a provider contract). |
 | `test_scripts/`, `config.yaml` | The test scripts and renderer configuration. |
 | `capture.json` | The capture manifest. |
 
@@ -25,8 +26,8 @@ All files live in `plain/` at the host root (an existing ***plain project there 
 
 Write each step to disk immediately through the named skill, then review it (see *Review* below) before the next step.
 
-1. **Host context.** If `template/host_context.plain` exists and still matches the host, keep it. Otherwise create it with `create-import-module`, then `add-concept` for the host codebase concept and `add-implementation-requirement` for the host stack and conventions, transcribed from the Phase 1 facts.
-2. **Interface and boundary.** With `add-concept`, define the unit's interface and link, where they are, the host files that define it. Define each host symbol the unit uses by its fully qualified name, marked as imported from the host and not to be redefined. The interface is the contract with the rest of the host: names, signatures, the errors callers catch, and the side effects callers rely on must all survive regeneration.
+1. **Host context.** If `template/host_context.plain`, or an adopted import module that holds only host-wide facts, exists and still matches the host, keep it and update it in place. Otherwise create `template/host_context.plain` with `create-import-module`, then `add-concept` for the host codebase concept and `add-implementation-requirement` for the host stack and conventions, transcribed from the Phase 1 facts.
+2. **Interface and boundary.** With `add-concept`, define the unit's interface: copy the host files that define it to `resources/host/<host path>` and link the copies. Define each host symbol the unit uses by its fully qualified name, marked as imported from the host and not to be redefined. The interface is the contract with the rest of the host: names, signatures, the errors callers catch, and the side effects callers rely on must all survive regeneration.
 3. **Domain concepts.** With `add-concept`, define the unit's own concepts, before any spec that uses them.
 4. **Functional specs.** With `add-functional-specs`, write one functionality per behavior observable through the interface:
    - derive them from the entry points, the branches and error paths reachable from them, and the assertions in the host's tests of the unit;

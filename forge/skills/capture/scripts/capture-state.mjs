@@ -12,7 +12,9 @@
 //            levels from there), dependency manifests, test and migration
 //            folders, CI, languages.
 // status     Compares every captured unit with its recorded file hashes and
-//            classifies each change. Writes nothing.
+//            classifies each change, and lists every copy under
+//            plain/resources/host/ that no longer matches its host file.
+//            Writes nothing.
 // snapshot   Records the current hashes of a unit's files (all of them, or the
 //            given --paths). With --revert, also records that the given paths
 //            keep their hand edits only until the next render replaces them.
@@ -292,6 +294,23 @@ function funcIdsOf(unit, file) {
 }
 
 function unitStatus(unit, root, manifestFile, files, dirty, commit) {
+  // Before its first snapshot a unit has no record to compare with: every file
+  // would read as added, which says nothing.
+  if (!unit.last_captured && Object.keys(unit.files ?? {}).length === 0) {
+    return {
+      id: unit.id,
+      module: unit.module,
+      state: "capturing",
+      last_captured: null,
+      last_captured_reachable: null,
+      head: commit,
+      unit_changes: [],
+      boundary_changes: [],
+      uncommitted: [],
+      awaiting_render: [],
+      outside: null,
+    };
+  }
   const manifestDir = path.dirname(manifestFile);
   const plainDir = plainPrefix(root, manifestFile);
   const scope = scopeOf(unit, files, plainDir);
@@ -343,8 +362,7 @@ function unitStatus(unit, root, manifestFile, files, dirty, commit) {
   }
 
   let state;
-  if (!unit.last_captured && Object.keys(recorded).length === 0) state = "capturing";
-  else if (uncommitted.length > 0) state = "uncommitted";
+  if (uncommitted.length > 0) state = "uncommitted";
   else if (unitChanges.length > 0 || boundaryChanges.length > 0) state = "changed";
   else state = "up-to-date";
 
@@ -363,6 +381,29 @@ function unitStatus(unit, root, manifestFile, files, dirty, commit) {
   };
 }
 
+// Host files are copied to plain/resources/host/<host path> so the renderer,
+// which receives only plain/, sees them. A copy that no longer matches its host
+// file is stale; one whose host file is gone has lost its source.
+function staleCopies(root, manifestFile) {
+  const copiesRoot = path.join(path.dirname(manifestFile), "resources", "host");
+  if (!fs.existsSync(copiesRoot)) return [];
+  const stale = [];
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const abs = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(abs);
+      else if (entry.isFile()) {
+        const rel = path.relative(copiesRoot, abs).replaceAll("\\", "/");
+        const source = path.join(root, rel);
+        if (!fs.existsSync(source)) stale.push({ path: rel, issue: "source-missing" });
+        else if (hashFile(source) !== hashFile(abs)) stale.push({ path: rel, issue: "differs" });
+      }
+    }
+  };
+  walk(copiesRoot);
+  return stale.sort((a, b) => a.path.localeCompare(b.path));
+}
+
 function cmdStatus(opts) {
   const manifestFile = path.resolve(opts.manifest ?? defaultManifest());
   const m = readManifest(manifestFile);
@@ -376,10 +417,12 @@ function cmdStatus(opts) {
     manifest: manifestFile,
     host_root: root,
     head: commit,
+    stale_copies: staleCopies(root, manifestFile),
     units: units.map((u) => unitStatus(u, root, manifestFile, files, dirty, commit)),
   };
   process.stdout.write(JSON.stringify(report, null, 2) + "\n");
-  return report.units.every((u) => u.state === "up-to-date") ? 0 : 1;
+  const settled = report.units.every((u) => u.state === "up-to-date");
+  return settled && report.stale_copies.length === 0 ? 0 : 1;
 }
 
 // ---------- snapshot ----------

@@ -6,7 +6,7 @@ Runs when `plain/capture.json` holds captured units. It never absorbs a change o
 
 Run `capture-state.mjs status`, or `status --unit <id>` when the user named a unit.
 
-- **Exit `0`** — every unit is up to date. Report each unit's `last_captured` commit, list any `awaiting_render` files, and stop. Write nothing.
+- **Exit `0`** — every unit is up to date and every copy under `plain/resources/host/` matches its host file. Report each unit's `last_captured` commit, list any `awaiting_render` files, and stop. Write nothing.
 - **Exit `1`** — handle each unit by its `state`:
   - `uncommitted` — list the files and ask the user to commit or discard them. Skip the unit until then: capture compares commits, never work in progress.
   - `capturing` — the first capture never finished; resume it from the SKILL.md phase whose output is missing.
@@ -23,6 +23,15 @@ A file in `boundary_changes` is a host file the unit depends on. For each, show 
 - **Update the specs** — the change alters a name, signature, type, error, or behavior the unit relies on. Edit the affected `.plain` text through its skill, then `snapshot --paths <file>`.
 - **No spec change** — the change does not affect the unit. `snapshot --paths <file>`.
 - **Defer** — no snapshot; the next run asks again.
+
+Unless the answer was defer, also refresh the file's copy under `plain/resources/host/`, if it has one.
+
+## 3b. Refresh stale copies
+
+`stale_copies` lists the copies under `plain/resources/host/` that no longer match their host file. A copy is a byte-for-byte snapshot, so refreshing it is not a spec decision:
+
+- **`differs`** — copy the host file over it. If the file is not in any unit's boundary, say which copy was refreshed; if it is, step 3 has already decided what the change means for the specs.
+- **`source-missing`** — the host file is gone. Ask whether to delete the copy and rewrite the specs that link it, or to keep it as it is for now.
 
 ## 4. Flag edits to the unit's code
 

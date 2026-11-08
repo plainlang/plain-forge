@@ -41,7 +41,7 @@ description: >-
 | Command | Does | Exit |
 |---|---|---|
 | `inventory [--depth <n>] [--under <folder>]` | Prints host facts at `HEAD` as JSON: commit, folders two levels deep (or `--depth`) with file and line counts, dependency manifests, test and migration folders, CI files, existing `.plain` files. `--under` narrows it to one folder, for drilling into a large host. | `0` |
-| `status [--unit <id>]` | Compares each captured unit with its recorded hashes and prints every change, classified. Writes nothing. | `0` all up to date, `1` something needs attention |
+| `status [--unit <id>]` | Compares each captured unit with its recorded hashes and prints every change, classified, plus every copy under `plain/resources/host/` that no longer matches its host file. Writes nothing. | `0` all up to date, `1` something needs attention |
 | `snapshot --unit <id> [--revert] [--paths <p>...]` | Records the current hashes of the unit's files, or only of `--paths`. Advances `last_captured` to `HEAD` once every file matches its record. | `0` |
 
 Exit `2` means a usage, git, or manifest error; read stderr, fix the cause, and run it again. Never edit `files`, `decisions`, `last_captured`, or `status` in the manifest by hand — `snapshot` owns them.
@@ -55,6 +55,9 @@ Exit `2` means a usage, git, or manifest error; read stderr, fix the cause, and 
    - **Captured units, and the user did not ask for a new unit** → re-capture: read `references/recapture.md` and follow it.
    - **The user asks to capture another unit or to see the units again** → Phase 1, then Phases 2 to 5 for the new unit.
 3. If `plain/` already holds a ***plain project without a manifest, adopt it: new modules go next to the existing ones, and nothing existing is moved or renamed.
+   - Run `plain-parser check` on each existing top module before writing anything. Record every failure as pre-existing, show the list to the user, and ask whether to proceed. Capture does not fix modules it did not write.
+   - If an existing import module holds only host-wide facts (stack, conventions, unit-test policy), it is the host context: Phase 3 updates it instead of creating `template/host_context.plain`. An import module that also carries rules for other modules is left as it is; Phase 3 creates `template/host_context.plain` beside it, and the final report names the facts the two share.
+   - If the existing test scripts cannot stage the unit's paths into the host, the unit gets its own scripts and `config.yaml`; the existing ones are not changed.
 
 ## Phase 0 — Intent
 
@@ -83,7 +86,7 @@ Read `references/phase-3-author.md` and follow it. It writes the host context im
 
 ## Phase 4 — Verify
 
-1. Run `plain-healthcheck`. Fix every `FAIL` item in the `.plain` files, `config.yaml`, or scripts and run it again until `PASS`.
+1. Run `plain-healthcheck`. Fix every `FAIL` item in the `.plain` files, `config.yaml`, or scripts and run it again until `PASS`. An item recorded as pre-existing in Step 0 does not block the capture; report it again at the end.
 2. Spawn a fresh `general-purpose` review agent (not a fork). Give it `references/checklist.md`, the paths of every file written, `plain/capture.json`, and an evidence record: each question asked in Phases 0 to 3, its answer, what was written in response, and the `plain-healthcheck` verdict. It returns `APPROVED` or a numbered list of unmet items. Fix each item through the skill that owns it, re-run `plain-healthcheck` if a `.plain` file changed, and spawn a fresh agent again, until one returns `APPROVED`.
 3. Ask the user whether to render the unit now and run the host's tests against the rendered code. That run is the evidence that the specs describe the code. A failing test means the specs miss behavior: fix the specs (as `debug-specs` does), never the generated code, and run it again.
 

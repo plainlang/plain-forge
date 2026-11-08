@@ -68,22 +68,22 @@ Run host discovery **before** the first question to the user. Treat the results 
 - The renderer is allowed to redefine **only** symbols the host does not provide
 - Naming the symbol by FQN is not optional decoration — it tells the renderer where the type comes from, which prevents a duplicate definition under `plain_modules/`
 
-## Link host files at their original path — never copy them into `resources/`
+## Copy host files into `resources/host/` — never link outside `plain/`
 
-The module's `.plain` files live **inside the host codebase** (per the *adopt the host's `.plain` setup verbatim* step), so host source files are already reachable as linked resources via their host-relative paths. The spec references them **in place**; it never duplicates them under `resources/host/`.
+The renderer receives only the `plain/` project folder. A link that leaves it (`../lib/integrations/base.py`) points at nothing the renderer can read, so the spec loses that context. Every host file the module depends on is therefore **copied** into the project and linked there.
 
-- Every host file the module touches (base classes, configuration modules, registries, exception classes, lifecycle hooks) is referenced from the relevant spec using linked-resource syntax with the **path as it exists in the host codebase** — e.g. `[base.py](host_project/integrations/base.py)` if the `.plain` module sits next to `host_project/`
-- **Do NOT copy host files into `resources/host/`.** A copy creates a second source of truth that drifts the moment the host file is edited; the rendered code will then disagree with whatever the host actually ships
-- **Do NOT add host files via the `add-resource` skill's default copy behavior** when that behavior would duplicate the file — point at the existing host path directly
-- **Never inline a host file's contents** into a spec
-- **Never describe a host symbol's shape from memory** — the renderer reads the linked file's bytes at its host path and that is the source of truth
-- This still obeys the broader [`linked-resources.md`](linked-resources.md) rules: a directory is not a valid link, a URL is not a valid link, a binary is not a valid link. Only the *location* changes — host files live where the host put them, not under `resources/`
+- Copy each host file the module touches (base classes, interfaces, configuration modules, registries, exception classes, lint configuration) to `resources/host/<its path in the host>` and link the copy — e.g. `lib/integrations/base.py` is copied to `resources/host/lib/integrations/base.py`. Keeping the host path below `resources/host/` makes the origin of every copy unambiguous
+- **Never link a file outside `plain/`**, with `../` or an absolute path
+- **A copy is a snapshot of the host file, byte for byte.** Never edit it; refresh it from the host whenever the host file changes. For a unit captured with `capture`, `capture` flags every copy whose host file changed; otherwise refresh the copies before each render
+- Copy only what the renderer needs: when a large host file matters for one fact (a framework setting, a version), state the fact in the spec instead of copying the file
+- **Never inline a host file's contents** into a spec, and **never describe a host symbol's shape from memory** — the renderer reads the copy, and the copy is the source of truth for the render
+- The broader [`linked-resources.md`](linked-resources.md) rules still apply: a directory is not a valid link, a URL is not a valid link, a binary is not a valid link
 
-### What still belongs under `resources/`
+### What else belongs under `resources/`
 
-This rule applies to **host source code only**. Artifacts the module authors for the first time — contract schemas, a configuration schema, static lookup tables, captured provider responses — still live under `resources/` exactly like in a non-embedded project.
+Artifacts the module authors for the first time — contract schemas, a configuration schema, static lookup tables, captured provider responses — live under `resources/` outside `resources/host/`, exactly like in a non-embedded project.
 
-The rule of thumb: if the host wrote it and ships it, link it where the host put it. If the module is authoring it for the first time, it goes under `resources/`.
+The rule of thumb: if the host wrote it, copy it unchanged into `resources/host/`. If the module authors it, it goes elsewhere under `resources/`.
 
 ## Single source of truth for the host root
 
@@ -124,7 +124,7 @@ Before declaring an embedded module done:
 
 - [ ] `host-codebase` concept records host root path, host language + version, host dependency manager + manifest, target package path, host base class import path, target generated-class FQN, and the host conventions the module follows
 - [ ] Every host symbol referenced in any spec uses its fully qualified import path and is tagged "imported from the host codebase; do not redefine"
-- [ ] Every host file the module touches is linked at its **original host-relative path** — no host file has been copied into `resources/host/` or anywhere else, and no host file contents are inlined in any spec
+- [ ] Every host file the module touches is copied to `resources/host/<its host path>`, unchanged, and linked there; no link leaves `plain/`, and no host file contents are inlined in any spec
 - [ ] Tech-stack implementation reqs are transcribed verbatim from the host (no independent stack choices), including host-package version pins
 - [ ] `prepare_environment` copies `$1` into the host's source tree at the module's package path, cleans the host's build-output directory, and runs the host's install / build so the conformance suite can resolve the module from the local dependency cache
 - [ ] `run_unittests` runs the same copy-into-host sequence (self-contained — does not depend on `prepare_environment` having run) and invokes the host's test runner scoped to the module's package
@@ -139,7 +139,8 @@ Before declaring an embedded module done:
 
 - **Choosing a different language, framework, or dependency manager than the host.** The host stack is inherited; cross-stack `requires` chains are forbidden by [`requires-modules.md`](requires-modules.md)
 - **Redefining a host class under `plain_modules/`.** Reference the host symbol by FQN; let the renderer import it
-- **Copying host source files into `resources/host/` (or anywhere under `resources/`).** That creates a second source of truth that silently drifts from the host. Link the host file in place; the `.plain` module already lives inside the host codebase, so the path resolves naturally
+- **Linking a host file where it lives (`../src/...`).** The renderer receives only `plain/`; copy the file to `resources/host/<its host path>` and link the copy
+- **Editing a copy under `resources/host/`, or letting it go stale.** A copy is refreshed from the host, never changed by hand; a stale copy renders against a host that no longer exists
 - **Hardcoding the host codebase path in any spec or script.** Read it from the env var declared in the configuration concept
 - **Asking the user to design the module's tech stack.** Read it from the host's manifest files
 - **Wiring tests with `PYTHONPATH` / `NODE_PATH` / Go `replace` directives instead of physically copying `$1` into the host's package tree.** The import-stitching approach is forbidden — every prepare / unit test starts by copying the generated module into the host's source tree at the module's package path

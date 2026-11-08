@@ -11,7 +11,7 @@ The Phase 4 review agent runs this list. Check each item by its tag: `[disk]` ag
 
 ## Specs
 
-- [ ] `[disk]` `template/host_context.plain` exists and transcribes the host stack and conventions; every host file is linked where it is, and none is copied into `resources/`.
+- [ ] `[disk]` `template/host_context.plain` exists and transcribes the host stack and conventions; every host file the specs need is copied unchanged to `resources/host/<host path>` and linked there, and no link leaves `plain/`.
 - [ ] `[disk]` The unit's interface is a concept that links the host files defining it; each host symbol is named by its fully qualified name and marked as imported from the host.
 - [ ] `[both]` Every interface entry point from the scan is covered by at least one func-id.
 - [ ] `[disk]` Every functional spec describes behavior observable through the interface, has a func-id, and passes the authoring rules loaded through `load-plain-reference`.
