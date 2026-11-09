@@ -114,6 +114,19 @@ describe("capture-state inventory", () => {
     assert.deepEqual(r.uncommitted_sample, ["src/unit/a.js"]);
   });
 
+  test("plain-forge files installed through a symlinked agent folder are not host work", () => {
+    const h = makeHost();
+    h.write("ai-config/skills/host-skill/SKILL.md", "host\n");
+    fs.mkdirSync(path.join(h.root, ".claude"));
+    fs.symlinkSync("../ai-config/skills", path.join(h.root, ".claude/skills"));
+    h.commit("host keeps its agent skills in ai-config");
+    h.write("ai-config/skills/capture/SKILL.md", "capture\n");
+    h.write(".claude/.plain-forge/manifest.json", JSON.stringify({ files: ["skills/capture/SKILL.md"] }));
+    assert.equal(h.run("inventory").json.uncommitted, 0);
+    h.write("ai-config/skills/host-skill/notes.md", "host work\n");
+    assert.deepEqual(h.run("inventory").json.uncommitted_sample, ["ai-config/skills/host-skill/notes.md"]);
+  });
+
   test("--under . means the whole host", () => {
     const h = makeHost();
     const all = h.run("inventory").json;

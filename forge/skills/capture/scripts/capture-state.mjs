@@ -136,6 +136,37 @@ function dirtyFiles(root) {
   return dirty;
 }
 
+// Every file a plain-forge install manifest records, as a path relative to root. A host can link its
+// agent folders into a tracked folder of its own (.claude/skills -> ../ai-config/skills), so each path
+// is resolved through symlinks to where git reports it.
+function pluginFiles(root) {
+  const files = new Set();
+  let realRoot;
+  try {
+    realRoot = fs.realpathSync(root);
+  } catch {
+    return files;
+  }
+  for (const dir of [".claude", ".agents", ".forge", ".opencode"]) {
+    const manifest = path.join(root, dir, ".plain-forge", "manifest.json");
+    let recorded;
+    try {
+      recorded = JSON.parse(fs.readFileSync(manifest, "utf8")).files ?? [];
+    } catch {
+      continue;
+    }
+    for (const f of [...recorded, ".plain-forge/manifest.json"]) {
+      try {
+        const rel = path.relative(realRoot, fs.realpathSync(path.join(root, dir, f))).replaceAll("\\", "/");
+        if (rel && !rel.startsWith("..")) files.add(rel);
+      } catch {
+        // recorded but no longer on disk
+      }
+    }
+  }
+  return files;
+}
+
 function changedSince(root, commit) {
   const out = git(root, ["diff", "--name-only", "--relative", "-z", `${commit}..HEAD`]);
   return out.split("\0").filter(Boolean);
@@ -661,9 +692,11 @@ function cmdInventory(opts) {
   }
 
   const asList = (map) => [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  // Uncommitted work the scan would read: plain/ and agent folders are capture's own, not the host's.
+  // Uncommitted work the scan would read: plain/, agent folders and plain-forge's installed files are
+  // capture's own, not the host's.
+  const installed = pluginFiles(root);
   const uncommittedWork = [...dirtyFiles(root)]
-    .filter((f) => !NOT_HOST_WORK.some((p) => f.startsWith(p)))
+    .filter((f) => !NOT_HOST_WORK.some((p) => f.startsWith(p)) && !installed.has(f))
     .sort();
   // A candidate is often a file plus a folder of the same name: total any set of prefixes.
   let pathsTotal = null;
