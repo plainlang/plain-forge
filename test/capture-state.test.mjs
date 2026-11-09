@@ -103,6 +103,25 @@ describe("capture-state inventory", () => {
     assert.deepEqual(r.json.migration_dirs, [{ path: "db/migrations/", files: 1 }]);
   });
 
+  test("uncommitted work leaves out plain/ and agent folders", () => {
+    const h = makeHost();
+    h.write("plain/draft.plain", "> draft\n");
+    h.write(".claude/skills/x/SKILL.md", "x\n");
+    assert.equal(h.run("inventory").json.uncommitted, 0);
+    h.write("src/unit/a.js", "export const a = 5;\n");
+    const r = h.run("inventory").json;
+    assert.equal(r.uncommitted, 1);
+    assert.deepEqual(r.uncommitted_sample, ["src/unit/a.js"]);
+  });
+
+  test("--under . means the whole host", () => {
+    const h = makeHost();
+    const all = h.run("inventory").json;
+    const dot = h.run("inventory", "--under", ".").json;
+    assert.equal(dot.files, all.files);
+    assert.deepEqual(dot.directories, all.directories);
+  });
+
   test("--under narrows the folders to one subtree, counted from there", () => {
     const h = makeHost();
     h.write("src/unit/deep/er/x.js", "x\n");
@@ -325,6 +344,74 @@ describe("capture-state snapshot and status", () => {
     const r = h.run("status");
     assert.equal(r.code, 2);
     assert.match(r.err, /needs a non-empty "topic" and "answer"/);
+  });
+
+  test("--paths without a path is rejected instead of snapshotting everything", () => {
+    const h = makeHost();
+    capture(h);
+    const r = h.run("snapshot", "--unit", "unit", "--paths");
+    assert.equal(r.code, 2);
+    assert.match(r.err, /--paths needs at least one path/);
+  });
+
+  test("rejects a boundary that is not an array of paths", () => {
+    const h = makeHost();
+    const m = JSON.parse(h.manifest());
+    m.units[0].boundary = "src/host/base.js";
+    h.write("plain/capture.json", JSON.stringify(m));
+    const r = h.run("status");
+    assert.equal(r.code, 2);
+    assert.match(r.err, /"boundary" of unit "unit" must be an array of paths/);
+  });
+
+  test("an uncommitted deletion blocks the first snapshot", () => {
+    const h = makeHost();
+    fs.rmSync(path.join(h.root, "src/unit/b.js"));
+    assert.deepEqual(h.run("status").json.units[0].state, "capturing");
+    const r = h.run("snapshot", "--unit", "unit");
+    assert.equal(r.code, 2);
+    assert.match(r.err, /src\/unit\/b\.js/);
+  });
+
+  test("a reverted deletion awaits the render until the file is back", () => {
+    const h = makeHost();
+    capture(h);
+    fs.rmSync(path.join(h.root, "src/unit/b.js"));
+    h.commit("hand deletion");
+    assert.equal(h.run("snapshot", "--unit", "unit", "--revert", "--paths", "src/unit/b.js").code, 0);
+    h.commit("record revert");
+    const waiting = h.run("status").json.units[0];
+    assert.equal(waiting.state, "up-to-date");
+    assert.deepEqual(waiting.awaiting_render, ["src/unit/b.js"]);
+
+    h.write("src/unit/b.js", "export const b = 2;\n");
+    h.commit("render restored the file");
+    assert.equal(h.run("snapshot", "--unit", "unit").code, 0);
+    assert.deepEqual(JSON.parse(h.manifest()).units[0].decisions, {});
+  });
+
+  test("a change matching a render older than the specs is a stale render, not accepted", () => {
+    const h = makeHost();
+    capture(h);
+    const rendered = "export const a = 'rendered';\n";
+    h.write("plain/plain_modules/unit/code/src/unit/a.js", rendered);
+    h.write("plain/unit.plain", "> spec\n");
+    const renderedAt = new Date(Date.now() - 60_000);
+    fs.utimesSync(path.join(h.root, "plain/plain_modules/unit/code/src/unit/a.js"), renderedAt, renderedAt);
+    h.write("src/unit/a.js", rendered);
+    h.commit("old render copied after a spec edit");
+    assert.equal(h.run("status").json.units[0].unit_changes[0].origin, "stale-render");
+  });
+
+  test("a host-file copy whose source became a folder is reported, not a crash", () => {
+    const h = makeHost();
+    capture(h);
+    h.write("plain/resources/host/src/host/base.js", "export class Base {}\n");
+    fs.rmSync(path.join(h.root, "src/host/base.js"));
+    fs.mkdirSync(path.join(h.root, "src/host/base.js"));
+    const r = h.run("status");
+    assert.equal(r.code, 1);
+    assert.deepEqual(r.json.stale_copies, [{ path: "src/host/base.js", issue: "source-missing" }]);
   });
 
   test("rejects a manifest with an unknown version", () => {

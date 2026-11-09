@@ -4,7 +4,7 @@ Read-only. The output is a ranked list of candidate units, each with evidence, r
 
 ## 1. Reuse a scan of the same commit
 
-If `scan.commit` in the manifest equals `HEAD`, reuse `scan.candidates` and go to Phase 2. Scanning the same commit again can only reword or reorder the candidates, which breaks idempotency. Scan again only when `HEAD` moved or the user asks for it.
+If `scan.commit` in the manifest equals `HEAD`, reuse the evidence in `scan.candidates` instead of reading the host again: re-reading the same commit can only reword it, which breaks idempotency. The ranking depends on the intent, though: when the current intent differs from `scan.intent`, rank the cached candidates again (step 6) and record the new order and intent before Phase 2. Scan again only when `HEAD` moved or the user asks for it.
 
 ## 2. Read the host
 
@@ -30,7 +30,7 @@ A candidate qualifies only if all four hold:
 
 1. **It is a set of path prefixes.** Folders or whole files. A unit never owns part of a file.
 2. **It has an interface.** The functions, classes, routes, commands, or messages through which the rest of the host uses it. Record each entry point with file and line. A registration point outside the unit's paths (a registry entry, a driver map, discovery by file name) is part of the interface; its file goes in the boundary.
-3. **The rest of the host goes through that interface.** Search for references from outside its paths into its symbols. Every reference that bypasses the interface is a **leak**; record it with file and line and one kind: `boot` (read when the host loads), `registry` (names a class or constant), `test pin` (a host test that names a class, doubles a signature, or reaches a private member through `send` or reflection — note which), or `call` (calls past the interface). Search the host's tests as well as its code: test pins are the easiest leaks to miss.
+3. **The rest of the host goes through that interface.** Search for references from outside its paths into its symbols. Every reference that bypasses the interface is a **leak**; record it with file and line and one kind: `boot` (read when the host loads), `registry` (names a class or constant), `test pin` (a host test that names a class, doubles a signature, or reaches a private member through `send` or reflection — note which), or `call` (calls past the interface). Search the host's tests as well as its code: test pins are the easiest leaks to miss. That includes the candidate's own tests when they sit inside its paths: the user may keep them as the oracle (Phase 2), and every private member they reach then becomes a pin.
 4. **Its behavior can be observed through the interface.** The host's tests exercise it, or a test could call the interface and check the result.
 
 A part that is already the render of an existing `.plain` module (its folder has an install manifest, or the module names its paths) is not a candidate: record it with fit `low` and the reason "adopt the module that renders it". A candidate described by an existing module under another name is still a candidate; note the module, and pick a module name that does not collide with it.
@@ -87,4 +87,4 @@ Recommend exactly one. Lower the fit, and say why, when a candidate is:
 
 ## 7. Record the scan
 
-Create `plain/` if it does not exist. Write `scan` to `plain/capture.json`: `commit` set to `HEAD`, and `candidates` in ranked order, in the shape `references/manifest.md` gives. Keep `units` as it is.
+Create `plain/` if it does not exist. Write `scan` to `plain/capture.json`: `commit` set to `HEAD`, `intent` set to the intent the candidates were ranked for, and `candidates` in ranked order, in the shape `references/manifest.md` gives. Keep `units` as it is.

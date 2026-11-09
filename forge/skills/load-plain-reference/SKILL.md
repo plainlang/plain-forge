@@ -76,7 +76,7 @@ Do not load integration rules for ordinary non-integration specs.
 
 A unit captured from an existing host (see `capture`) is embedded in that host but is not an
 integration: read `rules/host-embedded.md` and `rules/integration-embedded-testing.md`, and load
-the integration rules above only when the unit also calls a third-party API.
+the integration rules above only when the unit also calls a REST API, third-party or internal.
 
 ## 4. Load operational references only when needed
 

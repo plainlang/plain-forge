@@ -40,7 +40,12 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const MANIFEST_VERSION = 1;
+// The recorded "hash" of a file the user chose to have restored by the next render.
+const DELETED = "deleted";
 const OUTSIDE_SAMPLE = 20;
+// Folders whose uncommitted files are not work in progress on the host: the ***plain project and the
+// agent folders plain-forge installs into.
+const NOT_HOST_WORK = ["plain/", ".claude/", ".agents/", ".forge/", ".opencode/"];
 const MAX_LINE_COUNT_BYTES = 2 * 1024 * 1024;
 
 const MANIFEST_FILES = new Set([
@@ -193,6 +198,20 @@ function readManifest(file) {
     if (!Array.isArray(u.paths) || u.paths.length === 0) {
       throw new UsageError(`${file}: unit "${u.id}" needs a non-empty "paths" array.`);
     }
+    for (const key of ["paths", "exclude", "boundary"]) {
+      const v = u[key];
+      if (v !== undefined && !(Array.isArray(v) && v.every((p) => typeof p === "string"))) {
+        throw new UsageError(`${file}: "${key}" of unit "${u.id}" must be an array of paths.`);
+      }
+    }
+    if (u.render_map !== undefined && !(Array.isArray(u.render_map) &&
+        u.render_map.every((r) => r && typeof r.from === "string" && typeof r.to === "string"))) {
+      throw new UsageError(`${file}: "render_map" of unit "${u.id}" must be an array of {"from", "to"} paths.`);
+    }
+    if (u.functionalities !== undefined && !(u.functionalities && typeof u.functionalities === "object" &&
+        !Array.isArray(u.functionalities) && Object.values(u.functionalities).every(Array.isArray))) {
+      throw new UsageError(`${file}: "functionalities" of unit "${u.id}" must map each func-id to an array of paths.`);
+    }
     checkAnswers(file, u.answers, `unit "${u.id}"`);
   }
   checkAnswers(file, m.answers, "the project");
@@ -281,6 +300,15 @@ function scopeOf(unit, files, plainDir) {
   return scope;
 }
 
+// Whether a path falls under the unit's or its boundary's prefixes, whether or not the file exists.
+function inUnitScope(unit, file, plainDir) {
+  if (plainDir && file.startsWith(plainDir)) return false;
+  const paths = unit.paths.map(normalizePrefix);
+  const exclude = (unit.exclude ?? []).map(normalizePrefix);
+  const boundary = (unit.boundary ?? []).map(normalizePrefix);
+  return (underAny(file, paths) && !underAny(file, exclude)) || underAny(file, boundary);
+}
+
 function kindOfRecorded(unit, file) {
   const paths = unit.paths.map(normalizePrefix);
   const exclude = (unit.exclude ?? []).map(normalizePrefix);
@@ -289,7 +317,32 @@ function kindOfRecorded(unit, file) {
 
 // ---------- status ----------
 
-function originOf(unit, file, change, root, manifestDir) {
+const SKIP_DIRS = new Set(["plain_modules", "dist", "node_modules"]);
+
+// Newest modification time of the files under dir (optionally only those ending in ext), or 0.
+function newestMtime(dir, ext, skip = new Set()) {
+  let newest = 0;
+  const walk = (d) => {
+    let entries;
+    try {
+      entries = fs.readdirSync(d, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (e.name.startsWith(".") || skip.has(e.name)) continue;
+      const abs = path.join(d, e.name);
+      if (e.isDirectory()) walk(abs);
+      else if (e.isFile() && (!ext || e.name.endsWith(ext))) newest = Math.max(newest, fs.statSync(abs).mtimeMs);
+    }
+  };
+  walk(dir);
+  return newest;
+}
+
+// A change that matches the render output came from the specs only if that render is not older than
+// the specs; a render made before the last spec edit is stale and its match proves nothing.
+function originOf(unit, file, change, root, manifestDir, times) {
   const maps = (unit.render_map ?? []).map((r) => ({
     from: normalizePrefix(r.from),
     to: normalizePrefix(r.to),
@@ -301,9 +354,13 @@ function originOf(unit, file, change, root, manifestDir) {
   if (!fs.existsSync(renderRoot)) return "unknown";
   const rel = map.to === "" ? file : file.slice(map.to.replace(/\/?$/, "/").length);
   const rendered = path.join(renderRoot, rel);
-  if (change === "deleted") return fs.existsSync(rendered) ? "edited" : "rendered";
-  if (!fs.existsSync(rendered)) return "edited";
-  return hashFile(rendered) === hashFile(path.join(root, file)) ? "rendered" : "edited";
+  let matches;
+  if (change === "deleted") matches = !fs.existsSync(rendered);
+  else matches = fs.existsSync(rendered) && hashFile(rendered) === hashFile(path.join(root, file));
+  if (!matches) return "edited";
+  times.specs ??= newestMtime(manifestDir, ".plain", SKIP_DIRS);
+  times.renders[renderRoot] ??= newestMtime(renderRoot);
+  return times.renders[renderRoot] < times.specs ? "stale-render" : "rendered";
 }
 
 function funcIdsOf(unit, file) {
@@ -339,6 +396,7 @@ function unitStatus(unit, root, manifestFile, files, dirty, commit) {
   const current = new Map();
   for (const f of scope.keys()) current.set(f, hashFile(path.join(root, f)));
 
+  const times = { specs: undefined, renders: {} };
   const unitChanges = [];
   const boundaryChanges = [];
   const all = new Set([...current.keys(), ...Object.keys(recorded)]);
@@ -353,7 +411,7 @@ function unitStatus(unit, root, manifestFile, files, dirty, commit) {
     const kind = scope.get(f) ?? kindOfRecorded(unit, f);
     const item = { path: f, change, since: was?.commit ?? null };
     if (kind === "unit") {
-      item.origin = originOf(unit, f, change, root, manifestDir);
+      item.origin = originOf(unit, f, change, root, manifestDir, times);
       item.func_ids = funcIdsOf(unit, f);
       unitChanges.push(item);
     } else {
@@ -361,12 +419,12 @@ function unitStatus(unit, root, manifestFile, files, dirty, commit) {
     }
   }
 
-  const uncommitted = [...dirty]
-    .filter((f) => scope.has(f) || (recorded[f] && !(plainDir && f.startsWith(plainDir))))
-    .sort();
+  // Includes uncommitted deletions, which are in neither the scope nor the record.
+  const uncommitted = [...dirty].filter((f) => inUnitScope(unit, f, plainDir)).sort();
 
   const awaitingRender = Object.entries(unit.decisions ?? {})
-    .filter(([f, d]) => d.decision === "revert" && current.get(f) === d.hash)
+    .filter(([f, d]) => d.decision === "revert" &&
+      (current.has(f) ? current.get(f) === d.hash : d.hash === DELETED))
     .map(([f]) => f)
     .sort();
 
@@ -416,7 +474,13 @@ function staleCopies(root, manifestFile) {
       else if (entry.isFile()) {
         const rel = path.relative(copiesRoot, abs).replaceAll("\\", "/");
         const source = path.join(root, rel);
-        if (!fs.existsSync(source)) stale.push({ path: rel, issue: "source-missing" });
+        let st = null;
+        try {
+          st = fs.lstatSync(source);
+        } catch {
+          // no source file
+        }
+        if (!st || !(st.isFile() || st.isSymbolicLink())) stale.push({ path: rel, issue: "source-missing" });
         else if (hashFile(source) !== hashFile(abs)) stale.push({ path: rel, issue: "differs" });
       }
     }
@@ -471,7 +535,11 @@ function cmdSnapshot(opts) {
     }
   }
   const dirty = dirtyFiles(root);
-  const blocked = targets.filter((t) => dirty.has(t));
+  // A full snapshot settles the whole unit, so any uncommitted path under its prefixes blocks it —
+  // including a deletion, which is in neither the scope nor the record.
+  const blocked = opts.paths.length
+    ? targets.filter((t) => dirty.has(t))
+    : [...dirty].filter((f) => inUnitScope(unit, f, plainDir)).sort();
   if (blocked.length) {
     throw new UsageError(
       `Commit these files before snapshotting unit "${unit.id}":\n  ${blocked.join("\n  ")}`,
@@ -493,14 +561,22 @@ function cmdSnapshot(opts) {
         decisions[t] = { hash, decision: "revert" };
       }
     } else {
+      if (opts.revert) {
+        if (kindOfRecorded(unit, t) !== "unit") {
+          throw new UsageError(`--revert applies to unit files only; ${t} is in the boundary.`);
+        }
+        decisions[t] = { hash: DELETED, decision: "revert" };
+      }
       delete recorded[t];
       removed++;
     }
   }
 
-  // A revert decision lasts until the file changes again (normally: a render).
+  // A revert decision lasts until the file changes again (normally: a render); for a reverted
+  // deletion, until the file exists again.
   for (const [f, d] of Object.entries(decisions)) {
-    if (!scope.has(f) || hashFile(path.join(root, f)) !== d.hash) delete decisions[f];
+    const unchanged = scope.has(f) ? hashFile(path.join(root, f)) === d.hash : d.hash === DELETED;
+    if (!unchanged) delete decisions[f];
   }
 
   const settled =
@@ -544,7 +620,9 @@ function cmdInventory(opts) {
   const root = path.resolve(opts.root ?? toplevel(process.cwd()));
   toplevel(root);
   const depth = opts.depth ?? 2;
-  const under = opts.under ? normalizePrefix(opts.under).replace(/\/?$/, "/") : "";
+  // `.` and `./` mean the whole host, so they normalize to the empty prefix.
+  const underPrefix = opts.under ? normalizePrefix(opts.under) : "";
+  const under = underPrefix ? underPrefix.replace(/\/?$/, "/") : "";
   const underDepth = under ? under.split("/").length - 1 : 0;
   const files = listFiles(root).filter((f) => f.startsWith(under));
   const dirs = new Map();
@@ -583,6 +661,10 @@ function cmdInventory(opts) {
   }
 
   const asList = (map) => [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  // Uncommitted work the scan would read: plain/ and agent folders are capture's own, not the host's.
+  const uncommittedWork = [...dirtyFiles(root)]
+    .filter((f) => !NOT_HOST_WORK.some((p) => f.startsWith(p)))
+    .sort();
   // A candidate is often a file plus a folder of the same name: total any set of prefixes.
   let pathsTotal = null;
   if (opts.paths.length) {
@@ -598,7 +680,8 @@ function cmdInventory(opts) {
     under: under || null,
     paths_total: pathsTotal,
     head: head(root),
-    uncommitted: dirtyFiles(root).size,
+    uncommitted: uncommittedWork.length,
+    uncommitted_sample: uncommittedWork.slice(0, OUTSIDE_SAMPLE),
     files: files.length,
     binary_or_large_files: binary,
     directories: asList(dirs).map(([p, a]) => ({ path: p, files: a.files, lines: a.lines })),
@@ -635,7 +718,10 @@ function parseArgs(argv) {
     else if (a === "--unit") opts.unit = value();
     else if (a === "--revert") opts.revert = true;
     else if (a === "--paths") {
+      // An empty --paths would fall back to every file and settle unreviewed changes.
+      const before = opts.paths.length;
       while (i + 1 < rest.length && !rest[i + 1].startsWith("--")) opts.paths.push(rest[++i]);
+      if (opts.paths.length === before) throw new UsageError("--paths needs at least one path.");
     } else throw new UsageError(`Unknown option ${a}.`);
   }
   if (opts.depth !== undefined && !(Number.isInteger(opts.depth) && opts.depth > 0)) {

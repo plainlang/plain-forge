@@ -27,6 +27,7 @@ Paths use forward slashes and are relative to the host root, except `render_map[
   ],
   "scan": {
     "commit": "<HEAD when scanned>",
+    "intent": "make an integration driver regenerable",
     "candidates": [
       {
         "id": "app-integrations-bamboo-hr",
@@ -82,6 +83,7 @@ Paths use forward slashes and are relative to the host root, except `render_map[
 | `units[].intent` | The Phase 0 intent the unit was chosen for. |
 | `units[].answers` | Every answer the user gave about the unit, in the order given. Each has a `topic`, the `question` as asked (one line), the `answer` (the option chosen, plus any note), and the `commit` it was given at. |
 | `scan.commit` | The `HEAD` the candidates describe. A scan of the same commit is reused, never repeated. |
+| `scan.intent` | The intent the candidates are ranked for. A different intent reranks the same evidence. |
 | `scan.candidates[]` | The ranked candidates from Phase 1, recommended first. Free-form beyond the fields shown. |
 | `units[].id` | Kebab-case id, equal to the id of the candidate it came from. |
 | `units[].module` | The root `.plain` module of the unit, without `.plain`. |
