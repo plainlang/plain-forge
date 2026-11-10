@@ -8,7 +8,7 @@ A toolkit for working with [∗∗∗plain](https://plainlang.org) projects from
 
 ## What plain-forge does
 
-plain-forge is organized around four kinds of work, each with its own entry-point skill (and a long tail of supporting skills behind it).
+plain-forge is organized around five kinds of work, each with its own entry-point skill (and a long tail of supporting skills behind it).
 
 ### 1. Bootstrap a new project
 
@@ -17,20 +17,24 @@ Pick whichever entry point matches how much upfront design you want:
 - **`forge-plain`** — full end-to-end interview. One question at a time, immediate writes to disk, covers product → tech stack → testing → validation in four phases. Produces a complete `.plain` project with `config.yaml`, test scripts, and a passing `plain-healthcheck` before handing off.
 - **`init-plain-project`** — lightweight scaffold. Asks only about the base technology, project kind, and whether conformance testing is on; emits a template module, a stub top-level module, the testing scripts, and a `config.yaml`. No interview, no specs — pair it with `add-feature` to grow the project feature by feature.
 
-### 2. Grow an existing project
+### 2. Capture an existing codebase
+
+- **`capture`** — brings code that already exists under ***plain, one unit of regeneration at a time. Scans the host read-only, discovers the units it can be regenerated in at the levels the host itself has (a whole service, an integration, a piece of middleware, …), and lets you choose one. Writes that unit's behavior as `.plain` modules and records what was captured at which commit in `plain/capture.json`. Re-running it is idempotent: an unchanged host writes nothing, and every later change to the unit's code or its boundary is flagged for you to adopt into the specs, revert to the specs, or defer.
+
+### 3. Grow an existing project
 
 - **`add-feature`** — takes a feature request in plain English and runs the same one-question-at-a-time loop that `forge-plain` uses, scoped to a single feature against an existing `.plain` file.
 - **Per-section authoring skills** — `add-functional-spec`, `add-functional-specs`, `add-implementation-requirement`, `add-test-requirement`, `add-concept`, `add-test-scenarios`, `add-resource`, `add-template`. Each enforces the relevant ***plain syntax rules (concept uniqueness, complexity limits, bullet syntax, linked-resource constraints, …) so hand-authoring doesn't drift from the language. `add-test-scenarios` writes the test plain file of a functionality — by convention `tests/<module>/<func-id>.plain` — with the conformance and acceptance scenarios the renderer implements, and nothing else.
 - **Module-management skills** — `create-import-module`, `create-requires-module`, `refactor-module`, `consolidate-concepts` for restructuring as the project grows.
 
-### 3. Validate and maintain
+### 4. Validate and maintain
 
 - **`plain-healthcheck`** — the verification gate. Inventories every `.plain` module, validates every `config.yaml`, parses every top module with [`plain-parser`](https://github.com/plainlang/plain-parser), and checks every module against the ***plain rules. Returns `PASS` / `FAIL` with a numbered punch-list when something is broken.
 - **`init-config-file`** — assembles the canonical `config.yaml` per part of a project from the decisions made during interviewing.
 - **`check-plain-env`** — probes the host machine for everything the project needs (language toolchains, external services, system binaries, drivers) and emits a `PASS` / `WARN` / `FAIL` report with OS-specific install commands.
 - **`analyze-func-specs`** / **`analyze-if-func-spec-too-complex`** / **`break-down-func-spec`** / **`resolve-spec-conflict`** — the spec-quality toolchain that runs behind `add-feature` and `forge-plain` but can also be invoked directly when reviewing or refactoring.
 
-### 4. Debug and test
+### 5. Debug and test
 
 - **`debug-specs`** — when the rendered app misbehaves, this traces the generated code back to the spec that caused it and fixes the spec (never the generated code).
 - **`render-spec`** — [pyro](https://github.com/plainlang/pyro), the open-source ***plain renderer, bundled with plain-forge. Renders a `.plain` module (and the modules it requires or imports) into working, tested code directly inside your agent. See [Render with pyro](#render-with-pyro).
@@ -171,6 +175,13 @@ If you'd rather skip the full upfront interview and build the specs feature-by-f
 3. Repeat step 2 for each feature you want to add. The specs grow incrementally and `plain-healthcheck` is run as the final automated step of every `add-feature` pass.
 4. Render the specs into code (see [Rendering specs](#rendering-specs) below).
 
+### Capturing an existing codebase
+
+1. Commit the codebase, then invoke `capture` from its root.
+2. Say what you want to be able to regenerate. plain-forge scans the code, shows the units it found at each level, and recommends one.
+3. Pick a unit. plain-forge writes its specs into `plain/`, verifies them with `plain-healthcheck`, and records the capture in `plain/capture.json`. Commit `plain/`.
+4. Invoke `capture` again whenever the codebase has moved on. It reports the unit as up to date, or flags each change to the unit's code or boundary for you to decide.
+
 ### Adding a feature to an existing project
 
 1. Invoke `add-feature`.
@@ -268,6 +279,7 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 | `forge-plain` | End-to-end QA interview that produces complete `.plain` spec files for a new project |
 | `init-plain-project` | Lightweight project initializer — scaffolds `template/base.plain` (base impl + test reqs), a stub top-level module, the testing scripts, and `config.yaml`. No functional specs, no concepts, no validation. Pair with `add-feature` to grow the project feature-by-feature. |
 | `add-feature` | Interview the user about a single feature, then write all the specs for it |
+| `capture` | Scan an existing codebase, discover the units it can be regenerated in, write the chosen unit as `.plain` specs, and flag later changes to it for review |
 | `render-spec` | [pyro](https://github.com/plainlang/pyro), the open-source renderer: renders a `.plain` module and the modules it requires or imports into working, tested code, from inside your agent. See [Render with pyro](#render-with-pyro). |
 
 ### Spec Authoring

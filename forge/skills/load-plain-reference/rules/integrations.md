@@ -8,7 +8,7 @@ When writing or editing a `.plain` file that describes an **integration** agains
 
 ## Scope of "integration" specs
 - An integration `.plain` module describes how the project talks to a **third-party or internal REST API**
-- The integration may be **embedded** (lives as a library/module inside an existing host codebase) — see [`integration-embedded.md`](integration-embedded.md) for the additional rules that apply
+- The integration may be **embedded** (lives as a library/module inside an existing host codebase) — see [`host-embedded.md`](host-embedded.md) and [`integration-embedded.md`](integration-embedded.md) for the additional rules that apply
 - Or **standalone** (a service, daemon, CLI, scheduled job, or container) — see [`integration-standalone.md`](integration-standalone.md) for the additional rules that apply
 - The contract surface, edge-case coverage, live-API cross-check, and `resources/` layout described below apply to **both** shapes — the shape-specific rule files add to them, never replace them
 
@@ -95,7 +95,7 @@ Every integration is either **embedded** (lives as a library/module inside an ex
 
 The contract artifact itself is **identical** across both shapes: a JSON Schema (or OpenAPI) file under `resources/contract/`. What changes is **what the renderer emits from it** and **what extra context the spec carries**:
 
-- **Embedded** → the renderer generates a host-language class from the schema and wires it into the host's import path. The host codebase dictates the tech stack — see [`integration-embedded.md`](integration-embedded.md) for the full ruleset
+- **Embedded** → the renderer generates a host-language class from the schema and wires it into the host's import path. The host codebase dictates the tech stack — see [`host-embedded.md`](host-embedded.md) and [`integration-embedded.md`](integration-embedded.md) for the full ruleset
 - **Standalone** → the renderer treats the schema as the public artifact: it generates an internal implementation in `plain_modules/` and ships the schema verbatim for external consumers. The integration owns its stack — see [`integration-standalone.md`](integration-standalone.md) for the full ruleset
 
 ## Edge-case coverage is a hard floor, not a stretch goal

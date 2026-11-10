@@ -6,8 +6,10 @@ description: Rules for authoring the three test scripts that an embedded ***plai
 
 When an embedded integration ships its three `test_scripts/` (prepare-environment, unit,
 conformance), these rules apply on top of the contracts in the corresponding
-`implement-*-testing-script` skills. Use `load-plain-reference` for the rendering and testing
-workflow overview when needed.
+`implement-*-testing-script` skills. They apply the same way to every other module embedded in a
+host (see `host-embedded.md`), such as a unit captured with `capture`: read "integration" below
+as "embedded module". Use `load-plain-reference` for the rendering and testing workflow overview
+when needed.
 
 ## Staging model (read this first)
 
@@ -117,6 +119,17 @@ output=$(mvn test --no-transfer-progress 2>&1)
 - **Each fact lives in one place.** If two `***implementation reqs***` entries declare slightly different `:UnitTests:` paths (or two `***test reqs***` entries declare slightly different `:ConformanceTests:` packages), the renderer can't tell which to use. Author each group as a tight cluster (one bullet with sub-bullets) so a future reviewer sees them together
 - **Never duplicate a fact across sections.** `:UnitTests:` facts belong **only** in `***implementation reqs***`; `:ConformanceTests:` facts belong **only** in `***test reqs***`. The two groups never overlap — the script generators read each from its own section
 - **For non-Java languages**, the facts have language-specific equivalents — Python: `src/foo/`, `tests/foo/`, `tests.foo`; Node: `src/foo/`, `test/foo/`, `test/foo/**/*.test.ts`. The `implement-*-testing-script` skills know the mapping per language, but the spec still has to declare the host-relative paths and packages so the skill knows what to put in the script bodies
+
+## Hosts that test in their own environment, and captured units
+
+The staging model above assumes the conformance suite can run as a separate project. Two cases change that:
+
+- **The host's tests need its application environment** (a Rails, Django, or Spring app whose tests load the app, its factories, and its test databases). Then `:ConformanceTests:` cannot run from `/tmp/<lang>_conformance/`: the conformance script copies `$2` into a dedicated folder inside the host's test tree (e.g. `spec/plain_conformance/<module>/`), runs the host's own test runner there, and removes that folder on exit
+- **The module is a unit captured from the host** (see `capture`). Its render lands on files the host already has. Every staging script removes and copies only the unit's `paths` from `plain/capture.json`, minus its `exclude` — never the whole package folder around them, which can hold hand-written files the unit does not own. It backs up the host's own files at those paths before copying, restores only what it backed up on exit (`trap ... EXIT`), and removes the empty folders it created, so a test run leaves the host checkout unchanged
+
+In both cases, when the tests run in a container or another process that mounts the host, the script checks that it sees the staged files — compare the checksum of one staged file inside and outside — and exits `69` on a mismatch. Without that check, a script pointed at the wrong host root tests the host's own code and passes green.
+
+**Live OAuth with rotating refresh tokens.** When the provider issues a new refresh token on every refresh, a refresh inside a test invalidates the stored credentials. The prepare script refreshes once per run and writes the new access token and the rotated refresh token back to the `.env` file it read them from, never printing them or passing them on a command line; tests stub the token endpoint.
 
 ## Common contract (all three scripts)
 

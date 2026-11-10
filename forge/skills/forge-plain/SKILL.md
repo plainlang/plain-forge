@@ -6,8 +6,9 @@ description: >-
   specification files to disk incrementally, reviews each addition, and
   validates the specs with plain-healthcheck before handoff. Use when the user starts a
   new project or wants to build something new from scratch. Not for adding a
-  feature to an existing project (use add-feature) or for editing generated code
-  (the .plain specs are the source of truth).
+  feature to an existing project (use add-feature), for describing code that
+  already exists (use capture), or for editing generated code (the .plain specs
+  are the source of truth).
 ---
 
 # Forge Plain
