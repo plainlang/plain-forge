@@ -79,10 +79,13 @@ slack_react() {
     '{channel: $channel, timestamp: $timestamp, name: "white_check_mark"}')" >/dev/null || true
 }
 
+# On exit: reports a failed publish and removes the release worktree.
 cleanup() {
   local code=$?
-  # Only a publish that was announced reports its failure, in the start notice's
-  # thread and the channel. This runs before the worktree, our cwd, is removed.
+  # A failure from the publish step on is reported in the start notice's thread
+  # and the channel, or only the channel if the start notice did not post, as in
+  # the publish workflow. Earlier failures and aborts post nothing. This runs
+  # before the worktree, our cwd, is removed.
   if [ "$code" -ne 0 ] && [ "$PUBLISHING" = true ]; then
     deployment_status failure
     slack "*${PKG}*: publishing \`v${VERSION}\` to npm FAILED :x: (local deploy by *$(whoami)*)." "$SLACK_TS" broadcast >/dev/null
