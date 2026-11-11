@@ -154,15 +154,16 @@ It checks the tag out into a temporary git worktree, so your working tree, branc
 uncommitted edits have no bearing on what ships. It runs the same guards (semver,
 already-published), records the same Deployment, and posts the same Slack messages.
 
-Slack comes from `SLACK_WEBHOOK_URL` in the environment, or from a `.env.release` file
-at the repo root — gitignored, and the only place a webhook should live locally.
+For Slack, set `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` to the values behind the org secret
+and variable of the same names, in the environment or in a `.env.release` file at the repo
+root (gitignored). Without them the release still ships, with a warning, unannounced.
 
 ## Prerequisites (already configured)
 
 | what | where | note |
 |---|---|---|
 | Trusted publisher | npmjs.com → `plain-forge` → Settings → Trusted Publisher | GitHub Actions, `plainlang/plain-forge`, workflow `publish.yml` |
-| `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` | org secret, org variable | CI notifications are skipped without the variable; `scripts/deploy.sh` still uses `SLACK_WEBHOOK_URL` |
+| `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` | org secret, org variable | CI notifications are skipped without the variable; `scripts/deploy.sh` reads the same two locally |
 | `LINEAR_ACCESS_KEY` | repo secret | records stable releases in Linear, with their PRs and the GitHub release text; only logged until the `LINEAR_RELEASE_MODE` variable is `live` |
 | Branch protection | `main` | `Test (node 22 / 24)` required, no force pushes, no deletion |
 
