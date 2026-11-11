@@ -33,6 +33,7 @@ Pick whichever entry point matches how much upfront design you want:
 ### 4. Debug and test
 
 - **`debug-specs`** — when the rendered app misbehaves, this traces the generated code back to the spec that caused it and fixes the spec (never the generated code).
+- **`render`**: the entry point for rendering specs into code. Detects the installed ***plain renderers, asks which one to use when there is more than one, and runs it. See [Rendering specs](#rendering-specs).
 - **`render-spec`** — [pyro](https://github.com/plainlang/pyro), the open-source ***plain renderer, bundled with plain-forge. Renders a `.plain` module (and the modules it requires or imports) into working, tested code directly inside your agent. See [Render with pyro](#render-with-pyro).
 - **`implement-unit-testing-script`** / **`implement-conformance-testing-script`** / **`implement-prepare-environment-script`** — generate the per-language testing scripts that the renderer and you both invoke. New languages can be added by these skills without touching any other part of the project.
 
@@ -179,17 +180,17 @@ If you'd rather skip the full upfront interview and build the specs feature-by-f
 
 ### Rendering specs
 
-Once your `.plain` files are ready (and `plain-healthcheck` is green), render the specs into code with a ***plain renderer, passing it the final module in the dependency chain. plain-forge names that module at the end of Phase 4.
+Once your `.plain` files are ready (and `plain-healthcheck` is green), render the specs into code with the `render` skill, passing it the final module in the dependency chain. plain-forge names that module at the end of Phase 4.
+
+```
+/render <module>.plain
+```
+
+`render` picks the renderer: the only one installed, or the one you choose when several are. It knows two renderers: [pyro](https://github.com/plainlang/pyro) and [codeplain](https://codeplain.ai).
 
 #### Render with pyro
 
-plain-forge ships [pyro](https://github.com/plainlang/pyro), an open-source renderer packaged as the `render-spec` skill that renders inside your AI coding agent. Invoke it with the module to render:
-
-```
-/render-spec <module>.plain
-```
-
-It resolves the modules the target requires or imports, renders them in dependency order, and writes:
+plain-forge ships [pyro](https://github.com/plainlang/pyro), an open-source renderer packaged as the `render-spec` skill that renders inside your AI coding agent. `render` invokes it for you. It resolves the modules the target requires or imports, renders them in dependency order, and writes:
 
 - implementation code and unit tests to `plain_module/code/`
 - conformance tests to `plain_module/tests/`
@@ -268,6 +269,7 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 | `forge-plain` | End-to-end QA interview that produces complete `.plain` spec files for a new project |
 | `init-plain-project` | Lightweight project initializer — scaffolds `template/base.plain` (base impl + test reqs), a stub top-level module, the testing scripts, and `config.yaml`. No functional specs, no concepts, no validation. Pair with `add-feature` to grow the project feature-by-feature. |
 | `add-feature` | Interview the user about a single feature, then write all the specs for it |
+| `render` | Entry point for rendering: detects the installed ***plain renderers, asks which one to use when there is more than one, and renders a `.plain` module. See [Rendering specs](#rendering-specs). |
 | `render-spec` | [pyro](https://github.com/plainlang/pyro), the open-source renderer: renders a `.plain` module and the modules it requires or imports into working, tested code, from inside your agent. See [Render with pyro](#render-with-pyro). |
 
 ### Spec Authoring
