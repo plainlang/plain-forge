@@ -42,6 +42,6 @@ Only after `plain-healthcheck` passes, tell the user their specs are ready and t
 - Chain `base.plain → features.plain → integrations.plain` → render `integrations.plain`.
 - Single module `my_app.plain` → render `my_app.plain`.
 
-**Default renderer: pyro.** Ask the user whether to render `<module>` now with pyro's `render-spec` skill (`/render-spec <module>.plain`, or `/pyro:render-spec <module>.plain` when pyro is installed as a Claude Code plugin), and invoke it only if they agree. If no `render-spec` skill is available in this session, tell the user pyro is not installed and point them to https://github.com/plainlang/pyro#installation. The user may render with any other ***plain renderer instead.
+Ask the user whether to render `<module>` now; if they agree, invoke `render` with `<module>.plain`.
 
 Also remind the user of any **side-channel commands** they may want to run themselves per the Phase 3 testing strategy — for example `./test_scripts/run_unittests.sh <module>`, `./test_scripts/prepare_environment.sh <module>`, or `./test_scripts/run_conformance_tests.sh <module> <conformance_tests_folder>`. Mention only the scripts that were actually generated in Phase 3.
