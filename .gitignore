@@ -15,7 +15,7 @@ conformance_tests
 .env.production.local
 *.tgz
 
-# local release credentials (slack webhook)
+# local release credentials (Slack bot token)
 .env.release
 
 # copied from vendor/pyro at publish time by scripts/bundle-pyro.sh

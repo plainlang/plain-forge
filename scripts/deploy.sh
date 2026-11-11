@@ -15,9 +15,9 @@
 # Auth differs from CI: Actions uses OIDC trusted publishing, which only works
 # from a CI runner. Locally you publish as yourself — `npm login` first.
 #
-# Slack notifications are sent when a webhook is available, from either:
-#   * the SLACK_WEBHOOK_URL environment variable, or
-#   * a local .env.release file containing SLACK_WEBHOOK_URL=...  (gitignored)
+# Slack notices post as the same bot, to the same channel, as the publish
+# workflow: set SLACK_BOT_TOKEN and SLACK_CHANNEL_ID in the environment or in a
+# gitignored .env.release file. Without them the release ships unannounced.
 
 set -euo pipefail
 
@@ -32,6 +32,9 @@ ASSUME_YES=false
 WORKTREE=""
 DEPLOYMENT_ID=""
 VERSION=""
+SLACK=false
+SLACK_TS=""
+PUBLISHING=false
 
 # ---------------------------------------------------------------- utilities
 
@@ -44,21 +47,48 @@ usage() {
   exit "${1:-0}"
 }
 
+# Calls a Slack Web API method and prints its response. A failure only warns:
+# Slack must never block a release. The token goes in through stdin, not argv.
+slack_api() {
+  local response error
+  response=$(printf 'Authorization: Bearer %s\n' "$SLACK_BOT_TOKEN" |
+    curl -sS --max-time 10 -H @- -H 'Content-Type: application/json; charset=utf-8' \
+      --data "$2" "https://slack.com/api/$1") || true
+  if [ "$(jq -r .ok <<<"$response" 2>/dev/null)" != true ]; then
+    error=$(jq -r '.error // empty' <<<"$response" 2>/dev/null) || true
+    warn "slack $1 failed${error:+: $error}"
+    return 1
+  fi
+  printf '%s\n' "$response"
+}
+
+# Posts a notice and prints its ts. Given a ts, it replies in that thread, and
+# "broadcast" also shows the reply in the channel.
 slack() {
-  [ -n "${SLACK_WEBHOOK_URL:-}" ] || return 0
-  curl -sf -X POST "$SLACK_WEBHOOK_URL" \
-    -H 'Content-type: application/json' \
-    --data "$(jq -n --arg t "$1" '{text: $t}')" >/dev/null || warn "slack notification failed"
+  [ "$SLACK" = true ] || return 0
+  { slack_api chat.postMessage "$(jq -n --arg channel "$SLACK_CHANNEL_ID" --arg text "$1" \
+      --arg thread_ts "${2:-}" --arg broadcast "${3:-}" '{channel: $channel, text: $text}
+      + if $thread_ts == "" then {} else {thread_ts: $thread_ts, reply_broadcast: ($broadcast == "broadcast")} end')" \
+    || true; } | jq -r '.ts // empty'
+}
+
+# Puts a ✅ on the start notice, as the publish workflow does on success.
+slack_react() {
+  [ "$SLACK" = true ] && [ -n "$1" ] || return 0
+  slack_api reactions.add "$(jq -n --arg channel "$SLACK_CHANNEL_ID" --arg timestamp "$1" \
+    '{channel: $channel, timestamp: $timestamp, name: "white_check_mark"}')" >/dev/null || true
 }
 
 cleanup() {
   local code=$?
+  # Only a publish that was announced reports its failure, in the start notice's
+  # thread and the channel. This runs before the worktree, our cwd, is removed.
+  if [ "$code" -ne 0 ] && [ "$PUBLISHING" = true ]; then
+    deployment_status failure
+    slack "*${PKG}*: publishing \`v${VERSION}\` to npm FAILED :x: (local deploy by *$(whoami)*)." "$SLACK_TS" broadcast >/dev/null
+  fi
   if [ -n "$WORKTREE" ] && [ -d "$WORKTREE" ]; then
     git worktree remove --force "$WORKTREE" >/dev/null 2>&1 || true
-  fi
-  if [ "$code" -ne 0 ] && [ -n "$VERSION" ] && [ "$DRY_RUN" = false ]; then
-    deployment_status failure
-    slack "*${PKG}*: publishing \`v${VERSION}\` to npm FAILED :x: (local deploy by *$(whoami)*)."
   fi
   exit "$code"
 }
@@ -115,6 +145,14 @@ if [ -f .env.release ]; then
   set +a
 fi
 
+SLACK=true
+for var in SLACK_BOT_TOKEN SLACK_CHANNEL_ID; do
+  if [ -z "${!var:-}" ]; then
+    warn "$var is not set, so this release is not announced in Slack"
+    SLACK=false
+  fi
+done
+
 NODE_MAJOR=$(node -p "process.versions.node.split('.')[0]")
 [ "$NODE_MAJOR" -ge 18 ] || die "node >= 18 required (found $(node --version))"
 
@@ -155,7 +193,7 @@ if [ "$DRY_RUN" = true ]; then
 else
   log "publishing  as $(npm whoami)"
 fi
-log "slack       $([ -n "${SLACK_WEBHOOK_URL:-}" ] && echo configured || echo 'not configured — notifications skipped')"
+log "slack       $([ "$SLACK" = true ] && echo "channel $SLACK_CHANNEL_ID" || echo 'not configured — not announced')"
 echo
 
 if [ "$ASSUME_YES" = false ] && [ "$DRY_RUN" = false ]; then
@@ -195,15 +233,18 @@ fi
 
 deployment_create
 deployment_status in_progress "publishing to npm"
-slack "*${PKG}*: release \`v${VERSION}\` published by *$(whoami)* — shipping to npm (local deploy)..."
+PUBLISHING=true
+SLACK_TS=$(slack "*${PKG}*: release \`v${VERSION}\` published by *$(whoami)* — shipping to npm (local deploy)...")
 
 log "publishing to npm"
 OTP_ARGS=()
 if [ -n "$OTP" ]; then OTP_ARGS=(--otp "$OTP"); fi
 npm publish --access public "${NPM_TAG_ARGS[@]}" "${OTP_ARGS[@]}"
+PUBLISHING=false
 
 deployment_status success "published $PKG@$VERSION"
-slack "*${PKG}*: \`v${VERSION}\` published to npm :white_check_mark:. Install with \`npx ${PKG}@latest update\`."
+slack "*${PKG}*: \`v${VERSION}\` published to npm :white_check_mark:. Install with \`npx ${PKG}@latest update\`." "$SLACK_TS" >/dev/null
+slack_react "$SLACK_TS"
 
 echo
 log "published $PKG@$VERSION → https://www.npmjs.com/package/$PKG/v/$VERSION"
