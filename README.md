@@ -292,6 +292,7 @@ On `install`, the CLI reads `forge/skills` and `forge/rules` and writes them int
 | `create-import-module` | Create a shared template module (definitions + reqs, no functional specs) |
 | `create-requires-module` | Create a module that depends on a previously built module |
 | `refactor-module` | Split a large module into smaller modules connected via a requires chain |
+| `capture` | Turn an existing piece of this codebase (functionality, layer, component, or module) into ***plain specs |
 | `consolidate-concepts` | Gather scattered concept definitions into a single shared import module |
 
 ### Analysis and Quality
