@@ -14,6 +14,16 @@ echo "Current directory: $current_dir"
 echo "Build folder name: $1"
 echo "--------------------------------"
 
+# Try to find Python interpreter (python3 first, then python)
+if command -v python3 &> /dev/null; then
+    PYTHON_CMD="python3"
+elif command -v python &> /dev/null; then
+    PYTHON_CMD="python"
+else
+    printf "Error: Python interpreter not found. Please install Python.\n"
+    exit $UNRECOVERABLE_ERROR_EXIT_CODE
+fi
+
 # Working folder lives in the system temp directory. $1 may be an absolute
 # path, so only its basename is used to build the working folder name.
 PYTHON_BUILD_SUBFOLDER="/tmp/python_$(basename "$1")"
