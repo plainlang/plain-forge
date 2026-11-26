@@ -23,34 +23,37 @@ live, then create it there with `init-config-file`.
 
 # Step 1: Define capture target
 
-User needs to define what to capture (capture target): a component, module or a layer inside application or the whole application. Capture target must be a part of the codebase in the current project. If the target is an external library, stop and report to the user that capture target needs to be inside this project. If capture is not specified, ask the user to define capture target.
+User needs to define what to capture (capture target): a component, a module or the whole application. If it is not specified or is not clear what the capture target is, ask the user.
 
-# Step 2: Analyze capture target's code and tests
+Capture target must be a part of the codebase in the current project. If the target is an external library, abort capture and report back to the user.
 
-Analyze the source code, its architecture and distill main modules of the capture target, and how modules interact with each other. The ideal module is a deep module that have narrow well-defined interface with lots of functionalities.
+# Step 2: Prepare capture plan
 
-Prepare a plan, a structure how to map modules into .plain specs. Present this to the user as a composition chart and wait for confirmation. Then write it as a **capture plan**: a sequence of specs and what modules they represent, and how are they compose into final **top-level spec**. 
+Analyze the source code with tests and infer the main code modules of the capture target. The ideal module is a deep module that have small interface with lots of functionalities. Analyze how main modules interact with each other, and which depends on which. Ideally, there are no bidirectional dependencies (cycles).
 
-Analyze the test code of capture target's, what kind of tests are present, where they reside. Especially note high-level end-to-end tests, which can later be used evaluate the rendered code. 
+Prepare a plan how to map modules into .plain specs. Present it to the user as a composition chart and wait for confirmation. Then write this plan as a **capture plan**: a sequence of .plain specs with definition what code modules each spec represents. The final .plain spec is the **top-level spec** which represents the **top-level module**.
 
-Capture shared tech stack by writing implementation and test requirements inside an `import` .plain spec (base spec), which can be reused by most .plain specs.
+# Step 3: Capture target's boundary and top-level module
 
-# Step 3: Capture target's top-level boundary
+Target's boundary consists of all of target's entry points and their observable outputs, for example:
+* if capture target is a web/desktop application: User interface with all user messages, buttons, forms, designs, etc.
+* if capture target is a CLI application: CLI interface with all commands, arguments, messages, error messages, results, etc.
+* if capture target is a code component: public API with all public signatures, types, constants, etc.
 
-Top-level boundary of the capture target is either:
-* User interface (UI) if capture target is application
-* public API if capture target is code component
+All these observable outputs of the boundary should be catalaged in resources and linked inside spec in order to keep the spec concise and readable.
 
-Analyze the top-level boundary of the capture target extracting main behaviour and functionalities by:
-- reading source code
-- reading high-level tests
-- running the code in isolation
+First analyze the top-level module by:
+* reading source code
+* reading high-level tests
+* running the code in isolation
 
-Write a **top-level spec** (the top `.plain` module) that defines the interface and functionalities of the capture target in detail. The code generated from this top-level spec should be able a drop-in replacement for the current code (capture target) without any additional adjustments necessary. Read the target's original tests, which show the contract. Note every test case. Write test scenarios for **top-level spec**.
+Write a .plain spec for **top-level module** that describes the boundary and all functionalities of the capture target in detail, but without internal implementation details. The code generated from spec should be able a drop-in replacement for the capture target's code without any additional adjustments necessary. Note every functionality and every test case and write test scenarios for **top-level module**.
 
-## Step 4: Capture complete target's behaviour
+Write an `import` .plain spec (base spec) for shared tech stack by writing implementation and test requirements. This base spec can be reused by other .plain specs.
 
-Go through every spec in **capture plan** from bottom to the top. The final **top-level** spec is already written, but review it through the same procedure, and revise if necessary.
+## Step 4: Capture target's complete functionalities
+
+Go through every spec in **capture plan**. The final **top-level spec** is already written, but review it at the end and revise if necessary.
 
 For every spec:
 * Analyze source code and tests of modules it represents from capture target
