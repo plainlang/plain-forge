@@ -125,7 +125,7 @@ jobs:
         id: slack-start
         if: ${{ vars.SLACK_CHANNEL_ID != '' }}
         continue-on-error: true
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        uses: slackapi/slack-github-action@0bc3581177d9a0f8d555e07689384b376528e8fa # v4.1.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -285,7 +285,7 @@ jobs:
       # A release builds from its tag; a merge builds from the merge commit.
       - name: Notify Slack (tests failed)
         if: ${{ needs.test.result == 'failure' }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        uses: slackapi/slack-github-action@0bc3581177d9a0f8d555e07689384b376528e8fa # v4.1.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -298,7 +298,7 @@ jobs:
 
       - name: Notify Slack (release failed)
         if: ${{ needs.publish.result == 'failure' }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        uses: slackapi/slack-github-action@0bc3581177d9a0f8d555e07689384b376528e8fa # v4.1.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -316,7 +316,7 @@ jobs:
         env:
           # Empty while the release step only logs, or when it failed.
           RELEASE_URL: ${{ needs.linear-release.outputs.release-url }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        uses: slackapi/slack-github-action@0bc3581177d9a0f8d555e07689384b376528e8fa # v4.1.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -334,7 +334,7 @@ jobs:
       - name: Notify Slack (✅ on the start notice)
         if: ${{ needs.publish.result == 'success' && env.THREAD_TS != 'null' }}
         continue-on-error: true
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        uses: slackapi/slack-github-action@0bc3581177d9a0f8d555e07689384b376528e8fa # v4.1.0
         with:
           method: reactions.add
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -346,7 +346,7 @@ jobs:
 
       - name: Notify Slack (prerelease failed)
         if: ${{ needs.prerelease.result == 'failure' }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        uses: slackapi/slack-github-action@0bc3581177d9a0f8d555e07689384b376528e8fa # v4.1.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -359,7 +359,7 @@ jobs:
 
       - name: Notify Slack (prerelease published)
         if: ${{ needs.prerelease.result == 'success' && needs.prerelease.outputs.skip == 'false' }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        uses: slackapi/slack-github-action@0bc3581177d9a0f8d555e07689384b376528e8fa # v4.1.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
@@ -376,7 +376,7 @@ jobs:
       # gets its own quiet line rather than claiming something shipped.
       - name: Notify Slack (nothing to publish)
         if: ${{ needs.prerelease.result == 'success' && needs.prerelease.outputs.skip == 'true' }}
-        uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        uses: slackapi/slack-github-action@0bc3581177d9a0f8d555e07689384b376528e8fa # v4.1.0
         with:
           method: chat.postMessage
           token: ${{ secrets.SLACK_BOT_TOKEN }}
